@@ -1,4 +1,5 @@
 import '@mantine/core/styles.css'
+import '@mantine/notifications/styles.css'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './assets/index.css'

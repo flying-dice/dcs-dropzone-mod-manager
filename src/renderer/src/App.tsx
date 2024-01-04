@@ -1,5 +1,5 @@
 import { AppShell, LoadingOverlay, Stack, Title } from '@mantine/core'
-import { FC } from 'react'
+import { FC, useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { LibraryPage } from './pages/library.page'
 import { SettingsPage } from './pages/settings.page'
@@ -8,6 +8,10 @@ import { HomePage } from './pages/home.page'
 import { VscHome, VscSearch, VscSettingsGear } from 'react-icons/vsc'
 import { client } from './client'
 import { useAsync } from 'react-use'
+import useSWR from 'swr'
+import axios from 'axios'
+import { useLocalStorage } from '@mantine/hooks'
+import { showErrorNotification } from './utils/notifications'
 
 const routes: AppNavItem[] = [
   {
@@ -28,10 +32,23 @@ const routes: AppNavItem[] = [
 ]
 
 export const App: FC = () => {
+  const [registry] = useLocalStorage({
+    key: 'registry',
+    defaultValue: 'https://dcs-mod-manager-registry.pages.dev/'
+  })
+
   const defaultInstallationFolder = useAsync(
     () => client.installation.getDefaultInstallFolder.query(),
     []
   )
+
+  const { data, error } = useSWR('registry', () =>
+    axios.get('/registry.json', { baseURL: registry }).then((response) => response.data)
+  )
+
+  useEffect(() => {
+    error && showErrorNotification(error)
+  }, [error])
 
   return (
     <AppShell
@@ -45,7 +62,7 @@ export const App: FC = () => {
       <LoadingOverlay visible={defaultInstallationFolder.loading} />
       <AppShell.Header>
         <Stack pl={'sm'} h={'100%'} justify={'center'}>
-          <Title order={3}>DCS Mod Manager</Title>
+          <Title order={3}>DCS World Mod Manager</Title>
         </Stack>
       </AppShell.Header>
       <AppShell.Navbar>
@@ -54,7 +71,7 @@ export const App: FC = () => {
       <AppShell.Main>
         <Routes>
           <Route path={'/'} element={<HomePage />} />
-          <Route path={'/library'} element={<LibraryPage />} />
+          <Route path={'/library'} element={<LibraryPage registry={data} />} />
           {defaultInstallationFolder.value && (
             <Route
               path={'/settings'}

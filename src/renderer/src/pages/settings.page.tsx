@@ -1,8 +1,9 @@
 import React from 'react'
 import { Stack, Text, TextInput, Title } from '@mantine/core'
 import { useLocalStorage } from '@mantine/hooks'
-import { closeAllModals, openConfirmModal } from '@mantine/modals'
+import { closeAllModals, openConfirmModal, openModal } from '@mantine/modals'
 import { client } from '../client'
+import { RegistryForm } from '../forms/registry.form'
 
 export type SettingsPageProps = {
   defaultInstallationFolder: string
@@ -11,6 +12,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ defaultInstallationF
   const [installFolder, setInstallFolder] = useLocalStorage({
     key: 'installFolder',
     defaultValue: defaultInstallationFolder
+  })
+
+  const [registry, setRegistry] = useLocalStorage({
+    key: 'registry',
+    defaultValue: 'https://dcs-mod-manager-registry.pages.dev/'
   })
 
   const handleInstallFolderChange = async (): Promise<void> => {
@@ -44,6 +50,22 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ defaultInstallationF
     })
   }
 
+  const handleRegistryChange = async (): Promise<void> => {
+    openModal({
+      title: 'Registry',
+      children: (
+        <RegistryForm
+          initialValues={{ url: registry }}
+          onCancel={closeAllModals}
+          onSubmit={(values) => {
+            setRegistry(values.url)
+            closeAllModals()
+          }}
+        />
+      )
+    })
+  }
+
   return (
     <Stack>
       <Title order={3}>Settings</Title>
@@ -56,6 +78,16 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ defaultInstallationF
         onClick={handleInstallFolderChange}
         styles={{ input: { cursor: 'pointer' } }}
         error={!installFolder && 'Invalid installation folder'}
+      />
+      <TextInput
+        label="Registry"
+        description="The registry where the Mod Manager will look for Mods"
+        readOnly
+        placeholder="Set Registry"
+        value={registry}
+        onClick={handleRegistryChange}
+        styles={{ input: { cursor: 'pointer' } }}
+        error={!registry && 'Invalid registry'}
       />
     </Stack>
   )
