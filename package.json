@@ -14,15 +14,17 @@
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       "@semantic-release/npm",
+      "@semantic-release/git",
       [
         "@semantic-release/github",
         {
-          "assets": [
+          "prepare": [
             {
-              "path": "dist/dcs-mod-manager-Setup-${nextRelease.gitTag}.exe",
-              "label": "Installer"
+              "path": "@semantic-release/exec",
+              "cmd": "npm run build"
             }
-          ]
+          ],
+          "assets": ["dist/*.exe"]
         }
       ]
     ]
@@ -69,7 +71,9 @@
     "@electron-toolkit/eslint-config-prettier": "^1.0.1",
     "@electron-toolkit/eslint-config-ts": "^1.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
+    "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^11.1.0",
+    "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^9.2.6",
     "@semantic-release/release-notes-generator": "^12.1.0",
     "@types/node": "^18.17.5",
