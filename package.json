@@ -18,13 +18,15 @@
       [
         "@semantic-release/exec",
         {
-          "prepareCmd": "npm run build"
+          "prepareCmd": "npm install && run build"
         }
       ],
       [
         "@semantic-release/github",
         {
-          "assets": ["dist/*.exe"]
+          "assets": [
+            "dist/*.exe"
+          ]
         }
       ]
     ]
@@ -73,6 +75,7 @@
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^11.1.0",
+    "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^9.2.6",
     "@semantic-release/release-notes-generator": "^12.1.0",
