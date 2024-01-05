@@ -7,7 +7,24 @@
   "homepage": "https://www.electronjs.org",
   "private": true,
   "release": {
-    "branches": ["main"]
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/github",
+        {
+          "assets": [
+            {
+              "path": "dist/dcs-mod-manager-Setup-${nextRelease.gitTag}.exe",
+              "label": "Installer"
+            }
+          ]
+        }
+      ]
+    ]
   },
   "scripts": {
     "format": "prettier --write .",
@@ -52,6 +69,9 @@
     "@electron-toolkit/eslint-config-prettier": "^1.0.1",
     "@electron-toolkit/eslint-config-ts": "^1.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
+    "@semantic-release/commit-analyzer": "^11.1.0",
+    "@semantic-release/github": "^9.2.6",
+    "@semantic-release/release-notes-generator": "^12.1.0",
     "@types/node": "^18.17.5",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
@@ -64,6 +84,7 @@
     "prettier": "^3.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "semantic-release": "^22.0.12",
     "typescript": "^5.1.6",
     "vite": "^4.4.9"
   }
