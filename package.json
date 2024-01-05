@@ -16,14 +16,14 @@
       "@semantic-release/npm",
       "@semantic-release/git",
       [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "npm run build"
+        }
+      ],
+      [
         "@semantic-release/github",
         {
-          "prepare": [
-            {
-              "path": "@semantic-release/exec",
-              "cmd": "npm run build"
-            }
-          ],
           "assets": ["dist/*.exe"]
         }
       ]
