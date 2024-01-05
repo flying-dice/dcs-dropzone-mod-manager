@@ -1,6 +1,6 @@
 {
   "name": "dcs-mod-manager",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "An Electron application with React and TypeScript",
   "main": "./out/main/index.js",
   "author": "example.com",
@@ -24,7 +24,9 @@
               "cmd": "npm run build"
             }
           ],
-          "assets": ["dist/*.exe"]
+          "assets": [
+            "dist/*.exe"
+          ]
         }
       ]
     ]
