@@ -18,7 +18,6 @@ export class GithubRegistryContentProvider implements RegistryContentProvider {
 
   async getMeta(): Promise<Meta> {
     const response = await GithubRegistryContentProvider.octokit.rest.repos.get(this.octokitProps)
-
     return {
       url: response.data.html_url,
       license: response.data.license?.name,
