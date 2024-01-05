@@ -4,7 +4,7 @@ import React from 'react'
 import { z } from 'zod'
 import axios from 'axios'
 import { showErrorNotification } from '../utils/notifications'
-import { registrySchema } from '../schema/registry.schema'
+import { registryEntriesSchema } from '../schema/registryEntriesSchema'
 
 export const RegistryFormSchema = z.object({
   url: z.string().url()
@@ -32,7 +32,7 @@ export const RegistryForm: React.FC<RegistryFormProps> = ({
     if (!form.validate().hasErrors) {
       axios
         .get(form.values.url + '/registry.json')
-        .then((response) => registrySchema.parse(response.data))
+        .then((response) => registryEntriesSchema.parse(response.data))
         .then(() => onSubmit(form.values))
         .catch((error) => showErrorNotification(error))
     }

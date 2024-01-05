@@ -4,7 +4,7 @@ import { pathExistsSync } from 'fs-extra'
 import { trpc } from '../trpc'
 
 export const installationService = {
-  async getDefaultInstallFolder(): Promise<{ path: string; valid: boolean }> {
+  async getDefaultWriteDir(): Promise<{ path: string; valid: boolean }> {
     if (!process.env.USERPROFILE) {
       return {
         path: '',
@@ -30,8 +30,8 @@ export const installationService = {
       valid: false
     }
   },
-  async getInstallFolder(): Promise<string> {
-    const defaultPath = await installationService.getDefaultInstallFolder()
+  async getWriteDir(): Promise<string> {
+    const defaultPath = await installationService.getDefaultWriteDir()
     return await dialog
       .showOpenDialog({
         defaultPath: defaultPath?.path,
@@ -42,6 +42,6 @@ export const installationService = {
 }
 
 export const installationRouter = trpc.router({
-  getInstallFolder: trpc.procedure.query(installationService.getInstallFolder),
-  getDefaultInstallFolder: trpc.procedure.query(installationService.getDefaultInstallFolder)
+  getWriteDir: trpc.procedure.query(installationService.getWriteDir),
+  getDefaultWriteDir: trpc.procedure.query(installationService.getDefaultWriteDir)
 })

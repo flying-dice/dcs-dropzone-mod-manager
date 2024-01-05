@@ -6,7 +6,10 @@ export const useFuse = <T>(
   initialSearchTerm = ''
 ): { search: string; results: T[]; setSearch: (search: string) => void } => {
   const [search, setSearch] = useState(initialSearchTerm)
-  const fuse = useMemo(() => new Fuse(items, { keys: ['name'], threshold: 0.6 }), [items])
+  const fuse = useMemo(
+    () => new Fuse(items, { keys: ['name', 'description', 'author'], threshold: 0.6 }),
+    [items]
+  )
   const results = useMemo(
     () => (search.length < 2 ? items : fuse.search(search).map((result) => result.item)),
     [items, fuse, search]

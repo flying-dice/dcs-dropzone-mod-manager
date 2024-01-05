@@ -10,6 +10,7 @@
     "composite": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
+    "useUnknownInCatchVariables": false,
     "paths": {
       "@renderer/*": ["src/renderer/src/*"]
     }

@@ -10,15 +10,23 @@
 
 import { z } from 'zod'
 
-export const registryEntrySchema = z.object({
+export const assetSchema = z.object({
   name: z.string(),
+  path: z.string()
+})
+
+export const registryEntrySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
   author: z.string(),
   preview: z.string().url(),
-  url: z.string().url()
+  url: z.string().url(),
+  assets: z.array(assetSchema).optional()
 })
 
 export type RegistryEntry = z.infer<typeof registryEntrySchema>
 
-export const registrySchema = z.array(registryEntrySchema)
+export const registryEntriesSchema = z.array(registryEntrySchema)
 
-export type Registry = z.infer<typeof registrySchema>
+export type RegistryEntries = z.infer<typeof registryEntriesSchema>
