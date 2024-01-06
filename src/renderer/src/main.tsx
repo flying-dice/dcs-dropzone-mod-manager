@@ -10,6 +10,7 @@ import { Notifications } from '@mantine/notifications'
 import { HashRouter } from 'react-router-dom'
 import { client } from './client'
 
+client.updater.checkForUpdates.query()
 client.installation.getDefaultWriteDir.query().then((defaultWriteDir) => {
   ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>

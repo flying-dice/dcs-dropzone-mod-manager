@@ -87,16 +87,13 @@ export const SettingsPage: React.FC = () => {
 
       <Group>
         <Button loading={updateAvailable.loading} onClick={() => fetchUpdate()}>
-          Check for Updates
+          Update
         </Button>
-        {updateAvailable.value?.downloadPromise && (
-          <Button onClick={() => client.updater.quitAndInstall.query()}>Restart</Button>
-        )}
       </Group>
 
       {updateAvailable.value && (
         <Alert color={'green'}>
-          Found Latest Version: {updateAvailable.value.updateInfo.version}
+          Up to Date! Version: {updateAvailable.value.updateInfo.version}
         </Alert>
       )}
       {updateAvailable.error && <Alert color={'red'}>{updateAvailable.error.message}</Alert>}
