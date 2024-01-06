@@ -1,11 +1,11 @@
 import React from 'react'
-import { Button, Stack, Text, TextInput, Title } from '@mantine/core'
+import { Alert, Button, Group, Stack, Text, TextInput, Title } from '@mantine/core'
 import { closeAllModals, openConfirmModal, openModal } from '@mantine/modals'
 import { client } from '../client'
 import { RegistryForm } from '../forms/registry.form'
 import { useRegistry } from '../context/registry.context'
 import { useInstallation } from '../context/installation.context'
-import { showErrorNotification, showSuccessNotification } from '../utils/notifications'
+import { useAsyncFn } from 'react-use'
 
 export const SettingsPage: React.FC = () => {
   const registry = useRegistry()
@@ -58,6 +58,11 @@ export const SettingsPage: React.FC = () => {
     })
   }
 
+  const [updateAvailable, fetchUpdate] = useAsyncFn(
+    async () => client.updater.checkForUpdates.query(),
+    []
+  )
+
   return (
     <Stack>
       <Title order={3}>Settings</Title>
@@ -80,16 +85,21 @@ export const SettingsPage: React.FC = () => {
         styles={{ input: { cursor: 'pointer' } }}
       />
 
-      <Button
-        onClick={() =>
-          client.updater.checkForUpdates
-            .query()
-            .then((result) => showSuccessNotification(JSON.stringify(result)))
-            .catch(showErrorNotification)
-        }
-      >
-        Check for Updates
-      </Button>
+      <Group>
+        <Button loading={updateAvailable.loading} onClick={() => fetchUpdate()}>
+          Check for Updates
+        </Button>
+        {updateAvailable.value?.downloadPromise && (
+          <Button onClick={() => client.updater.quitAndInstall.query()}>Restart</Button>
+        )}
+      </Group>
+
+      {updateAvailable.value && (
+        <Alert color={'green'}>
+          Found Latest Version: {updateAvailable.value.updateInfo.version}
+        </Alert>
+      )}
+      {updateAvailable.error && <Alert color={'red'}>{updateAvailable.error.message}</Alert>}
     </Stack>
   )
 }
