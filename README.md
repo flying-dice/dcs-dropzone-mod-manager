@@ -1,4 +1,4 @@
-# DROPZONE a Community DCS World Mod Manager
+![heading.svg](resources%2Fheading.svg)
 
 DROPZONE is a Community Mod Manager for DCS World.
 
