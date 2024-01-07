@@ -9,6 +9,9 @@ import { ModalsProvider } from '@mantine/modals'
 import { Notifications } from '@mantine/notifications'
 import { HashRouter } from 'react-router-dom'
 import { client } from './client'
+import '@fontsource/genos/700.css'
+import '@fontsource/dela-gothic-one/400.css'
+import '@fontsource/montserrat/600-italic.css'
 
 client.updater.checkForUpdates.query()
 client.installation.getDefaultWriteDir.query().then((defaultWriteDir) => {

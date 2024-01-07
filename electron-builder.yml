@@ -1,5 +1,5 @@
 appId: com.electron.app
-productName: dcs-mod-manager
+productName: DCS DROPZONE - Community Mod Manager
 directories:
   buildResources: build
 files:
@@ -12,7 +12,8 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: dcs-mod-manager
+  icon: build/icon.png
+  executableName: dcs-dropzone
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

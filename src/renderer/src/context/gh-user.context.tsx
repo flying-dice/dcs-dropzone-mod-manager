@@ -43,7 +43,7 @@ export const GhUserProvider: FC<{ children: ReactNode }> = ({ children }) => {
       }
 
       window.localStorage.setItem('gh-token', token)
-      showSuccessNotification('Successfully authenticated with GH')
+      showSuccessNotification('Successfully authenticated with GitHub')
       setOctokit(new Octokit({ auth: token }))
       busy.close()
     } catch (e) {

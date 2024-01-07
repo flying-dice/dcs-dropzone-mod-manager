@@ -1,3 +1,10 @@
 .readme h1 {
   margin-top: var(--mantine-spacing-md) !important;
 }
+
+@font-face {
+  font-family: "Doctor Glitch";
+  src:
+    local("Doctor Glitch"),
+    url("./Doctor Glitch.otf") format("opentype");
+}

@@ -1,6 +1,6 @@
-# dcs-mod-manager
+# DROPZONE a Community DCS World Mod Manager
 
-DCS World Mod Manager is a tool for managing mods for DCS World.
+DROPZONE is a Community Mod Manager for DCS World.
 
 It gets its list of mods from https://github.com/flying-dice/dcs-mod-manager-registry
 

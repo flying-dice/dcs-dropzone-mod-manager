@@ -1,4 +1,4 @@
-import { AppShell, Group, Stack, Title } from '@mantine/core'
+import { AppShell, Divider, Group, Stack, Text, useMantineTheme } from '@mantine/core'
 import { FC } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { LibraryPage } from './pages/library.page'
@@ -11,7 +11,6 @@ import { GhProfile } from './container/gh-profile'
 import { GhUserProvider } from './context/gh-user.context'
 import { RegistryProvider } from './context/registry.context'
 import { InstallationProvider } from './context/installation.context'
-import { PiToolboxFill } from 'react-icons/pi'
 
 const routes: AppNavItem[] = [
   {
@@ -32,6 +31,7 @@ const routes: AppNavItem[] = [
 ]
 
 export const App: FC<{ defaultWriteDir: string }> = ({ defaultWriteDir }) => {
+  const theme = useMantineTheme()
   return (
     <AppShell
       header={{ height: 66 }}
@@ -48,18 +48,34 @@ export const App: FC<{ defaultWriteDir: string }> = ({ defaultWriteDir }) => {
       <GhUserProvider>
         <RegistryProvider>
           <InstallationProvider defaultWriteDir={defaultWriteDir}>
-            <AppShell.Header>
+            <AppShell.Header style={{ background: theme.colors.dark[8] }}>
               <Stack pl={'md'} h={'100%'} justify={'center'}>
                 <Group justify={'space-between'}>
                   <Group>
-                    <PiToolboxFill size={'2rem'} />
-                    <Title order={3}>DCS World Mod Manager</Title>
+                    <Text
+                      style={{
+                        fontSize: 'xx-large',
+                        fontFamily: 'Doctor Glitch',
+                        color: '#f59e0f'
+                      }}
+                    >
+                      Dropzone
+                    </Text>
+                    <Divider orientation={'vertical'} />
+                    <Text
+                      style={{
+                        fontFamily: 'Montserrat',
+                        width: 250
+                      }}
+                    >
+                      Community Mod Manager for DCS World
+                    </Text>
                   </Group>
                   <GhProfile />
                 </Group>
               </Stack>
             </AppShell.Header>
-            <AppShell.Navbar>
+            <AppShell.Navbar style={{ background: theme.colors.dark[8] }}>
               <AppNav items={routes} />
             </AppShell.Navbar>
             <AppShell.Main>
