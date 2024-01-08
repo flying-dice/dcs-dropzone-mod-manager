@@ -14,6 +14,7 @@ export type GhUserData = Endpoints['GET /user']['response']['data']
 
 export interface GhUserContextValue {
   user?: GhUserData
+  userToken?: string
   octokit?: Octokit
   login: () => void
   logout: () => void

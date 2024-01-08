@@ -1,6 +1,8 @@
 import { trpc } from '../trpc'
 import { BrowserWindow } from 'electron'
 import { OAuthApp } from 'octokit'
+import { getIntegrationToken } from '../../client'
+import { z } from 'zod'
 
 export const authService = {
   getAccessToken: async (): Promise<string> => {
@@ -75,9 +77,20 @@ export const authService = {
 
     console.log('Got token', authentication)
     return authentication.token
+  },
+  async getIntegrationWebhookUrl(id: string, registryUrl: string): Promise<string> {
+    const token = await authService.getAccessToken()
+    const it = await getIntegrationToken(
+      { id: id },
+      { baseURL: registryUrl, headers: { Authorization: `Bearer ${token}` } }
+    )
+    return it.data
   }
 }
 
 export const authRouter = trpc.router({
-  getAccessToken: trpc.procedure.query(authService.getAccessToken)
+  getAccessToken: trpc.procedure.query(authService.getAccessToken),
+  getIntegrationWebhookUrl: trpc.procedure
+    .input(z.object({ id: z.string(), registryUrl: z.string().url() }))
+    .query(({ input }) => authService.getIntegrationWebhookUrl(input.id, input.registryUrl))
 })

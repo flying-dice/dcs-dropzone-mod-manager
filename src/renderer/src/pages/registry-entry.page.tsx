@@ -3,56 +3,57 @@ import {
   Alert,
   Anchor,
   AppShell,
+  Avatar,
+  AvatarGroup,
   Badge,
   Breadcrumbs,
   Button,
-  Collapse,
   Divider,
   Group,
-  LoadingOverlay,
   ScrollArea,
   Stack,
   Text,
+  Textarea,
+  TextInput,
   Title,
+  Tooltip,
   TypographyStylesProvider
 } from '@mantine/core'
-import { RegistryEntry } from '../schema/registryEntriesSchema'
-import { useRegistryEntryContentProvider } from '../hooks/useRegistryEntryContentProvider'
-import { useAsync, useAsyncFn } from 'react-use'
 import { marked } from 'marked'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useRegistry } from '../context/registry.context'
 import { ReleaseSummary } from '../components/release-summary'
-import { useDisclosure } from '@mantine/hooks'
-import { AiOutlineStar } from 'react-icons/ai'
+import {
+  EntryIndex,
+  EntryLatestRelease,
+  useGetRegistryEntry,
+  useGetRegistryEntryLatestRelease
+} from '../../../client'
+import { useSettings } from '../context/settings.context'
+import { MdOutlineCategory } from 'react-icons/md'
 
 export const RegistryEntryPageLoader: React.FC = () => {
   const { id } = useParams()
-  const registry = useRegistry()
-  const entry = registry.entries.find((it) => it.id === id)
+  const settings = useSettings()
+  const entryIndex = useGetRegistryEntry(id || '', { axios: { baseURL: settings.registryUrl } })
+  const latestRelease = useGetRegistryEntryLatestRelease(id || '', {
+    axios: { baseURL: settings.registryUrl }
+  })
+
   return (
     <>
-      {(entry && <RegistryEntryPage entry={entry} />) || (
-        <Alert color={'red'}>Registry Entry with ID {id} not found</Alert>
-      )}
+      {(entryIndex.data?.data && (
+        <RegistryEntryPage entry={entryIndex.data.data} latestRelease={latestRelease.data?.data} />
+      )) || <Alert color={'red'}>Registry Entry with ID {id} not found</Alert>}
     </>
   )
 }
 
 export type RegistryEntryPageProps = {
-  entry: RegistryEntry
+  entry: EntryIndex
+  latestRelease?: EntryLatestRelease
 }
-export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) => {
+export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, latestRelease }) => {
   const navigate = useNavigate()
-  const [showAllReleases, allReleases] = useDisclosure(false)
-  const contentProvider = useRegistryEntryContentProvider(entry)
-  const [releases, fetchReleases] = useAsyncFn(
-    async () => contentProvider.getReleases(),
-    [contentProvider]
-  )
-  const meta = useAsync(() => contentProvider.getMeta(), [contentProvider])
-  const readme = useAsync(() => contentProvider.getReadme(), [contentProvider])
-  const latestRelease = useAsync(() => contentProvider.getLatestRelease(), [contentProvider])
 
   return (
     <Stack>
@@ -62,12 +63,9 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) =
         </Anchor>
         <Anchor size={'sm'}>{entry.name}</Anchor>
       </Breadcrumbs>
-      <LoadingOverlay visible={readme.loading || latestRelease.loading} />
-      {readme.value && (
-        <TypographyStylesProvider className={'readme'} pl={'xs'}>
-          <div dangerouslySetInnerHTML={{ __html: marked.parse(readme.value) }} />
-        </TypographyStylesProvider>
-      )}
+      <TypographyStylesProvider className={'readme'} pl={'xs'}>
+        <div dangerouslySetInnerHTML={{ __html: marked.parse(atob(entry.content)) }} />
+      </TypographyStylesProvider>
       <AppShell.Aside>
         <ScrollArea>
           <Stack p={'md'}>
@@ -75,63 +73,72 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) =
               <Title order={4} fw={500}>
                 About
               </Title>
-              <Text size={'sm'}>{meta.value?.description}</Text>
-              {meta.value?.topics && (
-                <Group gap={'xs'}>
-                  {meta.value?.topics.map((it) => (
-                    <Badge variant={'light'} key={it} size={'xs'}>
-                      {it}
-                    </Badge>
-                  ))}
-                </Group>
-              )}
+              <TextInput
+                readOnly
+                variant={'unstyled'}
+                leftSection={<MdOutlineCategory />}
+                value={entry.category}
+              />
+              <Textarea
+                readOnly
+                variant={'unstyled'}
+                autosize
+                size={'sm'}
+                value={entry.description}
+              />
+              <Group gap={'xs'}>
+                {entry.tags.map((it) => (
+                  <Badge variant={'light'} key={it} size={'sm'}>
+                    {it}
+                  </Badge>
+                ))}
+              </Group>
 
-              {meta.value?.license && (
-                <Text size={'sm'} c={'dimmed'}>
-                  {meta.value?.license}
-                </Text>
-              )}
-
-              <Button
-                onClick={() => window.open(meta.value?.url, '_blank')}
-                variant={'default'}
-                leftSection={<AiOutlineStar />}
-              >
-                {meta.value?.stars} stars
-              </Button>
+              <Text size={'sm'} c={'dimmed'}>
+                {entry.license}
+              </Text>
             </Stack>
+
+            <Divider color={'gray'} />
+
+            <Stack gap={'xs'}>
+              <Title order={4} fw={500}>
+                Authors
+              </Title>
+              <AvatarGroup>
+                {entry.authors.map((it) => (
+                  <Tooltip key={it.name} label={it.name}>
+                    <Avatar src={it.url} alt={it.name}>
+                      {it.name.slice(0, 2)}
+                    </Avatar>
+                  </Tooltip>
+                ))}
+              </AvatarGroup>
+            </Stack>
+
+            <Divider color={'gray'} />
+
+            <Stack gap={'xs'}>
+              <Title order={4} fw={500}>
+                Links
+              </Title>
+              <Anchor href={entry.homepage} target={'_blank'}>
+                Homepage
+              </Anchor>
+            </Stack>
+
+            <Divider color={'gray'} />
 
             <Stack gap={'xs'}>
               <Group justify={'space-between'}>
                 <Title order={4} fw={500}>
                   Releases
                 </Title>
-
-                {!releases.value && (
-                  <Button
-                    variant={'subtle'}
-                    size={'compact-xs'}
-                    onClick={() => fetchReleases().then(allReleases.open)}
-                    loading={releases.loading}
-                  >
-                    View All
-                  </Button>
-                )}
-                {releases.value && (
-                  <Button variant={'subtle'} size={'compact-xs'} onClick={allReleases.toggle}>
-                    {showAllReleases ? 'Hide All' : 'View All'} ({releases.value?.length})
-                  </Button>
-                )}
               </Group>
-              {latestRelease.value && <ReleaseSummary release={latestRelease.value} latest />}
-              {releases.value && (
-                <Collapse in={showAllReleases}>
-                  {releases.value
-                    .filter((it) => it.tag !== latestRelease.value?.tag)
-                    .map((it) => (
-                      <ReleaseSummary key={it.tag} release={it} />
-                    ))}
-                </Collapse>
+              {latestRelease ? (
+                <ReleaseSummary release={latestRelease} latest />
+              ) : (
+                <Text>No Release Found</Text>
               )}
             </Stack>
 

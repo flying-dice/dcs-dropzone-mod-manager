@@ -3,11 +3,23 @@ import { AppShell, Group, MultiSelect, Stack, TextInput, Title } from '@mantine/
 import { VscSearch } from 'react-icons/vsc'
 import { RegistryEntryCard } from '../components/registry-entry-card'
 import { useFuse } from '../hooks/useFuse'
-import { useRegistry } from '../context/registry.context'
+import { useGetRegistryIndex } from '../../../client'
+import { useSettings } from '../context/settings.context'
 
 export const LibraryPage: React.FC = () => {
-  const registry = useRegistry()
-  const { setSearch, results } = useFuse(registry.entries)
+  const settings = useSettings()
+  const registry = useGetRegistryIndex({ axios: { baseURL: settings.registryUrl } })
+  const { setSearch, results } = useFuse(registry.data?.data || [])
+
+  const allAuthors = registry.data?.data.flatMap((it) =>
+    it.authors.map((author) => {
+      if (typeof author === 'string') {
+        return { value: author, label: author }
+      } else {
+        return { value: author.name, label: author.name }
+      }
+    })
+  )
 
   return (
     <Stack>
@@ -18,7 +30,7 @@ export const LibraryPage: React.FC = () => {
         placeholder={'Search Mod Repository'}
         onBlur={(it) => setSearch(it.target.value)}
       />
-      <Group>{results?.map((entry) => <RegistryEntryCard key={entry.url} entry={entry} />)}</Group>
+      <Group>{results?.map((it) => <RegistryEntryCard key={it.id} item={it} />)}</Group>
       <AppShell.Aside>
         <Stack p={'md'}>
           <Title order={4} fw={500}>
@@ -26,7 +38,7 @@ export const LibraryPage: React.FC = () => {
           </Title>
           <MultiSelect
             label={'Authors'}
-            data={registry.entries.map((it) => ({ value: it.author, label: it.author }))}
+            data={allAuthors}
             placeholder={"Filter by author's name"}
             clearable
             searchable

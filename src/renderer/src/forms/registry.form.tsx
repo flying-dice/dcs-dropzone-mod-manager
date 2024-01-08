@@ -2,10 +2,9 @@ import { Button, Group, Stack, TextInput } from '@mantine/core'
 import { useForm, zodResolver } from '@mantine/form'
 import React from 'react'
 import { z } from 'zod'
-import axios from 'axios'
 import { showErrorNotification } from '../utils/notifications'
-import { registryEntriesSchema } from '../schema/registryEntriesSchema'
 import { config } from '../config'
+import { getRegistryIndex } from '../../../client'
 
 export const RegistryFormSchema = z.object({
   url: z.string().url()
@@ -31,9 +30,7 @@ export const RegistryForm: React.FC<RegistryFormProps> = ({
 
   const handleSubmit = () => {
     if (!form.validate().hasErrors) {
-      axios
-        .get(form.values.url + '/registry.json')
-        .then((response) => registryEntriesSchema.parse(response.data))
+      getRegistryIndex({ baseURL: form.values.url })
         .then(() => onSubmit(form.values))
         .catch((error) => showErrorNotification(error))
     }

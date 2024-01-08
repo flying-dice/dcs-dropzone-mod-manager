@@ -1,18 +1,18 @@
 import React from 'react'
-import { Release } from '../providers/RegistryContentProvider'
 import { Anchor, Badge, Group, Stack, Text } from '@mantine/core'
 import ms from 'ms'
+import { EntryLatestRelease } from '../../../client'
 
 export type ReleaseSummaryProps = {
   latest?: boolean
-  release: Release
+  release: EntryLatestRelease
 }
 export const ReleaseSummary: React.FC<ReleaseSummaryProps> = ({ latest, release }) => {
   return (
     <Stack gap={0}>
       <Group justify={'space-between'}>
-        <Anchor size={'sm'} href={release.htmlUrl} target={'_blank'}>
-          {release.tag} - {release.name}
+        <Anchor size={'sm'} href={release.releasepage} target={'_blank'}>
+          {release.version} - {release.name}
         </Anchor>
         {latest && (
           <Badge size={'xs'} color={'green'} variant={'outline'}>
@@ -21,7 +21,7 @@ export const ReleaseSummary: React.FC<ReleaseSummaryProps> = ({ latest, release 
         )}
       </Group>
       <Text size={'xs'} c={'dimmed'}>
-        {ms(Date.now() - +new Date(release.created))} ago
+        {ms(Date.now() - +new Date(release.date))} ago
       </Text>
     </Stack>
   )

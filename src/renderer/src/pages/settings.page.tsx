@@ -3,13 +3,12 @@ import { Alert, Button, Group, Stack, Text, TextInput, Title } from '@mantine/co
 import { closeAllModals, openConfirmModal, openModal } from '@mantine/modals'
 import { client } from '../client'
 import { RegistryForm } from '../forms/registry.form'
-import { useRegistry } from '../context/registry.context'
-import { useInstallation } from '../context/installation.context'
+import { useSettings } from '../context/settings.context'
 import { useAsyncFn } from 'react-use'
+import { observer } from 'mobx-react-lite'
 
-export const SettingsPage: React.FC = () => {
-  const registry = useRegistry()
-  const installation = useInstallation()
+export const SettingsPage: React.FC = observer(() => {
+  const settings = useSettings()
 
   const handleInstallFolderChange = async (): Promise<void> => {
     const suggested = await client.installation.getDefaultWriteDir.query()
@@ -31,12 +30,12 @@ export const SettingsPage: React.FC = () => {
         children: 'Choose another folder'
       },
       onConfirm: () => {
-        installation.setWriteDir(suggested.path)
+        settings.setWriteDir(suggested.path)
         closeAllModals()
       },
       onCancel: () => {
         client.installation.getWriteDir.query().then((folder) => {
-          installation.setWriteDir(folder)
+          settings.setWriteDir(folder)
         })
       }
     })
@@ -47,10 +46,10 @@ export const SettingsPage: React.FC = () => {
       title: 'Registry',
       children: (
         <RegistryForm
-          initialValues={{ url: registry.url }}
+          initialValues={{ url: settings.registryUrl }}
           onCancel={closeAllModals}
           onSubmit={(values) => {
-            registry.setUrl(values.url)
+            settings.setRegistryUrl(values.url)
             closeAllModals()
           }}
         />
@@ -71,7 +70,7 @@ export const SettingsPage: React.FC = () => {
         description="Where the users Mods and Scripts are installed, normally this is '%USERPROFILE%\Saved Games\DCS'"
         readOnly
         placeholder="Set Installation folder"
-        value={installation.writeDir}
+        value={settings.writeDir}
         onClick={handleInstallFolderChange}
         styles={{ input: { cursor: 'pointer' } }}
       />
@@ -80,14 +79,14 @@ export const SettingsPage: React.FC = () => {
         description="The registry where the Mod Manager will look for Mods"
         readOnly
         placeholder="Set Registry"
-        value={registry.url}
+        value={settings.registryUrl}
         onClick={handleRegistryChange}
         styles={{ input: { cursor: 'pointer' } }}
       />
 
       <Group>
         <Button loading={updateAvailable.loading} onClick={() => fetchUpdate()}>
-          Update
+          Update Application
         </Button>
       </Group>
 
@@ -99,4 +98,4 @@ export const SettingsPage: React.FC = () => {
       {updateAvailable.error && <Alert color={'red'}>{updateAvailable.error.message}</Alert>}
     </Stack>
   )
-}
+})

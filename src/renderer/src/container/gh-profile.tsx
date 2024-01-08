@@ -12,6 +12,9 @@ import {
 import { useGhUser } from '../context/gh-user.context'
 import { useAsync } from 'react-use'
 import { AiOutlineGithub } from 'react-icons/ai'
+import { useClipboard } from '@mantine/hooks'
+import { showSuccessNotification } from '../utils/notifications'
+import { VscCopy } from 'react-icons/vsc'
 
 interface UserButtonProps extends React.ComponentPropsWithoutRef<'button'> {
   image: string
@@ -51,6 +54,12 @@ export type GhProfileProps = {}
 export const GhProfile: React.FC<GhProfileProps> = ({}) => {
   const { octokit, login, logout } = useGhUser()
   const user = useAsync(async () => octokit?.request('GET /user').then((it) => it.data), [octokit])
+  const { copy } = useClipboard()
+
+  const copyUsername = () => {
+    copy(user.value?.login || '')
+    showSuccessNotification('GitHub username copied clipboard')
+  }
 
   return (
     <Stack pr={'sm'}>
@@ -64,7 +73,11 @@ export const GhProfile: React.FC<GhProfileProps> = ({}) => {
             />
           </Menu.Target>
 
-          <MenuDropdown w={150}>
+          <MenuDropdown>
+            <Menu.Item onClick={copyUsername} leftSection={<VscCopy />}>
+              {user.value?.login}
+            </Menu.Item>
+            <Menu.Divider />
             <Menu.Item onClick={logout}>Logout</Menu.Item>
           </MenuDropdown>
         </Menu>
