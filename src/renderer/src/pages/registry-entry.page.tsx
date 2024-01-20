@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   Alert,
   Anchor,
@@ -28,7 +28,8 @@ import {
   EntryLatestRelease,
   useGetRegistryEntry,
   useGetRegistryEntryLatestRelease,
-  useGetRegistryEntryInstall
+  useGetRegistryEntryInstall,
+  EntryInstallState
 } from '../../../client'
 import { useSettings } from '../context/settings.context'
 import { MdOutlineCategory } from 'react-icons/md'
@@ -61,6 +62,31 @@ export type RegistryEntryPageProps = {
 }
 export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, latestRelease, installInfo }) => {
   const navigate = useNavigate()
+  const [installState, setInstallState] = useState<EntryInstallState | null>(null)
+
+  const getInstallState = async () => {
+    if (!installInfo) return;
+    const response = await client.installation.getInstallState.query(installInfo.assets);
+    setInstallState(response)
+  }
+
+  useEffect(() => {
+    getInstallState()
+  }, [setInstallState, installInfo])
+
+  const installMod = useCallback(async () => {
+    if(!installInfo || ! latestRelease) return
+    const dir = await client.installation.installMod.query({ githubPage: installInfo.repository || "", tag: latestRelease.tag, installMapArr: installInfo.assets })
+    console.warn(dir);
+    await getInstallState();
+  },[installInfo, latestRelease])
+
+  const unInstallMod = useCallback(async () => {
+    if(!installInfo) return
+    const installStateResponse = await client.installation.uninstallMod.query(installInfo.assets)
+    setInstallState(installStateResponse);;
+  },[installInfo, setInstallState]) 
+
 
   return (
     <Stack>
@@ -155,13 +181,29 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, lat
               <Title order={4} fw={500}>
                 Manage
               </Title>
-              {latestRelease && installInfo && (
-              <Button size={'sm'} variant={'default'} onClick={async () => {
-                const dir = await client.installation.installMod.query({githubPage: installInfo.repository || "", tag: latestRelease.tag, installMapArr: installInfo.assets  })
-                console.warn(dir);
-                }}>
-                Install
-              </Button>
+              {latestRelease && installInfo && installState && (
+                <Group grow>
+                  {!installState.installed ? (
+                    <Button size={'sm'} variant={'default'} onClick={installMod}>
+                      Install
+                    </Button>
+                  ) : (
+                    <>
+                      {installState.installedVersion != latestRelease.tag && (
+                        <Button size={'sm'} variant={'default'} disabled >
+                          Update
+                        </Button>
+                      )}
+                      <Button size={'sm'} variant={'default'} disabled>
+                        Enable
+                      </Button>
+                      <Button size={'sm'} variant={'default'} onClick={unInstallMod}>
+                        Uninstall
+                      </Button>
+                    </>
+                  )}
+                </Group>
+
               )}
             </Stack>
           </Stack>

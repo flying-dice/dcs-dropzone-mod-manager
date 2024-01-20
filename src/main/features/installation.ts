@@ -4,7 +4,23 @@ import { pathExistsSync } from 'fs-extra'
 import { trpc } from '../trpc'
 import Downloader from 'nodejs-file-downloader';
 import { z } from 'zod'
-import { EntryInstallMap } from '../../client';
+import { EntryInstallMap, EntryInstallState } from '../../client';
+import fs from "fs";
+
+
+const getInstallState = async (installMapArr: EntryInstallMap[]): Promise<EntryInstallState> => {
+  const installBasePath = await installationService.getDefaultWriteDir();
+  const installStates = installMapArr.map(x => ({name:x.name, installed: fs.existsSync(join(installBasePath.path, x.target, x.name))}))
+
+  return {
+    installed: installStates.some(x => x.installed),
+    installedVersion: "1", // TODO: actually check somehow
+    incomplete: installStates.every(x => !x.installed),
+    missingFiles: installStates.filter(x => !x.installed).map(x => x.name)
+  }
+}
+
+
 
 export const installationService = {
   async getDefaultWriteDir(): Promise<{ path: string; valid: boolean }> {
@@ -42,7 +58,6 @@ export const installationService = {
       })
       .then((it) => it.filePaths[0])
   },
-
   async installMod(githubPage: string, tag: string, installMapArr: EntryInstallMap[]): Promise<string[]> {
     const installBasePath = await installationService.getDefaultWriteDir();
     const downloads = installMapArr.map((installMap: EntryInstallMap) => new Downloader({
@@ -60,12 +75,26 @@ export const installationService = {
       console.log(error);
       return [""]
     }
-  }
+  },
+  async uninstallMod(installMapArr: EntryInstallMap[]): Promise<EntryInstallState> {
+    const installBasePath = await installationService.getDefaultWriteDir();
+    installMapArr.forEach(x => fs.unlinkSync(join(installBasePath.path, x.target, x.name))) // IS this really uninstalling will the OS free count it as free space?
+    return await getInstallState(installMapArr);
+  },
+  getInstallState
 }
 
 export const installationRouter = trpc.router({
   getWriteDir: trpc.procedure.query(installationService.getWriteDir),
   getDefaultWriteDir: trpc.procedure.query(installationService.getDefaultWriteDir),
+  getInstallState: trpc.procedure.input(z.array(z.object({
+    name: z.string(),
+    target: z.string()
+  }))).query(({ input }) => installationService.getInstallState(input)),
+  uninstallMod: trpc.procedure.input(z.array(z.object({
+    name: z.string(),
+    target: z.string()
+  }))).query(({ input }) => installationService.uninstallMod(input)),
   installMod: trpc.procedure.input(z.object({githubPage: z.string().url(), tag: z.string(), installMapArr: z.array(z.object({
     name: z.string(),
     target: z.string()

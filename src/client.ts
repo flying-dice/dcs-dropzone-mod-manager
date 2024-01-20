@@ -47,6 +47,14 @@ export interface EntryInstall {
   assets: EntryInstallMap[]
 }
 
+
+export interface EntryInstallState {
+  installed: boolean,
+  installedVersion: string,
+  incomplete: boolean,
+  missingFiles: string[]
+}
+
 /**
  * The type of the integration
  */
