@@ -4,16 +4,24 @@ import { pathExistsSync } from 'fs-extra'
 import { trpc } from '../trpc'
 import Downloader from 'nodejs-file-downloader';
 import { z } from 'zod'
-import { EntryInstallMap, EntryInstallState } from '../../client';
+import { EntryInstallMap, EntryInstallMapSchema, EntryInstallState } from '../../client';
 import fs from "fs";
 import unzipper from  'unzipper'
 
 
 const fileInstallStatus = {} //is this a dumb in memory download status why yes it is!
 
+const getInstalledFilePath = (basePath:string, installMap: EntryInstallMap): string => {
+  const namedPath =  join(basePath, installMap.target, installMap.name.replace(".zip", ""));
+  if(!installMap.zipPath) return namedPath
+  var terminalFolder = installMap.zipPath.split("/").pop()
+  if(!terminalFolder) return namedPath
+  return join(basePath, installMap.target, terminalFolder)
+}
+
 const getInstallState = async (installMapArr: EntryInstallMap[]): Promise<EntryInstallState> => {
   const installBasePath = await installationService.getDefaultWriteDir();
-  const installStates = installMapArr.map(x => ({name:x.name, installed: fs.existsSync(join(installBasePath.path, x.target, x.name.replace(".zip", "")))}))
+  const installStates = installMapArr.map(x => ({name:x.name, installed: fs.existsSync(getInstalledFilePath(installBasePath.path, x))}))
 
   return {
     installed: installStates.some(x => x.installed),
@@ -77,12 +85,16 @@ export const installationService = {
       // Update all unzip states
       installMapArr.filter(x => x.name.endsWith(".zip")).map((installMap: EntryInstallMap) => fileInstallStatus[join(githubPage, installMap.name)] = "Unpacking")
 
-      const unzipList = reports.filter(x => x.filePath?.endsWith(".zip"))
-      await Promise.all(unzipList.map(x => fs.createReadStream(x.filePath || "") 
-      .pipe(unzipper.Extract({ path: x.filePath?.replace(".zip", "") })) // this is dumb as rocks don't like it would be nice if I could get a subset
+      const unzipList = installMapArr.filter(x => x.name?.endsWith(".zip"))
+      await Promise.all(unzipList.map(x => fs.createReadStream(join(installBasePath.path, x.target, x.name)) 
+      .pipe(unzipper.Extract({ path: join(installBasePath.path, x.target, x.name.replace(".zip", ""))})) // this is dumb as rocks don't like it would be nice if I could get a subset
       .promise()))
-      unzipList.forEach(x => fs.rmSync(x.filePath || "",  { recursive: true, force: true })) // IS this really uninstalling will the OS free count it as free space?
-
+      unzipList.forEach(x => fs.rmSync(join(installBasePath.path, x.target, x.name),  { recursive: true, force: true }))
+      installMapArr.filter(x => x.zipPath).forEach(x => {
+        if(!x.zipPath) return
+        fs.renameSync(join(installBasePath.path, x.target, x.name.replace(".zip", ""), x.zipPath), getInstalledFilePath(installBasePath.path, x))
+        fs.rmSync(join(installBasePath.path, x.target, x.name.replace(".zip", "")),  { recursive: true, force: true })
+      })
       // Remove file install statuses
       installMapArr.map((installMap: EntryInstallMap) => delete fileInstallStatus[join(githubPage, installMap.name)])
 
@@ -95,7 +107,9 @@ export const installationService = {
   },
   async uninstallMod(installMapArr: EntryInstallMap[]): Promise<EntryInstallState> {
     const installBasePath = await installationService.getDefaultWriteDir();
-    installMapArr.forEach(x => fs.rmSync(join(installBasePath.path, x.target, x.name.replace(".zip", "")), { recursive: true, force: true })) // IS this really uninstalling will the OS free count it as free space?
+    installMapArr.forEach(x => {
+      fs.rmSync(getInstalledFilePath(installBasePath.path, x), { recursive: true, force: true })
+    }) // IS this really uninstalling will the OS free count it as free space?
     return await getInstallState(installMapArr);
   },
   getInstallProgress(githubPage: string): string[] {
@@ -105,20 +119,13 @@ export const installationService = {
   getInstallState
 }
 
+
+
 export const installationRouter = trpc.router({
   getWriteDir: trpc.procedure.query(installationService.getWriteDir),
   getDefaultWriteDir: trpc.procedure.query(installationService.getDefaultWriteDir),
-  getInstallState: trpc.procedure.input(z.array(z.object({
-    name: z.string(),
-    target: z.string()
-  }))).query(({ input }) => installationService.getInstallState(input)),
+  getInstallState: trpc.procedure.input(EntryInstallMapSchema).query(({ input }) => installationService.getInstallState(input)),
   getInstallProgress: trpc.procedure.input(z.object({githubPage: z.string().url()})).query(({ input }) => installationService.getInstallProgress(input.githubPage)),
-  installMod: trpc.procedure.input(z.object({githubPage: z.string().url(), tag: z.string(), installMapArr: z.array(z.object({
-    name: z.string(),
-    target: z.string()
-  }))})).query(({ input }) => installationService.installMod(input.githubPage, input.tag, input.installMapArr)),
-  uninstallMod: trpc.procedure.input(z.array(z.object({
-    name: z.string(),
-    target: z.string()
-  }))).query(({ input }) => installationService.uninstallMod(input)),
+  installMod: trpc.procedure.input(z.object({githubPage: z.string().url(), tag: z.string(), installMapArr: EntryInstallMapSchema})).query(({ input }) => installationService.installMod(input.githubPage, input.tag, input.installMapArr)),
+  uninstallMod: trpc.procedure.input(EntryInstallMapSchema).query(({ input }) => installationService.uninstallMod(input)),
 })

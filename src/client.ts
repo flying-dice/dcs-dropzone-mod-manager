@@ -9,6 +9,7 @@ import * as axios from 'axios'
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import useSwr from 'swr'
 import type { Key, SWRConfiguration } from 'swr'
+import { z } from 'zod'
 export type RunGithubIntegrationParams = {
   /**
    * Integration Token
@@ -39,8 +40,15 @@ export interface EntryLatestRelease {
 
 export type EntryInstallMap = {
   name: string,
+  zipPath?: string 
   target: string
 }
+
+export const EntryInstallMapSchema =  z.array(z.object({
+  name: z.string(),
+  zipPath: z.string().optional(),
+  target: z.string()
+}))
 
 export interface EntryInstall {
   repository: string
