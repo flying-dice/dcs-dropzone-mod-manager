@@ -24,12 +24,15 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ReleaseSummary } from '../components/release-summary'
 import {
   EntryIndex,
+  EntryInstall,
   EntryLatestRelease,
   useGetRegistryEntry,
-  useGetRegistryEntryLatestRelease
+  useGetRegistryEntryLatestRelease,
+  useGetRegistryEntryInstall
 } from '../../../client'
 import { useSettings } from '../context/settings.context'
 import { MdOutlineCategory } from 'react-icons/md'
+import { client } from '../client'
 
 export const RegistryEntryPageLoader: React.FC = () => {
   const { id } = useParams()
@@ -38,11 +41,14 @@ export const RegistryEntryPageLoader: React.FC = () => {
   const latestRelease = useGetRegistryEntryLatestRelease(id || '', {
     axios: { baseURL: settings.registryUrl }
   })
+  const installInfo = useGetRegistryEntryInstall(id || '', {
+    axios: { baseURL: settings.registryUrl }
+  })
 
   return (
     <>
       {(entryIndex.data?.data && (
-        <RegistryEntryPage entry={entryIndex.data.data} latestRelease={latestRelease.data?.data} />
+        <RegistryEntryPage entry={entryIndex.data.data} latestRelease={latestRelease.data?.data} installInfo={installInfo.data?.data} />
       )) || <Alert color={'red'}>Registry Entry with ID {id} not found</Alert>}
     </>
   )
@@ -51,8 +57,9 @@ export const RegistryEntryPageLoader: React.FC = () => {
 export type RegistryEntryPageProps = {
   entry: EntryIndex
   latestRelease?: EntryLatestRelease
+  installInfo?: EntryInstall
 }
-export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, latestRelease }) => {
+export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, latestRelease, installInfo }) => {
   const navigate = useNavigate()
 
   return (
@@ -148,9 +155,14 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, lat
               <Title order={4} fw={500}>
                 Manage
               </Title>
-              <Button size={'sm'} variant={'default'}>
+              {latestRelease && installInfo && (
+              <Button size={'sm'} variant={'default'} onClick={async () => {
+                const dir = await client.installation.installMod.query({githubPage: installInfo.repository || "", tag: latestRelease.tag, installMapArr: installInfo.assets  })
+                console.warn(dir);
+                }}>
                 Install
               </Button>
+              )}
             </Stack>
           </Stack>
         </ScrollArea>
