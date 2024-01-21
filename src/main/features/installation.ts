@@ -125,7 +125,7 @@ export const installationService = {
     installMapArr.forEach(x => {
         const installedFilePath = getInstalledFilePath(modId, installBasePath.path, x);
         const symlinkFilePath = getSymlinkFilePath(saveGameBasePath.path, x)
-        fs.symlinkSync(installedFilePath, symlinkFilePath, fs.statSync(installedFilePath).isFile() ? 'file':'dir')
+        fs.symlinkSync(installedFilePath, symlinkFilePath, fs.statSync(installedFilePath).isFile() ? 'file':'junction')
     })
     return await getInstallState(modId, installMapArr);
   },

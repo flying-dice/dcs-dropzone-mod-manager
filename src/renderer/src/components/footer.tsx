@@ -11,7 +11,7 @@ export const Footer: FC = () => {
                     {installContext && installContext.installStates && (
                         <>
                             <Stack>
-                                {Object.keys(installContext.installStates).map(x => (<p>{x}: {installContext.installStates && installContext.installStates[x]}</p>))}
+                                {Object.keys(installContext.installStates).map(x => (<p key={x}>{x}: {installContext.installStates && installContext.installStates[x]}</p>))}
                             </Stack>
                             {Object.keys(installContext.installStates).length > 0 && (
                                 <CloseButton size={'sm'} variant={'default'} onClick={installContext.clearProgress} />
