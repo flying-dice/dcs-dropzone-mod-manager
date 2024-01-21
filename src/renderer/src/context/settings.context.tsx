@@ -16,13 +16,14 @@ class SettingsError extends Error {
 
 export class Settings {
   registryUrl: string
-
+  saveGameDir: string
   writeDir: string
 
-  constructor({ registryUrl, writeDir }: Pick<Settings, 'registryUrl' | 'writeDir'>) {
+  constructor({ registryUrl, writeDir, saveGameDir }: Pick<Settings, 'registryUrl' | 'writeDir' | 'saveGameDir'>) {
     makeAutoObservable(this)
     this.registryUrl = registryUrl
     this.writeDir = writeDir
+    this.saveGameDir = saveGameDir
   }
 
   static async fromLocalStorage() {
@@ -30,8 +31,12 @@ export class Settings {
     const writeDir =
       localStorage.getItem('write-dir') ||
       (await client.installation.getDefaultWriteDir.query().then((it) => it.path))
+    
+    const saveGameDir =
+      localStorage.getItem('save-game-dir') ||
+      (await client.installation.getDefaultSaveGameDir.query().then((it) => it.path))
 
-    if (!registryUrl || !writeDir) {
+    if (!registryUrl || !writeDir || !saveGameDir) {
       const error = new SettingsError('Could not load settings from local storage.')
       if (!registryUrl) {
         error.errors.push('Registry url could not be loaded.')
@@ -39,10 +44,13 @@ export class Settings {
       if (!writeDir) {
         error.errors.push('Write directory could not be loaded.')
       }
+      if (!saveGameDir) {
+        error.errors.push('Save Game directory could not be loaded.')
+      }
       throw error
     }
 
-    return new Settings({ writeDir, registryUrl })
+    return new Settings({ writeDir, registryUrl, saveGameDir })
   }
 
   setRegistryUrl(url: string) {
@@ -54,10 +62,15 @@ export class Settings {
     this.writeDir = dir
     localStorage.setItem('write-dir', dir)
   }
+
+  setSaveGameDir(dir: string) {
+    this.saveGameDir = dir
+    localStorage.setItem('save-game-dir', dir)
+  }
 }
 
 export const SettingsContext = createContext<Settings>(
-  new Settings({ registryUrl: '', writeDir: '' })
+  new Settings({ registryUrl: '', writeDir: '', saveGameDir: '' })
 )
 export const SettingsProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const settings = useAsync(async () => Settings.fromLocalStorage(), [])

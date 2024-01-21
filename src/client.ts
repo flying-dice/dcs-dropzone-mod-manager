@@ -60,7 +60,8 @@ export interface EntryInstallState {
   installed: boolean,
   installedVersion: string,
   incomplete: boolean,
-  missingFiles: string[]
+  missingFiles: string[],
+  enabled: boolean
 }
 
 /**
