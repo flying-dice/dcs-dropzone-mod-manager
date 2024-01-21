@@ -33,7 +33,7 @@ import {
 } from '../../../client'
 import { useSettings } from '../context/settings.context'
 import { MdOutlineCategory } from 'react-icons/md'
-import { client } from '../client'
+import { useInstallContext } from '@renderer/context/install.context'
 
 export const RegistryEntryPageLoader: React.FC = () => {
   const { id } = useParams()
@@ -62,13 +62,16 @@ export type RegistryEntryPageProps = {
 }
 export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, latestRelease, installInfo }) => {
   const navigate = useNavigate()
+  const installContext = useInstallContext()
   const [installState, setInstallState] = useState<EntryInstallState | null>(null)
-  const [isInstalling, setIsInstalling] = useState<boolean>(false)
-  const [downloadStates, setDownloadStates] = useState<string[]>([])
+  const isInstalling = installInfo && installInfo.repository && 
+  installContext.installStates && 
+  Object.keys(installContext.installStates)
+  .some(key => key.startsWith(installInfo.repository) && installContext.installStates && installContext.installStates[key] && !installContext.installStates[key].endsWith("Complete"))
 
   const getInstallState = async () => {
     if (!installInfo) return;
-    const response = await client.installation.getInstallState.query(installInfo.assets);
+    const response = await installContext.getInstallState(installInfo.assets);
     setInstallState(response)
   }
 
@@ -80,25 +83,16 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, lat
   // TODO move all this to Context (figure out how to stop breaking promise connections)
   const installMod = useCallback(async () => {
     if (!installInfo || !latestRelease) return
-    setIsInstalling(true)
-    const dir = await client.installation.installMod.query({ githubPage: installInfo.repository || "", tag: latestRelease.tag, installMapArr: installInfo.assets })
-    console.warn(dir)
-    setIsInstalling(false)
-    await getInstallState()
-  }, [installInfo, latestRelease, setIsInstalling])
+    installContext.installMod(installInfo.repository || "", latestRelease.tag, installInfo.assets)
+  }, [installInfo, latestRelease])
 
   const unInstallMod = useCallback(async () => {
     if (!installInfo) return
-    const installStateResponse = await client.installation.uninstallMod.query(installInfo.assets)
+    const installStateResponse = await installContext.uninstallMod(installInfo.assets)
     setInstallState(installStateResponse)
   }, [installInfo, setInstallState])
 
 
-  const checkDownloadState = useCallback(async () => {
-    if (!installInfo) return
-    const downloadStatesResponse = await client.installation.getInstallProgress.query({ githubPage: installInfo.repository || ""})
-    setDownloadStates(downloadStatesResponse)
-  }, [installInfo, setDownloadStates])
 
 
   return (
@@ -197,19 +191,9 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, lat
               {latestRelease && installInfo && installState && (
                 <Group grow>
                   {!installState.installed ? (
-                    <>
-                      <Button size={'sm'} variant={'default'} onClick={installMod} disabled={isInstalling}>
-                        {isInstalling ? "Installing" : "Install"}
-                      </Button>
-                      {isInstalling && (
-                        <>
-                        <Button size={'sm'} variant={'default'} onClick={checkDownloadState}>
-                        Check Status
-                        </Button>
-                        {downloadStates && downloadStates.map(x => (<p>{x}</p>))}
-                        </>
-                      )}
-                    </>
+                    <Button size={'sm'} variant={'default'} onClick={installMod} disabled={isInstalling}>
+                      {isInstalling ? "Installing" : "Install"}
+                    </Button>
                   ) : (
                     <>
                       {installState.installedVersion != latestRelease.tag && (
@@ -225,6 +209,7 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, lat
                       </Button>
                     </>
                   )}
+
                 </Group>
 
               )}
