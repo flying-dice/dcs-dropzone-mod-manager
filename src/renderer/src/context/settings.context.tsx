@@ -30,11 +30,11 @@ export class Settings {
     const registryUrl = localStorage.getItem('registry-url') || config.defaultRegistryUrl
     const writeDir =
       localStorage.getItem('write-dir') ||
-      (await client.installation.getDefaultWriteDir.query().then((it) => it.path))
+      (await client.settings.getDefaultWriteDir.query().then((it) => it.path))
     
     const saveGameDir =
       localStorage.getItem('save-game-dir') ||
-      (await client.installation.getDefaultSaveGameDir.query().then((it) => it.path))
+      (await client.settings.getDefaultSaveGameDir.query().then((it) => it.path))
 
     if (!registryUrl || !writeDir || !saveGameDir) {
       const error = new SettingsError('Could not load settings from local storage.')

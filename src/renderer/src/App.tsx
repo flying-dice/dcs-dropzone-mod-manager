@@ -53,8 +53,8 @@ export const App: FC = () => {
       padding="md"
     >
       <GhUserProvider>
-        <InstallProvider>
-          <SettingsProvider>
+        <SettingsProvider>
+          <InstallProvider>
             <AppShell.Header style={{ background: theme.colors.dark[8] }}>
               <Stack pl={'md'} h={'100%'} justify={'center'}>
                 <Group justify={'space-between'}>
@@ -95,8 +95,8 @@ export const App: FC = () => {
               </Routes>
             </AppShell.Main>
             <Footer />
-          </SettingsProvider>
-        </InstallProvider>
+          </InstallProvider>
+        </SettingsProvider>
       </GhUserProvider>
     </AppShell>
   )
