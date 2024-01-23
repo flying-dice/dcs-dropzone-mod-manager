@@ -94,10 +94,10 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, lat
 
 
   const toggleMod = useCallback(async () => {
-    if (!installInfo) return
+    if (!installInfo || !installState) return
     const installStateResponse = installState?.enabled ? await installContext.disableMod(entry.id, installInfo.assets) : await installContext.enableMod(entry.id, installInfo.assets)
     setInstallState(installStateResponse)
-  }, [installInfo, setInstallState])
+  }, [installInfo, installState, setInstallState])
 
 
 
