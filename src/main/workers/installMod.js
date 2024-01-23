@@ -2,6 +2,7 @@ const  Downloader =  require("nodejs-file-downloader")
 const  unzipper =  require('unzipper')
 const  { join } =  require("path");
 const  fs =  require("fs")
+const  fsp =  require("fs/promises")
 
 const workerpool = require('workerpool');
 
@@ -17,6 +18,7 @@ const downloadAndUnzip = async (modId, githubPage, tag, installMap, installBaseP
     const download = new Downloader({
       url: join(githubPage, "releases", "download", tag, installMap.name),
       directory: join(installBasePath, modId),
+      skipExistingFileName: installMap.name.endsWith(".zip"), // as zips are deleted in cleanup with can do this to skip a step if errors laterp
       onProgress: function (percentage) {
         workerpool.workerEmit({
             status: `${percentage}%`,
@@ -32,11 +34,11 @@ const downloadAndUnzip = async (modId, githubPage, tag, installMap, installBaseP
       await fs.createReadStream(join(installBasePath, modId, installMap.name)) 
         .pipe(unzipper.Extract({ path: join(installBasePath, modId, installMap.name.replace(".zip", ""))})) // this is dumb as rocks don't like it would be nice if I could get a subset
         .promise()
-      fs.rmSync(join(installBasePath, modId, installMap.name),  { recursive: true, force: true })
+      await fsp.rm(join(installBasePath, modId, installMap.name),  { recursive: true, force: true })
   
       if(installMap.zipPath) {
-        fs.renameSync(join(installBasePath, modId, installMap.name.replace(".zip", ""), installMap.zipPath), getInstalledFilePath(modId, installBasePath, installMap))
-        fs.rmSync(join(installBasePath, modId, installMap.name.replace(".zip", "")),  { recursive: true, force: true })
+        await fsp.rename(join(installBasePath, modId, installMap.name.replace(".zip", ""), installMap.zipPath), getInstalledFilePath(modId, installBasePath, installMap))
+        await fsp.rm(join(installBasePath, modId, installMap.name.replace(".zip", "")),  { recursive: true, force: true })
       } 
     }
     workerpool.workerEmit({

@@ -2,6 +2,7 @@ import { trpc } from '../trpc'
 import { z } from 'zod'
 import { EntryInstallMap, EntryInstallMapSchema, EntryInstallState } from '../../client';
 import fs from "fs";
+import fsp from "fs/promises";
 import workerpool from  'workerpool'
 import { getInstalledFilePath, getSymlinkFilePath } from '../utils'
 
@@ -22,6 +23,23 @@ const getInstallState = async (modId: string, installMapArr: EntryInstallMap[], 
   }
 }
 
+const enableMod = async(modId: string, installMapArr: EntryInstallMap[], writeDirPath: string, saveDirPath: string): Promise<EntryInstallState> => {
+  await Promise.all(installMapArr.map(async (x) => {
+      const installedFilePath = getInstalledFilePath(modId, writeDirPath, x);
+      const symlinkFilePath = getSymlinkFilePath(saveDirPath, x)
+      const fileStats = await fsp.stat(installedFilePath)
+      return fsp.symlink(installedFilePath, symlinkFilePath, fileStats.isFile() ? 'file':'junction')
+  }))
+  return await getInstallState(modId, installMapArr, writeDirPath, saveDirPath);
+}
+
+const disableMod = async(modId: string, installMapArr: EntryInstallMap[], writeDirPath: string, saveDirPath: string): Promise<EntryInstallState> => {
+  await Promise.all(installMapArr.map(async (x) => {
+      return fsp.unlink(getSymlinkFilePath(saveDirPath, x))
+  }))
+  return await getInstallState(modId, installMapArr, writeDirPath, saveDirPath);
+}
+
 const pool = workerpool.pool('./src/main/workers/installMod.js');
 
 export const installationService = {
@@ -40,9 +58,10 @@ export const installationService = {
   });
   },
   async uninstallMod(modId: string, installMapArr: EntryInstallMap[], writeDirPath: string, saveDirPath: string): Promise<EntryInstallState> {
-    installMapArr.forEach(x => {
-      fs.rmSync(getInstalledFilePath(modId, writeDirPath, x), { recursive: true, force: true })
-    })
+    await disableMod(modId, installMapArr, writeDirPath, saveDirPath)
+    await Promise.all(installMapArr.map(x => {
+      return fsp.rm(getInstalledFilePath(modId, writeDirPath, x), { recursive: true, force: true })
+    }))
     return await getInstallState(modId, installMapArr, writeDirPath, saveDirPath);
   },
   getInstallProgress(): Record<string, string> {
@@ -52,20 +71,8 @@ export const installationService = {
     Object.keys(fileInstallStatus).filter(x => fileInstallStatus[x].endsWith("Complete")).forEach(key => delete fileInstallStatus[key])
   },
   getInstallState,
-  async enableMod(modId: string, installMapArr: EntryInstallMap[], writeDirPath: string, saveDirPath: string): Promise<EntryInstallState> {
-    installMapArr.forEach((x) => {
-        const installedFilePath = getInstalledFilePath(modId, writeDirPath, x);
-        const symlinkFilePath = getSymlinkFilePath(saveDirPath, x)
-        fs.symlinkSync(installedFilePath, symlinkFilePath, fs.statSync(installedFilePath).isFile() ? 'file':'junction')
-    })
-    return await getInstallState(modId, installMapArr, writeDirPath, saveDirPath);
-  },
-  async disableMod(modId: string, installMapArr: EntryInstallMap[], writeDirPath: string, saveDirPath: string): Promise<EntryInstallState> {
-    installMapArr.forEach(x => {
-        fs.unlinkSync(getSymlinkFilePath(saveDirPath, x))
-    })
-    return await getInstallState(modId, installMapArr, writeDirPath, saveDirPath);
-  }
+  enableMod,
+  disableMod,
 }
 
 
