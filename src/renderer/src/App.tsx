@@ -11,6 +11,8 @@ import { GhProfile } from './container/gh-profile'
 import { GhUserProvider } from './context/gh-user.context'
 import { SettingsProvider } from './context/settings.context'
 import { IntegrationsPage } from './pages/integrations.page'
+import { InstallProvider } from './context/install.context'
+import { Footer } from './components/footer'
 
 const routes: AppNavItem[] = [
   {
@@ -52,45 +54,48 @@ export const App: FC = () => {
     >
       <GhUserProvider>
         <SettingsProvider>
-          <AppShell.Header style={{ background: theme.colors.dark[8] }}>
-            <Stack pl={'md'} h={'100%'} justify={'center'}>
-              <Group justify={'space-between'}>
-                <Group>
-                  <Text
-                    style={{
-                      fontSize: 'xx-large',
-                      fontFamily: 'Doctor Glitch',
-                      color: '#f59e0f'
-                    }}
-                  >
-                    Dropzone
-                  </Text>
-                  <Divider orientation={'vertical'} />
-                  <Text
-                    style={{
-                      fontFamily: 'Montserrat',
-                      width: 250
-                    }}
-                  >
-                    Community Mod Manager for DCS World
-                  </Text>
+          <InstallProvider>
+            <AppShell.Header style={{ background: theme.colors.dark[8] }}>
+              <Stack pl={'md'} h={'100%'} justify={'center'}>
+                <Group justify={'space-between'}>
+                  <Group>
+                    <Text
+                      style={{
+                        fontSize: 'xx-large',
+                        fontFamily: 'Doctor Glitch',
+                        color: '#f59e0f'
+                      }}
+                    >
+                      Dropzone
+                    </Text>
+                    <Divider orientation={'vertical'} />
+                    <Text
+                      style={{
+                        fontFamily: 'Montserrat',
+                        width: 250
+                      }}
+                    >
+                      Community Mod Manager for DCS World
+                    </Text>
+                  </Group>
+                  <GhProfile />
                 </Group>
-                <GhProfile />
-              </Group>
-            </Stack>
-          </AppShell.Header>
-          <AppShell.Navbar style={{ background: theme.colors.dark[8] }}>
-            <AppNav items={routes} />
-          </AppShell.Navbar>
-          <AppShell.Main>
-            <Routes>
-              <Route path={'/'} element={<HomePage />} />
-              <Route path={'/library/:id'} element={<RegistryEntryPageLoader />} />
-              <Route path={'/library'} element={<LibraryPage />} />
-              <Route path={'/integrations'} element={<IntegrationsPage />} />
-              <Route path={'/settings'} element={<SettingsPage />} />
-            </Routes>
-          </AppShell.Main>
+              </Stack>
+            </AppShell.Header>
+            <AppShell.Navbar style={{ background: theme.colors.dark[8] }}>
+              <AppNav items={routes} />
+            </AppShell.Navbar>
+            <AppShell.Main>
+              <Routes>
+                <Route path={'/'} element={<HomePage />} />
+                <Route path={'/library/:id'} element={<RegistryEntryPageLoader />} />
+                <Route path={'/library'} element={<LibraryPage />} />
+                <Route path={'/integrations'} element={<IntegrationsPage />} />
+                <Route path={'/settings'} element={<SettingsPage />} />
+              </Routes>
+            </AppShell.Main>
+            <Footer />
+          </InstallProvider>
         </SettingsProvider>
       </GhUserProvider>
     </AppShell>

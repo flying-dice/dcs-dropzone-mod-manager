@@ -9,6 +9,7 @@ import * as axios from 'axios'
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import useSwr from 'swr'
 import type { Key, SWRConfiguration } from 'swr'
+import { z } from 'zod'
 export type RunGithubIntegrationParams = {
   /**
    * Integration Token
@@ -33,6 +34,34 @@ export interface EntryLatestRelease {
   releasepage: string
   /** The version of the release */
   version: string
+  /** The tag of the release */
+  tag: string
+}
+
+export type EntryInstallMap = {
+  name: string,
+  zipPath?: string 
+  target: string
+}
+
+export const EntryInstallMapSchema =  z.array(z.object({
+  name: z.string(),
+  zipPath: z.string().optional(),
+  target: z.string()
+}))
+
+export interface EntryInstall {
+  repository: string
+  assets: EntryInstallMap[]
+}
+
+
+export interface EntryInstallState {
+  installed: boolean,
+  installedVersion: string,
+  incomplete: boolean,
+  missingFiles: string[],
+  enabled: boolean
 }
 
 /**
@@ -130,6 +159,8 @@ export type RegistryIndexItem = {
   tags: string[]
 }
 
+
+
 /**
  * @summary Get Registry Index
  */
@@ -220,7 +251,19 @@ export const getRegistryEntryLatestRelease = (
   return axios.default.get(`/${id}/latest.json`, options)
 }
 
+/**
+ * @summary Get Registry Entry Latest Release
+ */
+export const getRegistryEntryInstall = (
+  id: string,
+  options?: AxiosRequestConfig
+): Promise<AxiosResponse<EntryInstall>> => {
+  return axios.default.get(`/${id}/install.json`, options)
+}
+
 export const getGetRegistryEntryLatestReleaseKey = (id: string) => [`/${id}/latest.json`] as const
+
+export const getGetRegistryEntryInstallKey = (id: string) => [`/${id}/install.json`] as const
 
 export type GetRegistryEntryLatestReleaseQueryResult = NonNullable<
   Awaited<ReturnType<typeof getRegistryEntryLatestRelease>>
@@ -246,6 +289,34 @@ export const useGetRegistryEntryLatestRelease = <TError = AxiosError<unknown>>(
   const swrKey =
     swrOptions?.swrKey ?? (() => (isEnabled ? getGetRegistryEntryLatestReleaseKey(id) : null))
   const swrFn = () => getRegistryEntryLatestRelease(id, axiosOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+
+/**
+ * @summary Get Registry Entry Latest Release
+ */
+export const useGetRegistryEntryInstall = <TError = AxiosError<unknown>>(
+  id: string,
+  options?: {
+    swr?: SWRConfiguration<Awaited<ReturnType<typeof getRegistryEntryInstall>>, TError> & {
+      swrKey?: Key
+      enabled?: boolean
+    }
+    axios?: AxiosRequestConfig
+  }
+) => {
+  const { swr: swrOptions, axios: axiosOptions } = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!id
+  const swrKey =
+    swrOptions?.swrKey ?? (() => (isEnabled ? getGetRegistryEntryInstallKey(id) : null))
+  const swrFn = () => getRegistryEntryInstall(id, axiosOptions)
 
   const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
 

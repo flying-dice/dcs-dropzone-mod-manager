@@ -41,6 +41,37 @@ export const SettingsPage: React.FC = observer(() => {
     })
   }
 
+  const handleSaveGameFolderChange = async (): Promise<void> => {
+    const suggested = await client.installation.getDefaultSaveGameDir.query()
+    openConfirmModal({
+      title: 'DCS Save Game folder',
+      children: (
+        <Stack gap={10}>
+          <Text>Do you want to use the suggested DCS Save Game folder?</Text>
+          <Text>{suggested.path}</Text>
+        </Stack>
+      ),
+      confirmProps: {
+        color: 'blue',
+        children: 'Use Suggested'
+      },
+      cancelProps: {
+        variant: 'subtle',
+        color: 'red',
+        children: 'Choose another folder'
+      },
+      onConfirm: () => {
+        settings.setSaveGameDir(suggested.path)
+        closeAllModals()
+      },
+      onCancel: () => {
+        client.installation.getWriteDir.query().then((folder) => {
+          settings.setSaveGameDir(folder)
+        })
+      }
+    })
+  }
+
   const handleRegistryChange = async (): Promise<void> => {
     openModal({
       title: 'Registry',
@@ -67,11 +98,20 @@ export const SettingsPage: React.FC = observer(() => {
       <Title order={3}>Settings</Title>
       <TextInput
         label="Installation folder"
-        description="Where the users Mods and Scripts are installed, normally this is '%USERPROFILE%\Saved Games\DCS'"
+        description="This is where we will store the mod files"
         readOnly
         placeholder="Set Installation folder"
         value={settings.writeDir}
         onClick={handleInstallFolderChange}
+        styles={{ input: { cursor: 'pointer' } }}
+      />
+      <TextInput
+        label="DCS Save Game folder"
+        description="Where the users Mods and Scripts are installed, normally this is '%USERPROFILE%\Saved Games\DCS'"
+        readOnly
+        placeholder="Set Save Game folder"
+        value={settings.saveGameDir}
+        onClick={handleSaveGameFolderChange}
         styles={{ input: { cursor: 'pointer' } }}
       />
       <TextInput

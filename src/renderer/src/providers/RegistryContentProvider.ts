@@ -1,4 +1,4 @@
-import { RegistryEntry } from '../schema/registryEntriesSchema'
+// import { RegistryEntry } from '../schema/registryEntriesSchema'
 import { match } from 'ts-pattern'
 import { GithubRegistryContentProvider } from './impl/GithubRegistryContentProvider'
 
@@ -58,7 +58,7 @@ export interface RegistryContentProvider {
  * @throws {Error} If the registry URL of the given entry is unknown.
  */
 export const getRegistryEntryContentProvider = (
-  registryEntry: RegistryEntry
+  registryEntry: any
 ): RegistryContentProvider =>
   match(registryEntry)
     .when(

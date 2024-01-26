@@ -1,47 +1,88 @@
-import { join } from 'path'
-import { dialog } from 'electron'
-import { pathExistsSync } from 'fs-extra'
 import { trpc } from '../trpc'
+import { z } from 'zod'
+import { EntryInstallMap, EntryInstallMapSchema, EntryInstallState } from '../../client';
+import fs from "fs";
+import fsp from "fs/promises";
+import workerpool from  'workerpool'
+import { getInstalledFilePath, getSymlinkFilePath } from '../utils'
 
-export const installationService = {
-  async getDefaultWriteDir(): Promise<{ path: string; valid: boolean }> {
-    if (!process.env.USERPROFILE) {
-      return {
-        path: '',
-        valid: false
-      }
-    }
 
-    const defaultPath = join(process.env.USERPROFILE, 'Saved Games', 'DCS')
-    const defaultOBPath = join(process.env.USERPROFILE, 'Saved Games', 'DCS.openbeta')
+const fileInstallStatus = {} //is this a dumb in memory download status why yes it is!
+const baseEntrySchema = z.object({modId: z.string(), installMapArr: EntryInstallMapSchema, writeDirPath: z.string(), saveDirPath: z.string()})
 
-    const paths = [defaultPath, defaultOBPath]
+const getInstallState = async (modId: string, installMapArr: EntryInstallMap[],  writeDirPath: string, saveDirPath: string): Promise<EntryInstallState> => {
+  const installStates = installMapArr.map(x => ({name:x.name, installed: fs.existsSync(getInstalledFilePath(modId, writeDirPath, x))}))
+  const linkStates = installMapArr.map(x => ({name:x.name, installed: fs.existsSync(getSymlinkFilePath(saveDirPath, x))}))
 
-    const validPath = paths.find((it) => pathExistsSync(it))
-
-    if (validPath) {
-      return {
-        path: validPath,
-        valid: true
-      }
-    }
-    return {
-      path: defaultPath,
-      valid: false
-    }
-  },
-  async getWriteDir(): Promise<string> {
-    const defaultPath = await installationService.getDefaultWriteDir()
-    return await dialog
-      .showOpenDialog({
-        defaultPath: defaultPath?.path,
-        properties: ['openDirectory']
-      })
-      .then((it) => it.filePaths[0])
+  return {
+    installed: installStates.some(x => x.installed),
+    installedVersion: "1", // TODO: actually check somehow
+    incomplete: installStates.every(x => !x.installed),
+    missingFiles: installStates.filter(x => !x.installed).map(x => x.name),
+    enabled: linkStates.some(x => x.installed),
   }
 }
 
+const enableMod = async(modId: string, installMapArr: EntryInstallMap[], writeDirPath: string, saveDirPath: string): Promise<EntryInstallState> => {
+  await Promise.all(installMapArr.map(async (x) => {
+      const installedFilePath = getInstalledFilePath(modId, writeDirPath, x);
+      const symlinkFilePath = getSymlinkFilePath(saveDirPath, x)
+      const fileStats = await fsp.stat(installedFilePath)
+      return fsp.symlink(installedFilePath, symlinkFilePath, fileStats.isFile() ? 'file':'junction')
+  }))
+  return await getInstallState(modId, installMapArr, writeDirPath, saveDirPath);
+}
+
+const disableMod = async(modId: string, installMapArr: EntryInstallMap[], writeDirPath: string, saveDirPath: string): Promise<EntryInstallState> => {
+  await Promise.all(installMapArr.map(async (x) => {
+      return fsp.unlink(getSymlinkFilePath(saveDirPath, x))
+  }))
+  return await getInstallState(modId, installMapArr, writeDirPath, saveDirPath);
+}
+
+const pool = workerpool.pool('./src/main/workers/installMod.js');
+
+export const installationService = {
+  async installMod(modId: string, githubPage: string, tag: string, installMapArr: EntryInstallMap[], writeDirPath: string) {
+    installMapArr.map((installMap: EntryInstallMap) => {
+      const stateKey = `${modId}-${installMap.name}`
+      fileInstallStatus[stateKey] = "preparing"
+      pool.exec('downloadAndUnzip', [modId, githubPage, tag, installMap, writeDirPath], {
+      on: (payload: any) => {
+        fileInstallStatus[stateKey] = payload.status
+      }
+    }).catch(err => {
+      console.error(err)
+      fileInstallStatus[stateKey] = err;
+    })
+  });
+  },
+  async uninstallMod(modId: string, installMapArr: EntryInstallMap[], writeDirPath: string, saveDirPath: string): Promise<EntryInstallState> {
+    await disableMod(modId, installMapArr, writeDirPath, saveDirPath)
+    await Promise.all(installMapArr.map(x => {
+      return fsp.rm(getInstalledFilePath(modId, writeDirPath, x), { recursive: true, force: true })
+    }))
+    return await getInstallState(modId, installMapArr, writeDirPath, saveDirPath);
+  },
+  getInstallProgress(): Record<string, string> {
+    return fileInstallStatus
+  },
+  clearProgress() {
+    Object.keys(fileInstallStatus).filter(x => fileInstallStatus[x].endsWith("Complete")).forEach(key => delete fileInstallStatus[key])
+  },
+  getInstallState,
+  enableMod,
+  disableMod,
+}
+
+
+
 export const installationRouter = trpc.router({
-  getWriteDir: trpc.procedure.query(installationService.getWriteDir),
-  getDefaultWriteDir: trpc.procedure.query(installationService.getDefaultWriteDir)
+  getInstallState: trpc.procedure.input(baseEntrySchema).query(({ input }) => installationService.getInstallState(input.modId, input.installMapArr, input.writeDirPath, input.saveDirPath)),
+  getInstallProgress: trpc.procedure.query(installationService.getInstallProgress),
+  clearProgress: trpc.procedure.query(installationService.clearProgress),
+  installMod: trpc.procedure.input(z.object({modId: z.string(), githubPage: z.string().url(), tag: z.string(), installMapArr: EntryInstallMapSchema, writeDirPath: z.string()})).query(({ input }) => installationService.installMod(input.modId, input.githubPage, input.tag, input.installMapArr, input.writeDirPath)),
+  uninstallMod: trpc.procedure.input(baseEntrySchema).query(({ input }) => installationService.uninstallMod(input.modId, input.installMapArr, input.writeDirPath, input.saveDirPath)),
+  enableMod: trpc.procedure.input(baseEntrySchema).query(({ input }) => installationService.enableMod(input.modId, input.installMapArr, input.writeDirPath, input.saveDirPath)),
+  disableMod: trpc.procedure.input(baseEntrySchema).query(({ input }) => installationService.disableMod(input.modId, input.installMapArr, input.writeDirPath, input.saveDirPath)),
 })
