@@ -24,11 +24,9 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ReleaseSummary } from '../components/release-summary'
 import {
   EntryIndex,
-  EntryInstall,
   EntryLatestRelease,
   useGetRegistryEntry,
   useGetRegistryEntryLatestRelease,
-  useGetRegistryEntryInstall,
   EntryInstallState
 } from '../../../client'
 import { useSettings } from '../context/settings.context'
@@ -42,14 +40,11 @@ export const RegistryEntryPageLoader: React.FC = () => {
   const latestRelease = useGetRegistryEntryLatestRelease(id || '', {
     axios: { baseURL: settings.registryUrl }
   })
-  const installInfo = useGetRegistryEntryInstall(id || '', {
-    axios: { baseURL: settings.registryUrl }
-  })
 
   return (
     <>
       {(entryIndex.data?.data && (
-        <RegistryEntryPage entry={entryIndex.data.data} latestRelease={latestRelease.data?.data} installInfo={installInfo.data?.data} />
+        <RegistryEntryPage entry={entryIndex.data.data} latestRelease={latestRelease.data?.data} />
       )) || <Alert color={'red'}>Registry Entry with ID {id} not found</Alert>}
     </>
   )
@@ -58,46 +53,45 @@ export const RegistryEntryPageLoader: React.FC = () => {
 export type RegistryEntryPageProps = {
   entry: EntryIndex
   latestRelease?: EntryLatestRelease
-  installInfo?: EntryInstall
 }
-export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, latestRelease, installInfo }) => {
+export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, latestRelease }) => {
   const navigate = useNavigate()
   const installContext = useInstallContext()
   const [installState, setInstallState] = useState<EntryInstallState | null>(null)
-  const isInstalling = installInfo && installInfo.repository &&
+  const isInstalling = latestRelease &&
     installContext.installStates &&
     Object.keys(installContext.installStates)
-      .some(key => key.startsWith(installInfo.repository) && installContext.installStates && installContext.installStates[key] && !installContext.installStates[key].endsWith("Complete"))
+      .some(key => key.startsWith(entry.id) && installContext.installStates && installContext.installStates[key] && !installContext.installStates[key].endsWith("Complete"))
 
   const getInstallState = async () => {
-    if (!installInfo) return;
-    const response = await installContext.getInstallState(entry.id, installInfo.assets);
+    if (!latestRelease) return;
+    const response = await installContext.getInstallState(entry.id, latestRelease.assets);
     setInstallState(response)
   }
 
   useEffect(() => {
     getInstallState()
-  }, [setInstallState, installInfo])
+  }, [setInstallState, latestRelease])
 
 
   // TODO move all this to Context (figure out how to stop breaking promise connections)
   const installMod = useCallback(async () => {
-    if (!installInfo || !latestRelease) return
-    installContext.installMod(entry.id, installInfo.repository || "", latestRelease.tag, installInfo.assets)
-  }, [installInfo, latestRelease])
+    if (!latestRelease || !latestRelease) return
+    installContext.installMod(entry, latestRelease)
+  }, [latestRelease, latestRelease])
 
   const unInstallMod = useCallback(async () => {
-    if (!installInfo) return
-    const installStateResponse = await installContext.uninstallMod(entry.id, installInfo.assets)
+    if (!latestRelease) return
+    const installStateResponse = await installContext.uninstallMod(entry.id, latestRelease.assets)
     setInstallState(installStateResponse)
-  }, [installInfo, setInstallState])
+  }, [latestRelease, setInstallState])
 
 
   const toggleMod = useCallback(async () => {
-    if (!installInfo || !installState) return
-    const installStateResponse = installState?.enabled ? await installContext.disableMod(entry.id, installInfo.assets) : await installContext.enableMod(entry.id, installInfo.assets)
+    if (!latestRelease || !installState) return
+    const installStateResponse = installState?.enabled ? await installContext.disableMod(entry.id, latestRelease.assets) : await installContext.enableMod(entry.id, latestRelease.assets)
     setInstallState(installStateResponse)
-  }, [installInfo, installState, setInstallState])
+  }, [latestRelease, installState, setInstallState])
 
 
 
@@ -195,7 +189,7 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, lat
               <Title order={4} fw={500}>
                 Manage
               </Title>
-              {latestRelease && installInfo && installState && (
+              {latestRelease && installState && (
                 <Group grow>
                   {!installState.installed ? (
                     <Button size={'sm'} variant={'default'} onClick={installMod} disabled={isInstalling || false}>

@@ -5,20 +5,28 @@ const  fs =  require("fs")
 const  fsp =  require("fs/promises")
 
 const workerpool = require('workerpool');
+const HASH_SPLIT = '/#/'
 
 const getInstalledFilePath = (modId ,basePath, installMap) => {
-  const namedPath =  join(basePath, modId, installMap.name.replace(".zip", ""));
-  if(!installMap.zipPath) return namedPath
-  var terminalFolder = installMap.zipPath.split("/").pop()
-  if(!terminalFolder) return namedPath
-  return join(basePath, modId, terminalFolder)
+  let installFile = installMap.source
+  if(installFile.includes(HASH_SPLIT)) {
+    installFile = installFile.split(HASH_SPLIT)[1]
+  }
+  return join(basePath, modId, installFile)
 }
 
-const downloadAndUnzip = async (modId, githubPage, tag, installMap, installBasePath) => {
+const downloadAndUnzip = async (modId, installMap, installBasePath) => {
+  let downloadPath = installMap.source
+  let installFile = installMap.source
+  if(installFile.includes(HASH_SPLIT)) {
+    const  parts = installFile.split(HASH_SPLIT)
+    installFile = parts[1]
+    downloadPath = parts[0]
+  }
     const download = new Downloader({
-      url: join(githubPage, "releases", "download", tag, installMap.name),
+      url: downloadPath,
       directory: join(installBasePath, modId),
-      skipExistingFileName: installMap.name.endsWith(".zip"), // as zips are deleted in cleanup with can do this to skip a step if errors laterp
+      skipExistingFileName: downloadPath.endsWith(".zip"), // as zips are deleted in cleanup with can do this to skip a step if errors laterp
       onProgress: function (percentage) {
         workerpool.workerEmit({
             status: `${percentage}%`,
@@ -26,19 +34,21 @@ const downloadAndUnzip = async (modId, githubPage, tag, installMap, installBaseP
       },
     });
     await download.download();
-    if(installMap.name.endsWith(".zip"))
+    if(downloadPath.endsWith(".zip"))
     {
         workerpool.workerEmit({
             status: 'Unpacking',
           });
-      await fs.createReadStream(join(installBasePath, modId, installMap.name)) 
-        .pipe(unzipper.Extract({ path: join(installBasePath, modId, installMap.name.replace(".zip", ""))})) // this is dumb as rocks don't like it would be nice if I could get a subset
+        const downloadedFile = downloadPath.split('/').pop();
+        const downloadedFileUnzipped = downloadedFile.replace(".zip", "")
+      await fs.createReadStream(join(installBasePath, modId, downloadedFile)) 
+        .pipe(unzipper.Extract({ path: join(installBasePath, modId,downloadedFileUnzipped)})) // this is dumb as rocks don't like it would be nice if I could get a subset
         .promise()
-      await fsp.rm(join(installBasePath, modId, installMap.name),  { recursive: true, force: true })
+      await fsp.rm(join(installBasePath, modId, downloadedFile),  { recursive: true, force: true })
   
-      if(installMap.zipPath) {
-        await fsp.rename(join(installBasePath, modId, installMap.name.replace(".zip", ""), installMap.zipPath), getInstalledFilePath(modId, installBasePath, installMap))
-        await fsp.rm(join(installBasePath, modId, installMap.name.replace(".zip", "")),  { recursive: true, force: true })
+      if(downloadedFileUnzipped !== installFile) {
+        await fsp.rename(join(installBasePath, modId, downloadedFileUnzipped, installFile), getInstalledFilePath(modId, installBasePath, installMap))
+        await fsp.rm(join(installBasePath, modId, downloadedFileUnzipped),  { recursive: true, force: true })
       } 
     }
     workerpool.workerEmit({

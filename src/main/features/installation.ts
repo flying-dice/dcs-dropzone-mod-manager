@@ -11,15 +11,15 @@ const fileInstallStatus = {} //is this a dumb in memory download status why yes 
 const baseEntrySchema = z.object({modId: z.string(), installMapArr: EntryInstallMapSchema, writeDirPath: z.string(), saveDirPath: z.string()})
 
 const getInstallState = async (modId: string, installMapArr: EntryInstallMap[],  writeDirPath: string, saveDirPath: string): Promise<EntryInstallState> => {
-  const installStates = installMapArr.map(x => ({name:x.name, installed: fs.existsSync(getInstalledFilePath(modId, writeDirPath, x))}))
-  const linkStates = installMapArr.map(x => ({name:x.name, installed: fs.existsSync(getSymlinkFilePath(saveDirPath, x))}))
+  const installStates = installMapArr.map(x => ({name: getInstalledFilePath(modId, writeDirPath, x), installed: fs.existsSync(getInstalledFilePath(modId, writeDirPath, x))}))
+  const linkStates = installMapArr.map(x => ({enabled: fs.existsSync(getSymlinkFilePath(saveDirPath, x))}))
 
   return {
     installed: installStates.some(x => x.installed),
     installedVersion: "1", // TODO: actually check somehow
     incomplete: installStates.every(x => !x.installed),
     missingFiles: installStates.filter(x => !x.installed).map(x => x.name),
-    enabled: linkStates.some(x => x.installed),
+    enabled: linkStates.some(x => x.enabled),
   }
 }
 
@@ -43,11 +43,11 @@ const disableMod = async(modId: string, installMapArr: EntryInstallMap[], writeD
 const pool = workerpool.pool('./src/main/workers/installMod.js');
 
 export const installationService = {
-  async installMod(modId: string, githubPage: string, tag: string, installMapArr: EntryInstallMap[], writeDirPath: string) {
+  async installMod(modId: string, installMapArr: EntryInstallMap[], writeDirPath: string) {
     installMapArr.map((installMap: EntryInstallMap) => {
-      const stateKey = `${modId}-${installMap.name}`
+      const stateKey = `${modId}-${getInstalledFilePath(modId, writeDirPath, installMap)}`
       fileInstallStatus[stateKey] = "preparing"
-      pool.exec('downloadAndUnzip', [modId, githubPage, tag, installMap, writeDirPath], {
+      pool.exec('downloadAndUnzip', [modId, installMap, writeDirPath], {
       on: (payload: any) => {
         fileInstallStatus[stateKey] = payload.status
       }
@@ -58,7 +58,10 @@ export const installationService = {
   });
   },
   async uninstallMod(modId: string, installMapArr: EntryInstallMap[], writeDirPath: string, saveDirPath: string): Promise<EntryInstallState> {
-    await disableMod(modId, installMapArr, writeDirPath, saveDirPath)
+    try {
+      await disableMod(modId, installMapArr, writeDirPath, saveDirPath)
+    } catch (e) {}
+   
     await Promise.all(installMapArr.map(x => {
       return fsp.rm(getInstalledFilePath(modId, writeDirPath, x), { recursive: true, force: true })
     }))
@@ -81,7 +84,7 @@ export const installationRouter = trpc.router({
   getInstallState: trpc.procedure.input(baseEntrySchema).query(({ input }) => installationService.getInstallState(input.modId, input.installMapArr, input.writeDirPath, input.saveDirPath)),
   getInstallProgress: trpc.procedure.query(installationService.getInstallProgress),
   clearProgress: trpc.procedure.query(installationService.clearProgress),
-  installMod: trpc.procedure.input(z.object({modId: z.string(), githubPage: z.string().url(), tag: z.string(), installMapArr: EntryInstallMapSchema, writeDirPath: z.string()})).query(({ input }) => installationService.installMod(input.modId, input.githubPage, input.tag, input.installMapArr, input.writeDirPath)),
+  installMod: trpc.procedure.input(z.object({modId: z.string(), installMapArr: EntryInstallMapSchema, writeDirPath: z.string()})).query(({ input }) => installationService.installMod(input.modId, input.installMapArr, input.writeDirPath)),
   uninstallMod: trpc.procedure.input(baseEntrySchema).query(({ input }) => installationService.uninstallMod(input.modId, input.installMapArr, input.writeDirPath, input.saveDirPath)),
   enableMod: trpc.procedure.input(baseEntrySchema).query(({ input }) => installationService.enableMod(input.modId, input.installMapArr, input.writeDirPath, input.saveDirPath)),
   disableMod: trpc.procedure.input(baseEntrySchema).query(({ input }) => installationService.disableMod(input.modId, input.installMapArr, input.writeDirPath, input.saveDirPath)),

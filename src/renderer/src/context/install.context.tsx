@@ -1,13 +1,13 @@
 import { client } from '@renderer/client'
 import { createContext, FC, ReactNode, useContext } from 'react'
 import { noop } from '@mantine/core'
-import { EntryInstallMap, EntryInstallState } from 'src/client'
+import { EntryIndex, EntryInstallMap, EntryInstallState, EntryLatestRelease } from 'src/client'
 import useSwr from 'swr'
 import { useSettings } from './settings.context'
 
 export interface InstallContextValue {
   installStates?: Record<string, string>
-  installMod: (modId: string, githubPage: string, tag: string, installMapArr: EntryInstallMap[]) => void
+  installMod: (entry: EntryIndex, latestRelease: EntryLatestRelease) => void
   uninstallMod: (modId: string, installMapArr: EntryInstallMap[]) => Promise<EntryInstallState>
   enableMod: (modId: string, installMapArr: EntryInstallMap[]) => Promise<EntryInstallState>
   disableMod: (modId: string, installMapArr: EntryInstallMap[]) => Promise<EntryInstallState>
@@ -20,8 +20,16 @@ export const InstallProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const swrFn = () => client.installation.getInstallProgress.query();
   const query = useSwr<Awaited<ReturnType<typeof swrFn>>, any>("check", swrFn, { refreshInterval: 1000 })
 
-  const installMod = async (modId: string, githubPage: string, tag: string, installMapArr: EntryInstallMap[]) => {
-    client.installation.installMod.query({ modId, githubPage, tag, installMapArr, writeDirPath: settings.writeDir })
+  const installMod = async (entry: EntryIndex, latestRelease: EntryLatestRelease) => {
+    const installMapArrInferred = structuredClone(latestRelease.assets);
+    if(entry.integration && entry.integration?.type === "github")
+    {
+      installMapArrInferred.forEach((installMap: EntryInstallMap) => {
+        installMap.source = `https://github.com/${entry.integration.owner}/${entry.integration.repo}/releases/download/${latestRelease.tag}/${installMap.source}`
+      })
+    }
+
+    client.installation.installMod.query({ modId: entry.id, installMapArr: installMapArrInferred, writeDirPath: settings.writeDir })
   }
   const uninstallMod = async (modId: string, installMapArr: EntryInstallMap[]) => await client.installation.uninstallMod.query({ modId, installMapArr, writeDirPath: settings.writeDir, saveDirPath: settings.saveGameDir })
   const enableMod = async (modId: string, installMapArr: EntryInstallMap[]) => await client.installation.enableMod.query({ modId, installMapArr, writeDirPath: settings.writeDir, saveDirPath: settings.saveGameDir })
