@@ -1,25 +1,39 @@
-import { AppShell, Center, CloseButton, ScrollArea, Stack } from "@mantine/core"
-import { useInstallContext } from "@renderer/context/install.context"
-import { FC } from "react"
+import { AppShell, Container, ScrollArea, Stack, Group, ActionIcon } from '@mantine/core'
+import { useInstallContext } from '@renderer/context/install.context'
+import { FC } from 'react'
+import { VscCloseAll } from 'react-icons/vsc'
 
 export const Footer: FC = () => {
-    const installContext = useInstallContext()
-    return (
-        <AppShell.Footer>
+  const installContext = useInstallContext()
+  return (
+    <AppShell.Footer>
+      <Container size="xs">
+        <Group justify="space-between">
+          {installContext && installContext.installStates && (
             <ScrollArea>
-                <Center>
-                    {installContext && installContext.installStates && (
-                        <>
-                            <Stack>
-                                {Object.keys(installContext.installStates).map(x => (<p key={x}>{x}: {installContext.installStates && installContext.installStates[x]}</p>))}
-                            </Stack>
-                            {Object.keys(installContext.installStates).length > 0 && (
-                                <CloseButton size={'sm'} variant={'default'} onClick={installContext.clearProgress} />
-                            )}
-                        </>
-                    )}
-                </Center>
+              <Stack gap="xs">
+                {Object.keys(installContext.installStates).map((x) => (
+                  <div key={x}>
+                    {x}: {installContext.installStates && installContext.installStates[x]}
+                  </div>
+                ))}
+              </Stack>
             </ScrollArea>
-        </AppShell.Footer>
-    )
+          )}
+          {installContext &&
+            installContext.installStates &&
+            Object.keys(installContext.installStates).length > 0 && (
+              <ActionIcon
+                radius={0}
+                size={'xs'}
+                variant={'subtle'}
+                onClick={installContext.clearProgress}
+              >
+                <VscCloseAll />
+              </ActionIcon>
+            )}
+        </Group>
+      </Container>
+    </AppShell.Footer>
+  )
 }

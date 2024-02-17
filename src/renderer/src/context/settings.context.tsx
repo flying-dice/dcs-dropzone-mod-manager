@@ -1,9 +1,9 @@
-import { createContext, FC, ReactNode, useContext } from "react";
-import { makeAutoObservable } from "mobx";
-import { config } from "../config";
-import { client } from "../client";
-import { useAsync } from "react-use";
-import { Alert, List, LoadingOverlay } from "@mantine/core";
+import { createContext, FC, ReactNode, useContext } from 'react'
+import { makeAutoObservable } from 'mobx'
+import { config } from '../config'
+import { client } from '../client'
+import { useAsync } from 'react-use'
+import { Alert, List, LoadingOverlay } from '@mantine/core'
 
 class SettingsError extends Error {
   errors: string[]
@@ -19,7 +19,11 @@ export class Settings {
   saveGameDir: string
   writeDir: string
 
-  constructor({ registryUrl, writeDir, saveGameDir }: Pick<Settings, 'registryUrl' | 'writeDir' | 'saveGameDir'>) {
+  constructor({
+    registryUrl,
+    writeDir,
+    saveGameDir
+  }: Pick<Settings, 'registryUrl' | 'writeDir' | 'saveGameDir'>) {
     makeAutoObservable(this)
     this.registryUrl = registryUrl
     this.writeDir = writeDir
@@ -31,7 +35,7 @@ export class Settings {
     const writeDir =
       localStorage.getItem('write-dir') ||
       (await client.settings.getDefaultWriteDir.query().then((it) => it.path))
-    
+
     const saveGameDir =
       localStorage.getItem('save-game-dir') ||
       (await client.settings.getDefaultSaveGameDir.query().then((it) => it.path))
