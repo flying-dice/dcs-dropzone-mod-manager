@@ -3,8 +3,8 @@
 }
 
 @font-face {
-  font-family: "Doctor Glitch";
+  font-family: 'Doctor Glitch';
   src:
-    local("Doctor Glitch"),
-    url("./Doctor Glitch.otf") format("opentype");
+    local('Doctor Glitch'),
+    url('./Doctor Glitch.otf') format('opentype');
 }

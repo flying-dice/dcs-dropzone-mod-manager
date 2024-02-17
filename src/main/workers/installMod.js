@@ -23,7 +23,8 @@ const downloadAndUnzip = async (modId, downloadUrl, installMapArr, installBasePa
   if (filePath.endsWith('.zip')) {
     const unzippedFilePath = await unzip(filePath)
     await unpack(modId, unzippedFilePath, installBasePath, installMapArr)
-    await fsp.rm(join(installBasePath, modId, unzippedFilePath), { //Potential edge case if unzipped is all we need but deal with it later :D
+    await fsp.rm(join(installBasePath, modId, unzippedFilePath), {
+      //Potential edge case if unzipped is all we need but deal with it later :D
       recursive: true,
       force: true
     })

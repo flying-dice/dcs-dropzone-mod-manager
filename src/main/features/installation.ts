@@ -1,6 +1,11 @@
 import { trpc } from '../trpc'
 import { z } from 'zod'
-import { EntryInstallMap, EntryInstallMapSchema, EntryInstallState } from '../../client'
+import {
+  EachEntryInstallState,
+  EntryInstallMap,
+  EntryInstallMapSchema,
+  EntryInstallState
+} from '../../client'
 import fs from 'fs'
 import fsp from 'fs/promises'
 import workerpool from 'workerpool'
@@ -10,7 +15,6 @@ import { join } from 'path'
 export type installWorkerMessage = {
   status: string
 }
-
 
 const fileInstallStatus = {} //is this a dumb in memory download status why yes it is!
 const baseEntrySchema = z.object({
@@ -34,9 +38,16 @@ const getInstallState = async (
     enabled: fs.existsSync(getSymlinkFilePath(saveDirPath, x))
   }))
 
+  let installedVersion = ''
+  const installMetaPath = join(writeDirPath, modId, 'meta.json')
+  if (fs.existsSync(installMetaPath)) {
+    const meta = JSON.parse(await fsp.readFile(installMetaPath, 'utf-8'))
+    installedVersion = meta.version
+  }
+
   return {
     installed: installStates.some((x) => x.installed),
-    installedVersion: '1', // TODO: actually check somehow
+    installedVersion,
     incomplete: installStates.every((x) => !x.installed),
     missingFiles: installStates.filter((x) => !x.installed).map((x) => x.name),
     enabled: linkStates.some((x) => x.enabled)
@@ -81,7 +92,12 @@ const disableMod = async (
 const pool = workerpool.pool('./src/main/workers/installMod.js')
 
 export const installationService = {
-  async installMod(modId: string, installMapArr: EntryInstallMap[], writeDirPath: string) {
+  async installMod(
+    modId: string,
+    installMapArr: EntryInstallMap[],
+    writeDirPath: string,
+    version: string
+  ) {
     const aggInstallMaps = {}
     installMapArr.forEach((installMap: EntryInstallMap) => {
       const key = installMap.source.split('/#/')[0]
@@ -105,6 +121,10 @@ export const installationService = {
           fileInstallStatus[stateKey] = err
         })
     })
+
+    const metaData = { version, id: modId, installMapArr }
+    await fsp.mkdir(join(writeDirPath, modId), { recursive: true })
+    await fsp.writeFile(join(writeDirPath, modId, 'meta.json'), JSON.stringify(metaData), 'utf8')
   },
   async uninstallMod(
     modId: string,
@@ -135,10 +155,39 @@ export const installationService = {
   },
   getInstallState,
   enableMod,
-  disableMod
+  disableMod,
+  async getAllInstalled(
+    writeDirPath: string,
+    saveDirPath: string
+  ): Promise<Record<string, EachEntryInstallState>> {
+    const installedObj = {}
+    const entries = await fsp.readdir(writeDirPath, { withFileTypes: true })
+    const directories = entries.filter((dirent) => dirent.isDirectory())
+    await Promise.all(
+      directories.map(async (dir) => {
+        const metaPath = join(writeDirPath, dir.name, 'meta.json')
+        if (fs.existsSync(metaPath)) {
+          const meta = JSON.parse(await fsp.readFile(metaPath, 'utf-8'))
+          installedObj[meta.id] = meta
+          installedObj[meta.id].installState = await getInstallState(
+            meta.id,
+            meta.installMapArr,
+            writeDirPath,
+            saveDirPath
+          )
+        }
+      })
+    )
+    return installedObj
+  }
 }
 
 export const installationRouter = trpc.router({
+  getAllInstalled: trpc.procedure
+    .input(z.object({ writeDirPath: z.string(), saveDirPath: z.string() }))
+    .query(async ({ input }) =>
+      installationService.getAllInstalled(input.writeDirPath, input.saveDirPath)
+    ),
   getInstallState: trpc.procedure
     .input(baseEntrySchema)
     .query(({ input }) =>
@@ -156,11 +205,17 @@ export const installationRouter = trpc.router({
       z.object({
         modId: z.string(),
         installMapArr: EntryInstallMapSchema,
-        writeDirPath: z.string()
+        writeDirPath: z.string(),
+        version: z.string()
       })
     )
     .query(({ input }) =>
-      installationService.installMod(input.modId, input.installMapArr, input.writeDirPath)
+      installationService.installMod(
+        input.modId,
+        input.installMapArr,
+        input.writeDirPath,
+        input.version
+      )
     ),
   uninstallMod: trpc.procedure
     .input(baseEntrySchema)

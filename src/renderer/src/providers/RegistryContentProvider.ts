@@ -57,9 +57,7 @@ export interface RegistryContentProvider {
  * @returns {RegistryContentProvider} - The determined registry content provider.
  * @throws {Error} If the registry URL of the given entry is unknown.
  */
-export const getRegistryEntryContentProvider = (
-  registryEntry: any
-): RegistryContentProvider =>
+export const getRegistryEntryContentProvider = (registryEntry: any): RegistryContentProvider =>
   match(registryEntry)
     .when(
       (it) => it.url.startsWith('https://github.com/'),
