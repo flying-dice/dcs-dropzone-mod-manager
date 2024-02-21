@@ -11,7 +11,7 @@ export const SettingsPage: React.FC = observer(() => {
   const settings = useSettings()
 
   const handleInstallFolderChange = async (): Promise<void> => {
-    const suggested = await client.installation.getDefaultWriteDir.query()
+    const suggested = await client.settings.getDefaultWriteDir.query()
     openConfirmModal({
       title: 'Installation folder',
       children: (
@@ -34,7 +34,7 @@ export const SettingsPage: React.FC = observer(() => {
         closeAllModals()
       },
       onCancel: () => {
-        client.installation.getWriteDir.query().then((folder) => {
+        client.settings.getWriteDir.query().then((folder) => {
           settings.setWriteDir(folder)
         })
       }
@@ -42,7 +42,7 @@ export const SettingsPage: React.FC = observer(() => {
   }
 
   const handleSaveGameFolderChange = async (): Promise<void> => {
-    const suggested = await client.installation.getDefaultSaveGameDir.query()
+    const suggested = await client.settings.getDefaultSaveGameDir.query()
     openConfirmModal({
       title: 'DCS Save Game folder',
       children: (
@@ -65,7 +65,7 @@ export const SettingsPage: React.FC = observer(() => {
         closeAllModals()
       },
       onCancel: () => {
-        client.installation.getWriteDir.query().then((folder) => {
+        client.settings.getWriteDir.query().then((folder) => {
           settings.setSaveGameDir(folder)
         })
       }
