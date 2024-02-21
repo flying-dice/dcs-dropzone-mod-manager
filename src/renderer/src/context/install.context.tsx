@@ -57,33 +57,38 @@ export const InstallProvider: FC<{ children: ReactNode }> = ({ children }) => {
       modId,
       installMapArr,
       writeDirPath: settings.writeDir,
-      saveDirPath: settings.saveGameDir
+      saveDirPath: settings.saveGameDir,
+      registryBaseUrl: settings.registryUrl
     })
   const enableMod = async (modId: string, installMapArr: EntryInstallMap[]) =>
     await client.installation.enableMod.query({
       modId,
       installMapArr,
       writeDirPath: settings.writeDir,
-      saveDirPath: settings.saveGameDir
+      saveDirPath: settings.saveGameDir,
+      registryBaseUrl: settings.registryUrl
     })
   const disableMod = async (modId: string, installMapArr: EntryInstallMap[]) =>
     await client.installation.disableMod.query({
       modId,
       installMapArr,
       writeDirPath: settings.writeDir,
-      saveDirPath: settings.saveGameDir
+      saveDirPath: settings.saveGameDir,
+      registryBaseUrl: settings.registryUrl
     })
   const getInstallState = async (modId: string, installMapArr: EntryInstallMap[]) =>
     await client.installation.getInstallState.query({
       modId,
       installMapArr,
       writeDirPath: settings.writeDir,
-      saveDirPath: settings.saveGameDir
+      saveDirPath: settings.saveGameDir,
+      registryBaseUrl: settings.registryUrl
     })
   const getAllInstalled = async () =>
     await client.installation.getAllInstalled.query({
       writeDirPath: settings.writeDir,
-      saveDirPath: settings.saveGameDir
+      saveDirPath: settings.saveGameDir,
+      registryBaseUrl: settings.registryUrl
     })
   const clearProgress = async () => await client.installation.clearProgress.query()
 
