@@ -66,20 +66,20 @@ export const HomePage: React.FC<HomePageProps> = ({}) => {
   return (
     <Stack>
       <Group>
-      <Title order={3}>Mods</Title>
-      {anyUpdates && (
-        <Tooltip label="Update All Mods">
-          <ActionIcon
-            radius={0}
-            size={'sm'}
-            color="orange"
-            variant={'subtle'}
-            onClick={() => updateAllMods()}
-          >
-            <VscCloudDownload />
-          </ActionIcon>
-        </Tooltip>
-      )}
+        <Title order={3}>Mods</Title>
+        {anyUpdates && (
+          <Tooltip label="Update All Mods">
+            <ActionIcon
+              radius={0}
+              size={'sm'}
+              color="orange"
+              variant={'subtle'}
+              onClick={() => updateAllMods()}
+            >
+              <VscCloudDownload />
+            </ActionIcon>
+          </Tooltip>
+        )}
       </Group>
       <Stack gap="xs">
         {modCount === 0 && <Title order={4}>No mods installed</Title>}

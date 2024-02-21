@@ -32,7 +32,7 @@ const getInstallState = async (
   installMapArr: EntryInstallMap[],
   writeDirPath: string,
   saveDirPath: string,
-  registryBaseUrl: string,
+  registryBaseUrl: string
 ): Promise<EntryInstallState> => {
   const installStates = installMapArr.map((x) => ({
     name: getInstalledFilePath(modId, writeDirPath, x),
@@ -198,9 +198,15 @@ export const installationService = {
 
 export const installationRouter = trpc.router({
   getAllInstalled: trpc.procedure
-    .input(z.object({ writeDirPath: z.string(), saveDirPath: z.string(), registryBaseUrl: z.string()}))
+    .input(
+      z.object({ writeDirPath: z.string(), saveDirPath: z.string(), registryBaseUrl: z.string() })
+    )
     .query(async ({ input }) =>
-      installationService.getAllInstalled(input.writeDirPath, input.saveDirPath, input.registryBaseUrl)
+      installationService.getAllInstalled(
+        input.writeDirPath,
+        input.saveDirPath,
+        input.registryBaseUrl
+      )
     ),
   getInstallState: trpc.procedure
     .input(baseEntrySchema)

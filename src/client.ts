@@ -57,7 +57,7 @@ export interface EntryInstallState {
   installedVersion: string
   incomplete: boolean
   latestRelease: EntryLatestRelease
-  entry: EntryIndex,
+  entry: EntryIndex
   missingFiles: string[]
   enabled: boolean
 }
