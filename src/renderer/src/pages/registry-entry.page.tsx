@@ -90,6 +90,13 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, lat
     setInstallState(installStateResponse)
   }, [latestRelease, setInstallState])
 
+  const updateMod = useCallback(async () => {
+    if (!latestRelease || !latestRelease) return
+    const installStateResponse = await installContext.uninstallMod(entry.id, latestRelease.assets)
+    setInstallState(installStateResponse)
+    installContext.installMod(entry, latestRelease)
+  }, [latestRelease, setInstallState])
+
   const toggleMod = useCallback(async () => {
     if (!latestRelease || !installState) return
     const installStateResponse = installState?.enabled
@@ -205,7 +212,7 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, lat
                   ) : (
                     <>
                       {installState.installedVersion != latestRelease.tag && (
-                        <Button size={'sm'} variant={'default'} disabled>
+                        <Button size={'sm'} variant={'default'} onClick={updateMod}>
                           Update
                         </Button>
                       )}
