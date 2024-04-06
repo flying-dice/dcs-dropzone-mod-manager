@@ -25,7 +25,7 @@ export type GetIntegrationTokenParams = {
 }
 
 export type EntryInstallMap = {
-  source: string,
+  source: string
   target: string
 }
 
@@ -45,18 +45,28 @@ export interface EntryLatestRelease {
   assets: EntryInstallMap[]
 }
 
-export const EntryInstallMapSchema =  z.array(z.object({
-  source: z.string(),
-  target: z.string()
-}))
-
+export const EntryInstallMapSchema = z.array(
+  z.object({
+    source: z.string(),
+    target: z.string()
+  })
+)
 
 export interface EntryInstallState {
-  installed: boolean,
-  installedVersion: string,
-  incomplete: boolean,
-  missingFiles: string[],
+  installed: boolean
+  installedVersion: string
+  incomplete: boolean
+  latestRelease: EntryLatestRelease
+  entry: EntryIndex
+  missingFiles: string[]
   enabled: boolean
+}
+
+export interface EachEntryInstallState {
+  id: string
+  installMapArr: EntryInstallMap[]
+  installState: EntryInstallState
+  version: string
 }
 
 /**
@@ -154,8 +164,6 @@ export type RegistryIndexItem = {
   tags: string[]
 }
 
-
-
 /**
  * @summary Get Registry Index
  */
@@ -246,9 +254,7 @@ export const getRegistryEntryLatestRelease = (
   return axios.default.get(`/${id}/latest.json`, options)
 }
 
-
 export const getGetRegistryEntryLatestReleaseKey = (id: string) => [`/${id}/latest.json`] as const
-
 
 export type GetRegistryEntryLatestReleaseQueryResult = NonNullable<
   Awaited<ReturnType<typeof getRegistryEntryLatestRelease>>

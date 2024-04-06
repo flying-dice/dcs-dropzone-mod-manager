@@ -58,14 +58,20 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, lat
   const navigate = useNavigate()
   const installContext = useInstallContext()
   const [installState, setInstallState] = useState<EntryInstallState | null>(null)
-  const isInstalling = latestRelease &&
+  const isInstalling =
+    latestRelease &&
     installContext.installStates &&
-    Object.keys(installContext.installStates)
-      .some(key => key.startsWith(entry.id) && installContext.installStates && installContext.installStates[key] && !installContext.installStates[key].endsWith("Complete"))
+    Object.keys(installContext.installStates).some(
+      (key) =>
+        key.startsWith(entry.id) &&
+        installContext.installStates &&
+        installContext.installStates[key] &&
+        !installContext.installStates[key].endsWith('Complete')
+    )
 
   const getInstallState = async () => {
-    if (!latestRelease) return;
-    const response = await installContext.getInstallState(entry.id, latestRelease.assets);
+    if (!latestRelease) return
+    const response = await installContext.getInstallState(entry.id, latestRelease.assets)
     setInstallState(response)
   }
 
@@ -73,8 +79,6 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, lat
     getInstallState()
   }, [setInstallState, latestRelease])
 
-
-  // TODO move all this to Context (figure out how to stop breaking promise connections)
   const installMod = useCallback(async () => {
     if (!latestRelease || !latestRelease) return
     installContext.installMod(entry, latestRelease)
@@ -86,15 +90,20 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, lat
     setInstallState(installStateResponse)
   }, [latestRelease, setInstallState])
 
+  const updateMod = useCallback(async () => {
+    if (!latestRelease || !latestRelease) return
+    const installStateResponse = await installContext.uninstallMod(entry.id, latestRelease.assets)
+    setInstallState(installStateResponse)
+    installContext.installMod(entry, latestRelease)
+  }, [latestRelease, setInstallState])
 
   const toggleMod = useCallback(async () => {
     if (!latestRelease || !installState) return
-    const installStateResponse = installState?.enabled ? await installContext.disableMod(entry.id, latestRelease.assets) : await installContext.enableMod(entry.id, latestRelease.assets)
+    const installStateResponse = installState?.enabled
+      ? await installContext.disableMod(entry.id, latestRelease.assets)
+      : await installContext.enableMod(entry.id, latestRelease.assets)
     setInstallState(installStateResponse)
   }, [latestRelease, installState, setInstallState])
-
-
-
 
   return (
     <Stack>
@@ -192,27 +201,30 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, lat
               {latestRelease && installState && (
                 <Group grow>
                   {!installState.installed ? (
-                    <Button size={'sm'} variant={'default'} onClick={installMod} disabled={isInstalling || false}>
-                      {isInstalling ? "Installing" : "Install"}
+                    <Button
+                      size={'sm'}
+                      variant={'default'}
+                      onClick={installMod}
+                      disabled={isInstalling || false}
+                    >
+                      {isInstalling ? 'Installing' : 'Install'}
                     </Button>
                   ) : (
                     <>
                       {installState.installedVersion != latestRelease.tag && (
-                        <Button size={'sm'} variant={'default'} disabled >
+                        <Button size={'sm'} variant={'default'} onClick={updateMod}>
                           Update
                         </Button>
                       )}
                       <Button size={'sm'} variant={'default'} onClick={toggleMod}>
-                        {installState.enabled ? "Disable" : "Enable"}
+                        {installState.enabled ? 'Disable' : 'Enable'}
                       </Button>
                       <Button size={'sm'} variant={'default'} onClick={unInstallMod}>
                         Uninstall
                       </Button>
                     </>
                   )}
-
                 </Group>
-
               )}
             </Stack>
           </Stack>
