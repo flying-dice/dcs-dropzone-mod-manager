@@ -9,6 +9,7 @@ module.exports = {
   rules: {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/ban-types': 'off',
-    'no-empty-pattern': 'off'
+    'no-empty-pattern': 'off',
+    '@typescript-eslint/no-explicit-any': 'off'
   }
 }
