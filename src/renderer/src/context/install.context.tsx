@@ -10,6 +10,7 @@ import {
 } from 'src/client'
 import useSwr from 'swr'
 import { useSettings } from './settings.context'
+import { showErrorNotification, showSuccessNotification } from '../utils/notifications'
 
 export interface InstallContextValue {
   installStates?: Record<string, string>
@@ -45,37 +46,49 @@ export const InstallProvider: FC<{ children: ReactNode }> = ({ children }) => {
       })
     }
 
-    client.installation.installMod.query({
-      modId: entry.id,
-      installMapArr: installMapArrInferred,
-      writeDirPath: settings.writeDir,
-      version: latestRelease.version
-    })
+    client.installation.installMod
+      .query({
+        modId: entry.id,
+        installMapArr: installMapArrInferred,
+        writeDirPath: settings.writeDir,
+        version: latestRelease.version
+      })
+      .then(() => showSuccessNotification('Mod installing'))
+      .catch(showErrorNotification)
   }
   const uninstallMod = async (modId: string, installMapArr: EntryInstallMap[]) =>
-    await client.installation.uninstallMod.query({
-      modId,
-      installMapArr,
-      writeDirPath: settings.writeDir,
-      saveDirPath: settings.saveGameDir,
-      registryBaseUrl: settings.registryUrl
-    })
+    await client.installation.uninstallMod
+      .query({
+        modId,
+        installMapArr,
+        writeDirPath: settings.writeDir,
+        saveDirPath: settings.saveGameDir,
+        registryBaseUrl: settings.registryUrl
+      })
+      .then(() => showSuccessNotification('Mod uninstalled'))
+      .catch(showErrorNotification)
   const enableMod = async (modId: string, installMapArr: EntryInstallMap[]) =>
-    await client.installation.enableMod.query({
-      modId,
-      installMapArr,
-      writeDirPath: settings.writeDir,
-      saveDirPath: settings.saveGameDir,
-      registryBaseUrl: settings.registryUrl
-    })
+    await client.installation.enableMod
+      .query({
+        modId,
+        installMapArr,
+        writeDirPath: settings.writeDir,
+        saveDirPath: settings.saveGameDir,
+        registryBaseUrl: settings.registryUrl
+      })
+      .then(() => showSuccessNotification('Mod enabled'))
+      .catch(showErrorNotification)
   const disableMod = async (modId: string, installMapArr: EntryInstallMap[]) =>
-    await client.installation.disableMod.query({
-      modId,
-      installMapArr,
-      writeDirPath: settings.writeDir,
-      saveDirPath: settings.saveGameDir,
-      registryBaseUrl: settings.registryUrl
-    })
+    await client.installation.disableMod
+      .query({
+        modId,
+        installMapArr,
+        writeDirPath: settings.writeDir,
+        saveDirPath: settings.saveGameDir,
+        registryBaseUrl: settings.registryUrl
+      })
+      .then(() => showSuccessNotification('Mod disabled'))
+      .catch(showErrorNotification)
   const getInstallState = async (modId: string, installMapArr: EntryInstallMap[]) =>
     await client.installation.getInstallState.query({
       modId,

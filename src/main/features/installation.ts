@@ -12,7 +12,8 @@ import fs from 'fs'
 import fsp from 'fs/promises'
 import workerpool from 'workerpool'
 import { getInstalledFilePath, getSymlinkFilePath } from '../utils'
-import { join } from 'path'
+import { join, resolve } from 'path'
+import { ensureDir } from 'fs-extra'
 
 export type installWorkerMessage = {
   status: string
@@ -74,7 +75,13 @@ const enableMod = async (
     installMapArr.map(async (x) => {
       const installedFilePath = getInstalledFilePath(modId, writeDirPath, x)
       const symlinkFilePath = getSymlinkFilePath(saveDirPath, x)
+      const symlinkParentDir = resolve(symlinkFilePath, '..')
+
       const fileStats = await fsp.stat(installedFilePath)
+      console.debug('Ensuring Destination directory exists %s', symlinkParentDir)
+      await ensureDir(symlinkParentDir)
+
+      console.log('Creating symlink %s -> %s', installedFilePath, symlinkFilePath)
       return fsp.symlink(
         installedFilePath,
         symlinkFilePath,
