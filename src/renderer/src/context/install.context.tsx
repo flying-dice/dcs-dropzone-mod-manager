@@ -14,14 +14,27 @@ import { showErrorNotification, showSuccessNotification } from '../utils/notific
 
 export interface InstallContextValue {
   installStates?: Record<string, string>
-  installMod: (entry: EntryIndex, latestRelease: EntryLatestRelease) => void
-  uninstallMod: (modId: string, installMapArr: EntryInstallMap[]) => Promise<EntryInstallState>
-  enableMod: (modId: string, installMapArr: EntryInstallMap[]) => Promise<EntryInstallState>
-  disableMod: (modId: string, installMapArr: EntryInstallMap[]) => Promise<EntryInstallState>
-  getInstallState: (modId: string, installMapArr: EntryInstallMap[]) => Promise<EntryInstallState>
-  getAllInstalled: () => Promise<Record<string, EachEntryInstallState>>
-  clearProgress: () => void
+  installMod: (entry: EntryIndex, latestRelease: EntryLatestRelease) => Promise<void> | void
+  uninstallMod: (
+    modId: string,
+    installMapArr: EntryInstallMap[]
+  ) => Promise<EntryInstallState | void> | void
+  enableMod: (
+    modId: string,
+    installMapArr: EntryInstallMap[]
+  ) => Promise<EntryInstallState | void> | void
+  disableMod: (
+    modId: string,
+    installMapArr: EntryInstallMap[]
+  ) => Promise<EntryInstallState | void> | void
+  getInstallState: (
+    modId: string,
+    installMapArr: EntryInstallMap[]
+  ) => Promise<EntryInstallState | void> | void
+  getAllInstalled: () => Promise<Record<string, EachEntryInstallState>> | void
+  clearProgress: () => Promise<void> | void
 }
+
 export const InstallContext = createContext<InstallContextValue>({
   installMod: noop,
   uninstallMod: noop,
@@ -31,6 +44,7 @@ export const InstallContext = createContext<InstallContextValue>({
   enableMod: noop,
   disableMod: noop
 })
+
 export const InstallProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const settings = useSettings()
   const swrFn = () => client.installation.getInstallProgress.query()
@@ -38,58 +52,95 @@ export const InstallProvider: FC<{ children: ReactNode }> = ({ children }) => {
     refreshInterval: 1000
   })
 
-  const installMod = async (entry: EntryIndex, latestRelease: EntryLatestRelease) => {
-    const installMapArrInferred = structuredClone(latestRelease.assets)
-    if (entry.integration && entry.integration?.type === 'github') {
-      installMapArrInferred.forEach((installMap: EntryInstallMap) => {
-        installMap.source = `https://github.com/${entry.integration.owner}/${entry.integration.repo}/releases/download/${latestRelease.tag}/${installMap.source}`
-      })
-    }
+  const installMod = async (
+    entry: EntryIndex,
+    latestRelease: EntryLatestRelease
+  ): Promise<void> => {
+    try {
+      const installMapArrInferred = structuredClone(latestRelease.assets)
+      if (entry.integration && entry.integration?.type === 'github') {
+        installMapArrInferred.forEach((installMap: EntryInstallMap) => {
+          installMap.source = `https://github.com/${entry.integration?.owner}/${entry.integration?.repo}/releases/download/${latestRelease.tag}/${installMap.source}`
+        })
+      }
 
-    client.installation.installMod
-      .query({
+      const response = await client.installation.installMod.query({
         modId: entry.id,
         installMapArr: installMapArrInferred,
         writeDirPath: settings.writeDir,
         version: latestRelease.version
       })
-      .then(() => showSuccessNotification('Mod installing'))
-      .catch(showErrorNotification)
+      showSuccessNotification('Mod installing')
+      return response
+    } catch (e) {
+      showErrorNotification(e)
+    }
   }
-  const uninstallMod = async (modId: string, installMapArr: EntryInstallMap[]) =>
-    await client.installation.uninstallMod
-      .query({
+
+  const uninstallMod = async (
+    modId: string,
+    installMapArr: EntryInstallMap[]
+  ): Promise<EntryInstallState | void> => {
+    try {
+      const response = await client.installation.uninstallMod.query({
         modId,
         installMapArr,
         writeDirPath: settings.writeDir,
         saveDirPath: settings.saveGameDir,
         registryBaseUrl: settings.registryUrl
       })
-      .then(() => showSuccessNotification('Mod uninstalled'))
-      .catch(showErrorNotification)
-  const enableMod = async (modId: string, installMapArr: EntryInstallMap[]) =>
-    await client.installation.enableMod
-      .query({
+      showSuccessNotification('Mod uninstalled')
+      return response as EntryInstallState
+    } catch (e) {
+      showErrorNotification(e)
+      return
+    }
+  }
+
+  const enableMod = async (
+    modId: string,
+    installMapArr: EntryInstallMap[]
+  ): Promise<EntryInstallState | void> => {
+    try {
+      const response = await client.installation.enableMod.query({
         modId,
         installMapArr,
         writeDirPath: settings.writeDir,
         saveDirPath: settings.saveGameDir,
         registryBaseUrl: settings.registryUrl
       })
-      .then(() => showSuccessNotification('Mod enabled'))
-      .catch(showErrorNotification)
-  const disableMod = async (modId: string, installMapArr: EntryInstallMap[]) =>
-    await client.installation.disableMod
-      .query({
+      showSuccessNotification('Mod enabled')
+      return response as EntryInstallState
+    } catch (e) {
+      showErrorNotification(e)
+      return
+    }
+  }
+
+  const disableMod = async (
+    modId: string,
+    installMapArr: EntryInstallMap[]
+  ): Promise<EntryInstallState | void> => {
+    try {
+      const response = await client.installation.disableMod.query({
         modId,
         installMapArr,
         writeDirPath: settings.writeDir,
         saveDirPath: settings.saveGameDir,
         registryBaseUrl: settings.registryUrl
       })
-      .then(() => showSuccessNotification('Mod disabled'))
-      .catch(showErrorNotification)
-  const getInstallState = async (modId: string, installMapArr: EntryInstallMap[]) =>
+      showSuccessNotification('Mod disabled')
+      return response
+    } catch (e) {
+      showErrorNotification(e)
+      return
+    }
+  }
+
+  const getInstallState = async (
+    modId: string,
+    installMapArr: EntryInstallMap[]
+  ): Promise<EntryInstallState | void> =>
     await client.installation.getInstallState.query({
       modId,
       installMapArr,
@@ -97,12 +148,14 @@ export const InstallProvider: FC<{ children: ReactNode }> = ({ children }) => {
       saveDirPath: settings.saveGameDir,
       registryBaseUrl: settings.registryUrl
     })
+
   const getAllInstalled = async () =>
     await client.installation.getAllInstalled.query({
       writeDirPath: settings.writeDir,
       saveDirPath: settings.saveGameDir,
       registryBaseUrl: settings.registryUrl
     })
+
   const clearProgress = async () => await client.installation.clearProgress.query()
 
   return (

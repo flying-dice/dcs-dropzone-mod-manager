@@ -15,7 +15,10 @@ export const LibraryPage: React.FC = () => {
   const installContext = useInstallContext()
 
   const getInstalledMap = async () => {
-    const response = await installContext.getAllInstalled()
+    const response = (await installContext.getAllInstalled()) as Record<
+      string,
+      EachEntryInstallState
+    >
     setInstalledMap(response)
   }
 

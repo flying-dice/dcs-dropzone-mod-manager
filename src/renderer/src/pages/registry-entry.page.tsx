@@ -71,7 +71,10 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, lat
 
   const getInstallState = async () => {
     if (!latestRelease) return
-    const response = await installContext.getInstallState(entry.id, latestRelease.assets)
+    const response = (await installContext.getInstallState(
+      entry.id,
+      latestRelease.assets
+    )) as EntryInstallState
     setInstallState(response)
   }
 
@@ -86,22 +89,30 @@ export const RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, lat
 
   const unInstallMod = useCallback(async () => {
     if (!latestRelease) return
-    const installStateResponse = await installContext.uninstallMod(entry.id, latestRelease.assets)
+    const installStateResponse = (await installContext.uninstallMod(
+      entry.id,
+      latestRelease.assets
+    )) as EntryInstallState
     setInstallState(installStateResponse)
   }, [latestRelease, setInstallState])
 
   const updateMod = useCallback(async () => {
     if (!latestRelease || !latestRelease) return
-    const installStateResponse = await installContext.uninstallMod(entry.id, latestRelease.assets)
+    const installStateResponse = (await installContext.uninstallMod(
+      entry.id,
+      latestRelease.assets
+    )) as EntryInstallState
     setInstallState(installStateResponse)
     installContext.installMod(entry, latestRelease)
   }, [latestRelease, setInstallState])
 
   const toggleMod = useCallback(async () => {
     if (!latestRelease || !installState) return
-    const installStateResponse = installState?.enabled
-      ? await installContext.disableMod(entry.id, latestRelease.assets)
-      : await installContext.enableMod(entry.id, latestRelease.assets)
+    const installStateResponse = (
+      installState?.enabled
+        ? await installContext.disableMod(entry.id, latestRelease.assets)
+        : await installContext.enableMod(entry.id, latestRelease.assets)
+    ) as EntryInstallState
     setInstallState(installStateResponse)
   }, [latestRelease, installState, setInstallState])
 

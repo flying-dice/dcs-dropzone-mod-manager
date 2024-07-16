@@ -12,7 +12,10 @@ export const HomePage: React.FC<HomePageProps> = ({}) => {
   const installContext = useInstallContext()
 
   const getInstalledMap = async () => {
-    const response = await installContext.getAllInstalled()
+    const response = (await installContext.getAllInstalled()) as Record<
+      string,
+      EachEntryInstallState
+    >
     setInstalledMap(response)
   }
 
