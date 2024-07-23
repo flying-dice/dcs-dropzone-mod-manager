@@ -21,6 +21,7 @@ import Aigle from 'aigle'
 import { flatten } from 'lodash'
 import { TaskState } from '../../types'
 import { WriteDirectoryService } from '../services/write-directory.service'
+import { ToggleManager } from './toggle.manager'
 
 @Injectable()
 export class SubscriptionManager {
@@ -46,6 +47,9 @@ export class SubscriptionManager {
 
   @Inject()
   private readonly fsService: FsService
+
+  @Inject()
+  private readonly toggleManager: ToggleManager
 
   async getAllSubscriptions(): Promise<SubscriptionEntity[]> {
     return this.subscriptionRepository.find()
@@ -188,6 +192,7 @@ export class SubscriptionManager {
 
   async unsubscribe(modId: string): Promise<void> {
     const subscription = await this.subscriptionRepository.findOneBy({ modId })
+    await this.toggleManager.disableMod(modId)
     if (subscription) {
       await rmdir(
         await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription.id),

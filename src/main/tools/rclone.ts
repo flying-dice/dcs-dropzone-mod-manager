@@ -1,4 +1,4 @@
-import { _7zip, get7zip } from './7zip'
+import { get7zip } from './7zip'
 import { spawn } from 'child_process'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { ensureDir, readJsonSync, rmdir, writeJsonSync } from 'fs-extra'
@@ -7,8 +7,8 @@ import { join } from 'path'
 import { app } from 'electron'
 import { config } from '../../config'
 import { glob } from 'glob'
-import * as fs from 'node:fs'
 import { Logger } from '@nestjs/common'
+import { existsSync } from 'node:fs'
 
 const logger = new Logger('rclone')
 const rootDir = join(
@@ -98,7 +98,7 @@ export async function getrclone(): Promise<Rclone> {
     logger.log(`Checking for existing 7zip manifest at ${manifestPath}`)
     const { exePath, downloadUrl } = readJsonSync(manifestPath)
     logger.log(`Found existing rclone manifest, exePath: ${exePath}, downloadUrl: ${downloadUrl}`)
-    if (fs.existsSync(exePath) && RCLONE_DOWNLOAD === downloadUrl) {
+    if (existsSync(exePath) && RCLONE_DOWNLOAD === downloadUrl) {
       _rcloneInstance = new Rclone(exePath)
       logger.log(`Using existing Installation, new rclone instance created ${exePath}`)
       return _rcloneInstance
@@ -129,7 +129,7 @@ export async function getrclone(): Promise<Rclone> {
 
   const [rcloneExe] = await glob('**/rclone.exe', { cwd: rootDir, absolute: true })
 
-  if (!rcloneExe || !fs.existsSync(rcloneExe)) {
+  if (!rcloneExe || !existsSync(rcloneExe)) {
     throw new Error('Failed to extract rclone, file path not found or file does not exist')
   }
 

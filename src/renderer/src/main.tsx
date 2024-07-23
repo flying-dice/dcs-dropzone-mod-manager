@@ -24,7 +24,7 @@ const theme = createTheme({
   }
 })
 
-client.updater.checkForUpdates.query()
+client.checkForUpdates.query()
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <MantineProvider forceColorScheme={'dark'} theme={theme}>

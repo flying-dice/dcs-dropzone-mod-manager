@@ -6,16 +6,16 @@
  *
  * The wrapper class has been kept separate with this in mind, so that it can be easily replaced with a class that uses the user provided executable
  */
-import { ensureDir, readJsonSync, rmdir, writeJsonSync } from 'fs-extra'
+import { ensureDir, readJsonSync, rm, writeJsonSync } from 'fs-extra'
 import Downloader from 'nodejs-file-downloader'
 import { spawn } from 'child_process'
 import { join } from 'path'
 import { app } from 'electron'
 import { config } from '../../config'
 import { glob } from 'glob'
-import fs from 'node:fs'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { Logger } from '@nestjs/common'
+import { existsSync } from 'node:fs'
 
 const logger = new Logger('_7zip')
 
@@ -109,7 +109,7 @@ async function get7zipr(): Promise<_7zip> {
 
   const [_7zrExe] = await glob('**/7zr.exe', { cwd: rootDir, absolute: true })
 
-  if (!_7zrExe || !fs.existsSync(_7zrExe)) {
+  if (!_7zrExe || !existsSync(_7zrExe)) {
     throw new Error('Failed to extract 7za, file path not found or file does not exist')
   }
 
@@ -136,7 +136,7 @@ export async function get7zip(): Promise<_7zip> {
     logger.log(`Checking for existing 7zip manifest at ${manifestPath}`)
     const { exePath, downloadUrl } = readJsonSync(manifestPath)
     logger.log(`Found existing 7zip manifest, exePath: ${exePath}, downloadUrl: ${downloadUrl}`)
-    if (fs.existsSync(exePath) && _7ZEXTRA_DOWNLOAD === downloadUrl) {
+    if (existsSync(exePath) && _7ZEXTRA_DOWNLOAD === downloadUrl) {
       _7zipInstance = new _7zip(exePath)
       logger.log(`Using existing Installation, new 7zip instance created ${exePath}`)
       return _7zipInstance
@@ -146,7 +146,7 @@ export async function get7zip(): Promise<_7zip> {
   }
 
   logger.log(`Removing root directory: ${rootDir}`)
-  await rmdir(rootDir, { recursive: true }).catch((err) => logger.error(err))
+  await rm(rootDir, { recursive: true }).catch((err) => logger.error(err))
   await ensureDir(rootDir)
 
   logger.log(`Downloading 7-zip Extra from ${_7ZEXTRA_DOWNLOAD}`)
@@ -167,7 +167,7 @@ export async function get7zip(): Promise<_7zip> {
 
   const [_7zaExe] = await glob('**/7za.exe', { cwd: rootDir, absolute: true })
 
-  if (!_7zaExe || !fs.existsSync(_7zaExe)) {
+  if (!_7zaExe || !existsSync(_7zaExe)) {
     throw new Error('Failed to extract 7za, file path not found or file does not exist')
   }
 

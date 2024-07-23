@@ -1,5 +1,5 @@
-import React, { ReactNode } from 'react'
-import { Alert, Button, Combobox, Group, Stack, Text, TextInput, Title } from '@mantine/core'
+import React from 'react'
+import { Alert, Button, Group, Stack, Text, Title } from '@mantine/core'
 import { client } from '../client'
 import { config } from '../../../config'
 import { useConfig } from '../hooks/useConfig'
@@ -7,39 +7,13 @@ import useSWR from 'swr'
 import { isEmpty } from 'lodash'
 import { closeAllModals, openModal } from '@mantine/modals'
 import { RegistryForm } from '../forms/registry.form'
-import ClearButton = Combobox.ClearButton
+import { SettingEntry } from '../container/setting-entry'
 
-const SettingEntry: React.FC<{
-  name: string
-  label: ReactNode
-  description: ReactNode
-  defaultValue?: string
-  onClick: () => void
-  disabled?: boolean
-}> = ({ name, label, description, defaultValue, onClick, disabled }) => {
-  const config = useConfig(name)
+const Configurables: React.FC = () => {
+  const defaultRegistryUrl = config.defaultRegistryUrl
+  const defaultWriteDir = useSWR('defaultWriteDir', () => client.getDefaultWriteDir.query())
+  const defaultGameDir = useSWR('defaultGameDir', () => client.getDefaultGameDir.query())
 
-  return (
-    <TextInput
-      key={config.value.data?.lastModified}
-      label={label}
-      description={description}
-      readOnly
-      placeholder={defaultValue}
-      value={config.value.data?.value}
-      onClick={onClick}
-      styles={{ input: { cursor: 'pointer' } }}
-      rightSection={<ClearButton onClear={() => config.clear()} />}
-      disabled={disabled}
-    />
-  )
-}
-
-const Configurables: React.FC<{
-  defaultWriteDir: string
-  defaultGameDir: string
-  defaultRegistryUrl: string
-}> = ({ defaultRegistryUrl, defaultGameDir, defaultWriteDir }) => {
   const writeDir = useConfig('writeDir')
   const gameDir = useConfig('gameDir')
   const registryUrl = useConfig('registryUrl')
@@ -52,25 +26,26 @@ const Configurables: React.FC<{
         name="writeDir"
         label="Mods folder"
         description="This is where we will store the mod files"
-        defaultValue={defaultWriteDir}
+        defaultValue={defaultWriteDir.data}
         onClick={() =>
-          client.askFolder.query({ default: defaultWriteDir }).then((folder) => {
+          client.askFolder.query({ default: defaultWriteDir.data || '' }).then((folder) => {
             if (!folder) return
             const [f] = folder.filePaths
             if (!f) return
             writeDir.set(f)
           })
         }
-        disabled={isEmpty(defaultWriteDir)}
       />
+
+      {!defaultWriteDir.data && <Alert color={'red'}>Failed to get default write directory</Alert>}
 
       <SettingEntry
         name="gameDir"
         label="DCS Save Game folder"
         description="Where the users Mods and Scripts are installed, normally this is '%USERPROFILE%\Saved Games\DCS'"
-        defaultValue={defaultGameDir}
+        defaultValue={defaultGameDir.data}
         onClick={() =>
-          client.askFolder.query({ default: defaultGameDir }).then((folder) => {
+          client.askFolder.query({ default: defaultGameDir.data || '' }).then((folder) => {
             if (!folder) return
             const [f] = folder.filePaths
             if (!f) return
@@ -78,6 +53,14 @@ const Configurables: React.FC<{
           })
         }
       />
+
+      {!defaultGameDir.data && isEmpty(gameDir.value.data) && (
+        <Alert color={'red'}>
+          {/* eslint-disable-next-line react/no-unescaped-entities */}
+          Failed to find the DCS "Saved Games" directory and no setting is present, this will need
+          populating before any mods can be enabled.
+        </Alert>
+      )}
 
       <SettingEntry
         name="registryUrl"
@@ -109,10 +92,6 @@ const Configurables: React.FC<{
 }
 
 export const SettingsPage: React.FC = () => {
-  const defaultRegistryUrl = config.defaultRegistryUrl
-  const defaultWriteDir = useSWR('defaultWriteDir', () => client.getDefaultWriteDir.query())
-  const defaultGameDir = useSWR('defaultGameDir', () => client.getDefaultGameDir.query())
-
   const update = useSWR('update', () => client.checkForUpdates.query())
 
   return (
@@ -120,7 +99,7 @@ export const SettingsPage: React.FC = () => {
       <Title order={3}>Settings</Title>
       <Group>
         <Button loading={update.isLoading} onClick={() => update.mutate()}>
-          Update Application
+          Update DCS Dropzone
         </Button>
       </Group>
 
@@ -129,13 +108,7 @@ export const SettingsPage: React.FC = () => {
       )}
       {update.error && <Alert color={'red'}>{update.error.message}</Alert>}
 
-      {defaultWriteDir.data && defaultGameDir.data && (
-        <Configurables
-          defaultRegistryUrl={defaultRegistryUrl}
-          defaultWriteDir={defaultWriteDir.data}
-          defaultGameDir={defaultGameDir.data}
-        />
-      )}
+      <Configurables />
 
       <Title order={3}>RCLONE</Title>
       <Stack gap={'xs'}>

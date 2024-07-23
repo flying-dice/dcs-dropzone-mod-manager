@@ -4,6 +4,7 @@ import { Route, Routes } from 'react-router-dom'
 import { AppHeader } from './app.header'
 import { AppNavbar } from './app.navbar'
 import { config } from './config'
+import { DcsFoldersModal } from './modal/dcs-folders.modal'
 
 export const App: FC = () => {
   return (
@@ -17,6 +18,7 @@ export const App: FC = () => {
     >
       <AppHeader />
       <AppNavbar />
+      <DcsFoldersModal />
       <AppShell.Main>
         <Routes>
           {config.routes.map((route) => (

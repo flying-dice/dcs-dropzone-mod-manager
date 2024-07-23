@@ -5,8 +5,8 @@ import { config } from '../config'
 export const rcloneTransferringStatsSchema = z.object({
   bytes: z.number().optional(),
   eta: z.number().nullable().optional(),
-  group: z.string(),
-  name: z.string(),
+  group: z.string().optional(),
+  name: z.string().optional(),
   percentage: z.number().optional(),
   size: z.number().optional(),
   speed: z.number().optional(),

@@ -4,6 +4,7 @@ import { TaskProcessor } from './task.processor'
 import { get7zip } from '../tools/7zip'
 import { extname, join } from 'path'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
+import { rm } from 'fs-extra'
 
 export class ExtractTaskProcessor implements TaskProcessor<ExtractTaskPayload> {
   protected readonly logger = new Logger(ExtractTaskProcessor.name)
@@ -34,6 +35,7 @@ export class ExtractTaskProcessor implements TaskProcessor<ExtractTaskPayload> {
 
   async postProcess(task: AssetTaskEntity<ExtractTaskPayload>) {
     this.logger.debug(`[${task.id}] - Post processing extract task`)
+    await rm(join(task.payload.folder, task.payload.file), { force: true })
     if (this.extractProcess) {
       this.extractProcess.kill()
       this.extractProcess.removeAllListeners()
@@ -57,6 +59,7 @@ export class ExtractTaskProcessor implements TaskProcessor<ExtractTaskPayload> {
       if (code === 0) {
         this.logger.debug(`[${task.id}] - Extract process completed`)
         this.terminalStatus = AssetTaskStatus.COMPLETED
+        this.progress = 100
       } else {
         this.logger.error(`[${task.id}] - Extract process failed with code ${code}`)
         this.terminalStatus = AssetTaskStatus.FAILED
@@ -67,7 +70,7 @@ export class ExtractTaskProcessor implements TaskProcessor<ExtractTaskPayload> {
   async updateProgress() {
     if (!this.extractProcess) return
     try {
-      this.progress = Number(this.lastStdout.match(/(\d+)%/)?.[1] || 0)
+      this.progress = Number(this.lastStdout.match(/(\d+)%/)?.[1] || this.progress)
     } catch (error) {
       this.logger.error('Error updating progress', error)
     }

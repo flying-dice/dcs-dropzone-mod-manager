@@ -92,7 +92,10 @@ const SubscriptionRow: React.FC<{ modId: string; modName: string; created: numbe
             </ActionIcon>
           </Menu.Target>
           <Menu.Dropdown>
-            <Menu.Item onClick={() => handleToggleMod(modId)}>
+            <Menu.Item
+              onClick={() => handleToggleMod(modId)}
+              disabled={release.data?.status !== 'Completed'}
+            >
               {release.data?.enabled ? 'Disable' : 'Enable'}
             </Menu.Item>
             <Menu.Item onClick={() => client.openInExplorer.mutate({ modId: modId })}>

@@ -26,7 +26,9 @@ export const LibraryPage: React.FC = () => {
         leftSection={<VscSearch />}
         placeholder={'Search Mod Repository'}
         onChange={(it) => setSearch(it.target.value)}
+        pb={'lg'}
       />
+
       <Group>
         {results?.map((it) => (
           <RegistryEntryCard key={it.id} item={it} subscribed={subscribedIds?.includes(it.id)} />
