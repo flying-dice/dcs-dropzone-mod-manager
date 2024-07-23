@@ -109,7 +109,7 @@ const SubscriptionRow: React.FC<{ modId: string; modName: string; created: numbe
 export type SubscriptionsProps = {}
 export const Subscriptions: React.FC<SubscriptionsProps> = ({}) => {
   const subscriptions = useSubscriptions()
-  const { results, search, setSearch } = useFuse(subscriptions.data || [], '')
+  const { results, search, setSearch } = useFuse(subscriptions.data || [], '', ['modId', 'modName'])
 
   return (
     <Stack>
