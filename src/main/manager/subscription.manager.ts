@@ -180,8 +180,8 @@ export class SubscriptionManager {
   async unsubscribe(modId: string): Promise<void> {
     const subscription = await this.subscriptionRepository.findOneBy({ modId })
     if (subscription) {
-      await this.subscriptionRepository.remove(subscription)
       await rmdir(await this.getModWriteDirectory(subscription.id), { recursive: true })
+      await this.subscriptionRepository.remove(subscription)
     }
   }
 
