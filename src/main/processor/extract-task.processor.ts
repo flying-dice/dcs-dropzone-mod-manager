@@ -66,6 +66,10 @@ export class ExtractTaskProcessor implements TaskProcessor<ExtractTaskPayload> {
 
   async updateProgress() {
     if (!this.extractProcess) return
-    this.progress = Number(this.lastStdout.match(/(\d+)%/)?.[1] || 0)
+    try {
+      this.progress = Number(this.lastStdout.match(/(\d+)%/)?.[1] || 0)
+    } catch (error) {
+      this.logger.error('Error updating progress', error)
+    }
   }
 }
