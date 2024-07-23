@@ -15,6 +15,9 @@ export class ReleaseEntity {
   @Column()
   version: string
 
+  @Column({ default: false })
+  enabled: boolean
+
   @Column({
     default: () => Date.now()
   })

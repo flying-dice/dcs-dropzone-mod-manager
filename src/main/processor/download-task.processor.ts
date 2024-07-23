@@ -22,7 +22,8 @@ export class DownloadTaskProcessor implements TaskProcessor<DownloadTaskPayload>
   private readonly rcloneClient = new RcloneClient({ baseURL: config.rcloneBaseUrl })
 
   async process(task: AssetTaskEntity<DownloadTaskPayload>): Promise<void> {
-    this.logger.debug(`[${task.id}] - Processing download task`, task.payload)
+    this.logger.debug(`[${task.id}] - Processing download task`)
+    this.logger.verbose(task.payload)
 
     if (!this.tempPath) {
       await this.createTempFolder(task)
@@ -51,10 +52,10 @@ export class DownloadTaskProcessor implements TaskProcessor<DownloadTaskPayload>
     if (!this.rcloneJobId) return
 
     const status = await this.rcloneClient.jobStatus(this.rcloneJobId)
-    this.logger.debug(`[${task.id}] - Download status: %O`, status)
+    this.logger.verbose(`[${task.id}] - Download status: %O`, status)
 
     const stats = await this.rcloneClient.coreStats()
-    this.logger.debug(`[${task.id}] - Download stats: %O`, stats)
+    this.logger.verbose(`[${task.id}] - Download stats: %O`, stats)
 
     const transfer = stats.transferring?.find((transfer) => transfer.group === status.group)
 

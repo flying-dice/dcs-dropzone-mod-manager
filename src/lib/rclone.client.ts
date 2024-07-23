@@ -3,14 +3,14 @@ import { z } from 'zod'
 import { config } from '../config'
 
 export const rcloneTransferringStatsSchema = z.object({
-  bytes: z.number(),
-  eta: z.number().nullable(),
+  bytes: z.number().optional(),
+  eta: z.number().nullable().optional(),
   group: z.string(),
   name: z.string(),
-  percentage: z.number(),
-  size: z.number(),
-  speed: z.number(),
-  speedAvg: z.number()
+  percentage: z.number().optional(),
+  size: z.number().optional(),
+  speed: z.number().optional(),
+  speedAvg: z.number().optional()
 })
 export type RcloneTransferringStats = z.infer<typeof rcloneTransferringStatsSchema>
 
@@ -21,7 +21,7 @@ export const rcloneStatsSchema = z.object({
   deletes: z.number(),
   elapsedTime: z.number(),
   errors: z.number(),
-  eta: z.number().nullable(),
+  eta: z.number().nullable().optional(),
   fatalError: z.boolean(),
   renames: z.number(),
   retryError: z.boolean(),

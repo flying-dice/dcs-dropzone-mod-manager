@@ -8,6 +8,7 @@ import { SettingsManager } from './manager/settings.manager'
 import { FsService } from './services/fs.service'
 import { getDefaultGameDir } from './functions/getDefaultGameDir'
 import { getDefaultWriteDir } from './functions/getDefaultWriteDir'
+import { ToggleManager } from './manager/toggle.manager'
 
 export async function getAppWithRouter() {
   const app = await bootstrap()
@@ -15,6 +16,11 @@ export async function getAppWithRouter() {
   return {
     app,
     router: trpc.router({
+      // Enable/Disable Toggle
+      toggleMod: trpc.procedure
+        .input(z.object({ modId: z.string() }))
+        .mutation(async ({ input }) => app.get(ToggleManager).toggleMod(input.modId)),
+
       // Subscriptions
       getAllSubscriptions: trpc.procedure.query(async () =>
         app.get(SubscriptionManager).getAllSubscriptions()
@@ -22,7 +28,7 @@ export async function getAppWithRouter() {
       getSubscriptionRelease: trpc.procedure
         .input(z.object({ modId: z.string() }))
         .query(async ({ input }) =>
-          app.get(SubscriptionManager).getSubscriptionRelease(input.modId)
+          app.get(SubscriptionManager).getSubscriptionReleaseState(input.modId)
         ),
       subscribe: trpc.procedure
         .input(z.object({ modId: z.string() }))

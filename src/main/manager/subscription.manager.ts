@@ -6,7 +6,6 @@ import { extname, join } from 'path'
 import { ensureDirSync, rmdir } from 'fs-extra'
 import { SubscriptionEntity } from '../entities/subscription.entity'
 import { FsService } from '../services/fs.service'
-import { SettingsManager } from './settings.manager'
 import { ReleaseEntity } from '../entities/release.entity'
 import { ReleaseAssetEntity } from '../entities/release-asset.entity'
 import {
@@ -21,6 +20,7 @@ import { _7zip } from '../tools/7zip'
 import Aigle from 'aigle'
 import { flatten } from 'lodash'
 import { TaskState } from '../../types'
+import { WriteDirectoryService } from '../services/write-directory.service'
 
 @Injectable()
 export class SubscriptionManager {
@@ -42,7 +42,7 @@ export class SubscriptionManager {
   private readonly registryService: RegistryService
 
   @Inject()
-  private readonly settingsManager: SettingsManager
+  private readonly writeDirectoryService: WriteDirectoryService
 
   @Inject()
   private readonly fsService: FsService
@@ -51,9 +51,15 @@ export class SubscriptionManager {
     return this.subscriptionRepository.find()
   }
 
-  async getSubscriptionRelease(modId: string): Promise<
+  /**
+   * Gets the subscription and release for the mod or throws an error if not found
+   * This is primarily used on the MyContent page to render the current subscriptions and their status
+   * @param modId
+   */
+  async getSubscriptionReleaseState(modId: string): Promise<
     | undefined
     | {
+        enabled: boolean
         version: string
         status: TaskState
         progress: number
@@ -93,6 +99,7 @@ export class SubscriptionManager {
     const progress = taskProgress.reduce((acc, cur) => acc + cur, 0) / taskProgress.length
 
     return {
+      enabled: release.enabled,
       version: release.version,
       status,
       progress,
@@ -122,7 +129,9 @@ export class SubscriptionManager {
     })
 
     this.logger.debug(`Creating write directories`)
-    const modWriteDir = await this.getModWriteDirectory(subscription.id)
+    const modWriteDir = await this.writeDirectoryService.getWriteDirectoryForSubscription(
+      subscription.id
+    )
     const releaseWriteDir = join(modWriteDir, latestReleaseEntity.id.toString())
     ensureDirSync(modWriteDir)
     ensureDirSync(releaseWriteDir)
@@ -180,7 +189,10 @@ export class SubscriptionManager {
   async unsubscribe(modId: string): Promise<void> {
     const subscription = await this.subscriptionRepository.findOneBy({ modId })
     if (subscription) {
-      await rmdir(await this.getModWriteDirectory(subscription.id), { recursive: true })
+      await rmdir(
+        await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription.id),
+        { recursive: true }
+      )
       await this.subscriptionRepository.remove(subscription)
     }
   }
@@ -188,12 +200,9 @@ export class SubscriptionManager {
   async openInExplorer(modId: string): Promise<void> {
     const subscription = await this.subscriptionRepository.findOneBy({ modId })
     if (subscription) {
-      await this.fsService.openFolder(await this.getModWriteDirectory(subscription.id))
+      await this.fsService.openFolder(
+        await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription.id)
+      )
     }
-  }
-
-  protected async getModWriteDirectory(id: number): Promise<string> {
-    const writeDir = await this.settingsManager.getWriteDir()
-    return join(writeDir, id.toString())
   }
 }

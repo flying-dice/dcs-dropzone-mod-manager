@@ -18,6 +18,9 @@ export class ReleaseAssetEntity {
   @Column()
   target: string
 
+  @Column({ type: 'varchar', nullable: true })
+  symlinkPath: string | null
+
   @Column({
     default: () => Date.now()
   })

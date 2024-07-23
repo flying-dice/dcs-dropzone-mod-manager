@@ -15,7 +15,7 @@ import { useFuse } from '../hooks/useFuse'
 import { client } from '../client'
 import { BsThreeDotsVertical } from 'react-icons/bs'
 import { showErrorNotification, showSuccessNotification } from '../utils/notifications'
-import { BiCheckbox } from 'react-icons/bi'
+import { BiCheckbox, BiCheckboxChecked } from 'react-icons/bi'
 import { useSubscriptionRelease } from '../hooks/useSubscriptionRelease'
 
 const SubscriptionRow: React.FC<{ modId: string; modName: string; created: number }> = ({
@@ -36,11 +36,30 @@ const SubscriptionRow: React.FC<{ modId: string; modName: string; created: numbe
     }
   }
 
+  async function handleToggleMod(modId: string) {
+    try {
+      await client.toggleMod.mutate({ modId })
+      await subscriptions.mutate()
+      await release.mutate()
+    } catch (err) {
+      showErrorNotification(err)
+    }
+  }
+
   return (
-    <Table.Tr>
+    <Table.Tr c={release.data?.enabled ? undefined : 'dimmed'}>
       <Table.Td>
-        <ActionIcon disabled={release.data?.status !== 'Completed'} variant={'subtle'}>
-          <BiCheckbox />
+        <ActionIcon
+          size={'md'}
+          disabled={release.data?.status !== 'Completed'}
+          variant={'subtle'}
+          onClick={() => handleToggleMod(modId)}
+        >
+          {release.data?.enabled ? (
+            <BiCheckboxChecked size={'1.25em'} />
+          ) : (
+            <BiCheckbox size={'1.25em'} />
+          )}
         </ActionIcon>
       </Table.Td>
       <Table.Td>
@@ -73,6 +92,9 @@ const SubscriptionRow: React.FC<{ modId: string; modName: string; created: numbe
             </ActionIcon>
           </Menu.Target>
           <Menu.Dropdown>
+            <Menu.Item onClick={() => handleToggleMod(modId)}>
+              {release.data?.enabled ? 'Disable' : 'Enable'}
+            </Menu.Item>
             <Menu.Item onClick={() => client.openInExplorer.mutate({ modId: modId })}>
               Open in Explorer
             </Menu.Item>

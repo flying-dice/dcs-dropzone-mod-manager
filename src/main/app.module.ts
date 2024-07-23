@@ -16,6 +16,8 @@ import { ReleaseEntity } from './entities/release.entity'
 import { ReleaseAssetEntity } from './entities/release-asset.entity'
 import { ScheduleModule } from '@nestjs/schedule'
 import { TaskManager } from './manager/task.manager'
+import { ToggleManager } from './manager/toggle.manager'
+import { WriteDirectoryService } from './services/write-directory.service'
 
 const database = join(app.getPath('appData'), config.appDataName, 'db.sqlite')
 
@@ -44,7 +46,6 @@ const database = join(app.getPath('appData'), config.appDataName, 'db.sqlite')
       AssetTaskEntity
     ])
   ],
-  controllers: [],
   providers: [
     ConfigService,
     FsService,
@@ -52,7 +53,9 @@ const database = join(app.getPath('appData'), config.appDataName, 'db.sqlite')
     SettingsManager,
     RegistryService,
     SubscriptionManager,
-    TaskManager
+    TaskManager,
+    ToggleManager,
+    WriteDirectoryService
   ]
 })
 export class AppModule {}
