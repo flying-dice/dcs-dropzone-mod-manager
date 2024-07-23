@@ -7,7 +7,7 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin(), swcPlugin()]
   },
   preload: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin(), swcPlugin()]
   },
   renderer: {
     resolve: {

@@ -9,6 +9,9 @@ import { FsService } from './services/fs.service'
 import { getDefaultGameDir } from './functions/getDefaultGameDir'
 import { getDefaultWriteDir } from './functions/getDefaultWriteDir'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
+import { SubscriptionEntity } from './entities/subscription.entity'
+import { TaskState } from '../types'
+import { UpdateCheckResult } from 'electron-updater'
 
 export async function getAppWithRouter() {
   const app = await bootstrap()
@@ -19,61 +22,108 @@ export async function getAppWithRouter() {
       // Enable/Disable Toggle
       toggleMod: trpc.procedure
         .input(z.object({ modId: z.string() }))
-        .mutation(async ({ input }) => app.get(LifecycleManager).toggleMod(input.modId)),
+        .mutation(
+          async ({ input }): Promise<void> => app.get(LifecycleManager).toggleMod(input.modId)
+        ),
       getModAssets: trpc.procedure
         .input(z.object({ modId: z.string() }))
-        .query(async ({ input }) => app.get(LifecycleManager).getModAssets(input.modId)),
+        .query(
+          async ({
+            input
+          }): Promise<{ id: number; source: string; symlinkPath: string | null }[]> =>
+            app.get(LifecycleManager).getModAssets(input.modId)
+        ),
       openAssetInExplorer: trpc.procedure
         .input(z.object({ assetId: z.number() }))
-        .mutation(({ input }) => app.get(LifecycleManager).openAssetInExplorer(input.assetId)),
+        .mutation(
+          ({ input }): Promise<void> => app.get(LifecycleManager).openAssetInExplorer(input.assetId)
+        ),
 
       // Subscriptions
-      getAllSubscriptions: trpc.procedure.query(async () =>
-        app.get(SubscriptionManager).getAllSubscriptions()
+      getAllSubscriptions: trpc.procedure.query(
+        async (): Promise<SubscriptionEntity[]> =>
+          app.get(SubscriptionManager).getAllSubscriptions()
       ),
-      getSubscriptionRelease: trpc.procedure
-        .input(z.object({ modId: z.string() }))
-        .query(async ({ input }) =>
-          app.get(SubscriptionManager).getSubscriptionReleaseState(input.modId)
-        ),
+      getSubscriptionRelease: trpc.procedure.input(z.object({ modId: z.string() })).query(
+        async ({
+          input
+        }): Promise<
+          | {
+              enabled: boolean
+              version: string
+              status: TaskState
+              progress: number
+              label?: string | undefined
+            }
+          | undefined
+        > => app.get(SubscriptionManager).getSubscriptionReleaseState(input.modId)
+      ),
       subscribe: trpc.procedure
         .input(z.object({ modId: z.string() }))
-        .mutation(async ({ input }) => app.get(SubscriptionManager).subscribe(input.modId)),
+        .mutation(
+          async ({ input }): Promise<void> => app.get(SubscriptionManager).subscribe(input.modId)
+        ),
       unsubscribe: trpc.procedure
         .input(z.object({ modId: z.string() }))
-        .mutation(async ({ input }) => app.get(SubscriptionManager).unsubscribe(input.modId)),
+        .mutation(
+          async ({ input }): Promise<void> => app.get(SubscriptionManager).unsubscribe(input.modId)
+        ),
       openInExplorer: trpc.procedure
         .input(z.object({ modId: z.string() }))
-        .mutation(async ({ input }) => app.get(SubscriptionManager).openInExplorer(input.modId)),
+        .mutation(
+          async ({ input }): Promise<void> =>
+            app.get(SubscriptionManager).openInExplorer(input.modId)
+        ),
 
       // Settings
-      checkForUpdates: trpc.procedure.query(async () => app.get(UpdateManager).checkForUpdates()),
-      quitAndInstall: trpc.procedure.query(async () => app.get(UpdateManager).quitAndInstall()),
+      checkForUpdates: trpc.procedure.query(
+        async (): Promise<UpdateCheckResult | undefined> => app.get(UpdateManager).checkForUpdates()
+      ),
+      quitAndInstall: trpc.procedure.query(
+        async (): Promise<void> => app.get(UpdateManager).quitAndInstall()
+      ),
 
       askFolder: trpc.procedure
         .input(z.object({ default: z.string() }))
-        .query(async ({ input }) => app.get(FsService).askFolder(input.default)),
+        .query(
+          async ({ input }): Promise<Electron.OpenDialogReturnValue | undefined> =>
+            app.get(FsService).askFolder(input.default)
+        ),
 
       getConfigValue: trpc.procedure
         .input(z.object({ name: z.string() }))
-        .query(async ({ input }) => app.get(ConfigService).getConfigValue(input.name)),
+        .query(
+          async ({ input }): Promise<{ value: string; lastModified: number } | undefined> =>
+            app.get(ConfigService).getConfigValue(input.name)
+        ),
 
       setConfigValue: trpc.procedure
         .input(z.object({ name: z.string(), value: z.string() }))
-        .mutation(async ({ input }) =>
-          app.get(ConfigService).setConfigValue(input.name, input.value)
+        .mutation(
+          async ({ input }): Promise<void> =>
+            app.get(ConfigService).setConfigValue(input.name, input.value)
         ),
 
       clearConfigValue: trpc.procedure
         .input(z.object({ name: z.string() }))
-        .mutation(async ({ input }) => app.get(ConfigService).clearConfigValue(input.name)),
+        .mutation(
+          async ({ input }): Promise<void> => app.get(ConfigService).clearConfigValue(input.name)
+        ),
 
-      getDefaultWriteDir: trpc.procedure.query(async () => getDefaultWriteDir()),
-      getDefaultGameDir: trpc.procedure.query(async () => getDefaultGameDir()),
+      getDefaultWriteDir: trpc.procedure.query(async (): Promise<string> => getDefaultWriteDir()),
+      getDefaultGameDir: trpc.procedure.query(
+        async (): Promise<string | undefined> => getDefaultGameDir()
+      ),
 
-      getWriteDir: trpc.procedure.query(async () => app.get(SettingsManager).getWriteDir()),
-      getGameDir: trpc.procedure.query(async () => app.get(SettingsManager).getGameDir()),
-      getRegistryUrl: trpc.procedure.query(async () => app.get(SettingsManager).getRegistryUrl())
+      getWriteDir: trpc.procedure.query(
+        async (): Promise<string> => app.get(SettingsManager).getWriteDir()
+      ),
+      getGameDir: trpc.procedure.query(
+        async (): Promise<string> => app.get(SettingsManager).getGameDir()
+      ),
+      getRegistryUrl: trpc.procedure.query(
+        async (): Promise<string> => app.get(SettingsManager).getRegistryUrl()
+      )
     })
   }
 }

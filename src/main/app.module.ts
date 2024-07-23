@@ -25,7 +25,7 @@ const database = join(app.getPath('appData'), config.appDataName, 'db.sqlite')
   imports: [
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
-      type: 'sqlite',
+      type: 'better-sqlite3',
       database,
       entities: [
         AssetTaskEntity,

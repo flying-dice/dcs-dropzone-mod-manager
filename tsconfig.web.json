@@ -15,8 +15,6 @@
     "baseUrl": ".",
     "useUnknownInCatchVariables": false,
     "strictPropertyInitialization": false,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "paths": {
       "@renderer/*": ["src/renderer/src/*"]
     }
