@@ -21,7 +21,7 @@ import Aigle from 'aigle'
 import { flatten } from 'lodash'
 import { TaskState } from '../../types'
 import { WriteDirectoryService } from '../services/write-directory.service'
-import { ToggleManager } from './toggle.manager'
+import { LifecycleManager } from './lifecycle-manager.service'
 
 @Injectable()
 export class SubscriptionManager {
@@ -49,7 +49,7 @@ export class SubscriptionManager {
   private readonly fsService: FsService
 
   @Inject()
-  private readonly toggleManager: ToggleManager
+  private readonly toggleManager: LifecycleManager
 
   async getAllSubscriptions(): Promise<SubscriptionEntity[]> {
     return this.subscriptionRepository.find()

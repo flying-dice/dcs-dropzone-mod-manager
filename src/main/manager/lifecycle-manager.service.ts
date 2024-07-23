@@ -10,13 +10,16 @@ import { ReleaseAssetEntity } from '../entities/release-asset.entity'
 import { WriteDirectoryService } from '../services/write-directory.service'
 import { SettingsManager } from './settings.manager'
 import { HashPath } from '../utils/hash-path'
+import { FsService } from '../services/fs.service'
 
 /**
  * Manages the toggling of a mod between enabled and disabled states
+ *
+ * Also exposes methods to query the state of assets for a mod
  */
 @Injectable()
-export class ToggleManager {
-  private readonly logger = new Logger(ToggleManager.name)
+export class LifecycleManager {
+  private readonly logger = new Logger(LifecycleManager.name)
 
   @InjectRepository(SubscriptionEntity)
   private readonly subscriptionRepository: Repository<SubscriptionEntity>
@@ -32,6 +35,9 @@ export class ToggleManager {
 
   @Inject()
   private readonly settingsManager: SettingsManager
+
+  @Inject()
+  private readonly fsService: FsService
 
   /**
    * Toggles the mod between enabled and disabled states
@@ -123,5 +129,23 @@ export class ToggleManager {
     const release = await this.releaseRepository.findOneByOrFail({ subscription })
 
     return { subscription, release }
+  }
+
+  async getModAssets(modId: string) {
+    const { release } = await this.getSubscriptionWithReleaseOrThrow(modId)
+    const releaseAssets = await this.releaseAssetRepository.findBy({ release })
+    return releaseAssets.map((it) => ({
+      id: it.id,
+      source: it.source,
+      symlinkPath: it.symlinkPath
+    }))
+  }
+
+  async openAssetInExplorer(assetId: number) {
+    const asset = await this.releaseAssetRepository.findOneByOrFail({ id: assetId })
+    if (!asset.symlinkPath) throw new Error(`Symlink path not present, is the mod enabled?`)
+    this.logger.debug(`Opening asset in explorer: ${asset.id}`)
+
+    return this.fsService.openFolder(dirname(asset.symlinkPath))
   }
 }

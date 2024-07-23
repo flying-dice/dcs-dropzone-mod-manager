@@ -18,11 +18,12 @@ import { showErrorNotification, showSuccessNotification } from '../utils/notific
 import { BiCheckbox, BiCheckboxChecked } from 'react-icons/bi'
 import { useSubscriptionRelease } from '../hooks/useSubscriptionRelease'
 
-const SubscriptionRow: React.FC<{ modId: string; modName: string; created: number }> = ({
-  modId,
-  modName,
-  created
-}) => {
+const SubscriptionRow: React.FC<{
+  modId: string
+  modName: string
+  created: number
+  onOpenSymlinksModal: (modId: string) => void
+}> = ({ modId, modName, created, onOpenSymlinksModal }) => {
   const subscriptions = useSubscriptions()
   const release = useSubscriptionRelease(modId)
 
@@ -67,7 +68,7 @@ const SubscriptionRow: React.FC<{ modId: string; modName: string; created: numbe
       </Table.Td>
       <Table.Td>{release.data?.version}</Table.Td>
       <Table.Td>
-        {release.data?.status === 'In Progress' ? (
+        {release.data?.status === 'In Progress' || release.data?.status === 'Pending' ? (
           <Tooltip label={release.data.label}>
             <Progress.Root size="lg">
               <Progress.Section
@@ -98,6 +99,7 @@ const SubscriptionRow: React.FC<{ modId: string; modName: string; created: numbe
             >
               {release.data?.enabled ? 'Disable' : 'Enable'}
             </Menu.Item>
+            <Menu.Item onClick={() => onOpenSymlinksModal(modId)}>View Details</Menu.Item>
             <Menu.Item onClick={() => client.openInExplorer.mutate({ modId: modId })}>
               Open in Explorer
             </Menu.Item>
@@ -109,8 +111,10 @@ const SubscriptionRow: React.FC<{ modId: string; modName: string; created: numbe
   )
 }
 
-export type SubscriptionsProps = {}
-export const Subscriptions: React.FC<SubscriptionsProps> = ({}) => {
+export type SubscriptionsProps = {
+  onOpenSymlinksModal: (modId: string) => void
+}
+export const Subscriptions: React.FC<SubscriptionsProps> = ({ onOpenSymlinksModal }) => {
   const subscriptions = useSubscriptions()
   const { results, search, setSearch } = useFuse(subscriptions.data || [], '', ['modId', 'modName'])
 
@@ -123,6 +127,7 @@ export const Subscriptions: React.FC<SubscriptionsProps> = ({}) => {
       />
       {subscriptions.data?.length === 0 ? (
         <Alert>
+          {/* eslint-disable-next-line react/no-unescaped-entities */}
           It looks like you haven't subscribed to any mods yet. Visit the Library to get started.
         </Alert>
       ) : (
@@ -133,7 +138,7 @@ export const Subscriptions: React.FC<SubscriptionsProps> = ({}) => {
               <Table.Th>Name</Table.Th>
               <Table.Th>Version</Table.Th>
               <Table.Th>Status</Table.Th>
-              <Table.Th w={200}>Date</Table.Th>
+              <Table.Th w={200}>Installed Date</Table.Th>
               <Table.Th w={64}></Table.Th>
             </Table.Tr>
           </Table.Thead>
@@ -144,6 +149,7 @@ export const Subscriptions: React.FC<SubscriptionsProps> = ({}) => {
                 modId={element.modId}
                 modName={element.modName}
                 created={element.created}
+                onOpenSymlinksModal={onOpenSymlinksModal}
               />
             ))}
           </Table.Tbody>

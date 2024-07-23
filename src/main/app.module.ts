@@ -16,7 +16,7 @@ import { ReleaseEntity } from './entities/release.entity'
 import { ReleaseAssetEntity } from './entities/release-asset.entity'
 import { ScheduleModule } from '@nestjs/schedule'
 import { TaskManager } from './manager/task.manager'
-import { ToggleManager } from './manager/toggle.manager'
+import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { WriteDirectoryService } from './services/write-directory.service'
 
 const database = join(app.getPath('appData'), config.appDataName, 'db.sqlite')
@@ -54,7 +54,7 @@ const database = join(app.getPath('appData'), config.appDataName, 'db.sqlite')
     RegistryService,
     SubscriptionManager,
     TaskManager,
-    ToggleManager,
+    LifecycleManager,
     WriteDirectoryService
   ]
 })

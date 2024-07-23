@@ -4,7 +4,7 @@ import { useGetRegistryEntry, useGetRegistryEntryLatestRelease } from '../../../
 import { useEffect } from 'react'
 
 export const useRegistryEntry = (modId: string) => {
-  const url = useSwr('registryUrl', () => client.settings.getRegistryUrl.query())
+  const url = useSwr('registryUrl', () => client.getRegistryUrl.query())
   const index = useGetRegistryEntry(modId || '', { axios: { baseURL: url.data } })
   const latestRelease = useGetRegistryEntryLatestRelease(modId || '', {
     axios: { baseURL: url.data }

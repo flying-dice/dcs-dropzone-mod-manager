@@ -6,7 +6,8 @@ import { getrclone } from './tools/rclone'
 
 export async function bootstrap(): Promise<INestApplicationContext> {
   const app = await NestFactory.createApplicationContext(AppModule, {
-    logger: ['log', 'error', 'warn', 'debug']
+    logger: ['log', 'error', 'warn']
+    // logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   })
 
   await get7zip()

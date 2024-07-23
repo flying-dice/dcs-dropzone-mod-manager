@@ -51,6 +51,7 @@ export const DcsFoldersModal: React.FC<DcsFoldersModalProps> = ({}) => {
 
         {!defaultGameDir.data && (
           <Alert color={'red'}>
+            {/* eslint-disable-next-line react/no-unescaped-entities */}
             Failed to find the DCS "Saved Games" directory and no setting is present, this will need
             populating before any mods can be enabled.
           </Alert>
