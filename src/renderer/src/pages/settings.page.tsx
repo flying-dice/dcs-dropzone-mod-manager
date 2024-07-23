@@ -1,141 +1,163 @@
-import React from 'react'
-import { Alert, Button, Group, Stack, Text, TextInput, Title } from '@mantine/core'
-import { closeAllModals, openConfirmModal, openModal } from '@mantine/modals'
+import React, { ReactNode } from 'react'
+import { Alert, Button, Combobox, Group, Stack, Text, TextInput, Title } from '@mantine/core'
 import { client } from '../client'
+import { config } from '../../../config'
+import { useConfig } from '../hooks/useConfig'
+import useSWR from 'swr'
+import { isEmpty } from 'lodash'
+import { closeAllModals, openModal } from '@mantine/modals'
 import { RegistryForm } from '../forms/registry.form'
-import { useSettings } from '../context/settings.context'
-import { useAsyncFn } from 'react-use'
-import { observer } from 'mobx-react-lite'
+import ClearButton = Combobox.ClearButton
 
-export const SettingsPage: React.FC = observer(() => {
-  const settings = useSettings()
+const SettingEntry: React.FC<{
+  name: string
+  label: ReactNode
+  description: ReactNode
+  defaultValue?: string
+  onClick: () => void
+  disabled?: boolean
+}> = ({ name, label, description, defaultValue, onClick, disabled }) => {
+  const config = useConfig(name)
 
-  const handleInstallFolderChange = async (): Promise<void> => {
-    const suggested = await client.settings.getDefaultWriteDir.query()
-    openConfirmModal({
-      title: 'Installation folder',
-      children: (
-        <Stack gap={10}>
-          <Text>Do you want to use the suggested installation folder?</Text>
-          <Text>{suggested.path}</Text>
-        </Stack>
-      ),
-      confirmProps: {
-        color: 'blue',
-        children: 'Use Suggested'
-      },
-      cancelProps: {
-        variant: 'subtle',
-        color: 'red',
-        children: 'Choose another folder'
-      },
-      onConfirm: () => {
-        settings.setWriteDir(suggested.path)
-        closeAllModals()
-      },
-      onCancel: () => {
-        client.settings.getWriteDir.query().then((folder) => {
-          settings.setWriteDir(folder)
-        })
-      }
-    })
-  }
-
-  const handleSaveGameFolderChange = async (): Promise<void> => {
-    const suggested = await client.settings.getDefaultSaveGameDir.query()
-    openConfirmModal({
-      title: 'DCS Save Game folder',
-      children: (
-        <Stack gap={10}>
-          <Text>Do you want to use the suggested DCS Save Game folder?</Text>
-          <Text>{suggested.path}</Text>
-        </Stack>
-      ),
-      confirmProps: {
-        color: 'blue',
-        children: 'Use Suggested'
-      },
-      cancelProps: {
-        variant: 'subtle',
-        color: 'red',
-        children: 'Choose another folder'
-      },
-      onConfirm: () => {
-        settings.setSaveGameDir(suggested.path)
-        closeAllModals()
-      },
-      onCancel: () => {
-        client.settings.getWriteDir.query().then((folder) => {
-          settings.setSaveGameDir(folder)
-        })
-      }
-    })
-  }
-
-  const handleRegistryChange = async (): Promise<void> => {
-    openModal({
-      title: 'Registry',
-      children: (
-        <RegistryForm
-          initialValues={{ url: settings.registryUrl }}
-          onCancel={closeAllModals}
-          onSubmit={(values) => {
-            settings.setRegistryUrl(values.url)
-            closeAllModals()
-          }}
-        />
-      )
-    })
-  }
-
-  const [updateAvailable, fetchUpdate] = useAsyncFn(
-    async () => client.updater.checkForUpdates.query(),
-    []
+  return (
+    <TextInput
+      key={config.value.data?.lastModified}
+      label={label}
+      description={description}
+      readOnly
+      placeholder={defaultValue}
+      value={config.value.data?.value}
+      onClick={onClick}
+      styles={{ input: { cursor: 'pointer' } }}
+      rightSection={<ClearButton onClear={() => config.clear()} />}
+      disabled={disabled}
+    />
   )
+}
+
+const Configurables: React.FC<{
+  defaultWriteDir: string
+  defaultGameDir: string
+  defaultRegistryUrl: string
+}> = ({ defaultRegistryUrl, defaultGameDir, defaultWriteDir }) => {
+  const writeDir = useConfig('writeDir')
+  const gameDir = useConfig('gameDir')
+  const registryUrl = useConfig('registryUrl')
+
+  return (
+    <Stack>
+      <Title order={3}>Configuration</Title>
+
+      <SettingEntry
+        name="writeDir"
+        label="Mods folder"
+        description="This is where we will store the mod files"
+        defaultValue={defaultWriteDir}
+        onClick={() =>
+          client.askFolder.query({ default: defaultWriteDir }).then((folder) => {
+            if (!folder) return
+            const [f] = folder.filePaths
+            if (!f) return
+            writeDir.set(f)
+          })
+        }
+        disabled={isEmpty(defaultWriteDir)}
+      />
+
+      <SettingEntry
+        name="gameDir"
+        label="DCS Save Game folder"
+        description="Where the users Mods and Scripts are installed, normally this is '%USERPROFILE%\Saved Games\DCS'"
+        defaultValue={defaultGameDir}
+        onClick={() =>
+          client.askFolder.query({ default: defaultGameDir }).then((folder) => {
+            if (!folder) return
+            const [f] = folder.filePaths
+            if (!f) return
+            gameDir.set(f)
+          })
+        }
+      />
+
+      <SettingEntry
+        name="registryUrl"
+        label="Registry"
+        description="The registry where the Mod Manager will look for Mods"
+        defaultValue={defaultRegistryUrl}
+        onClick={() =>
+          openModal({
+            title: 'Registry',
+            children: (
+              <RegistryForm
+                initialValues={{ url: registryUrl.value.data?.value || defaultRegistryUrl }}
+                onCancel={closeAllModals}
+                onSubmit={(values) => {
+                  registryUrl.set(values.url)
+                  closeAllModals()
+                }}
+                onReset={() => {
+                  registryUrl.clear()
+                  closeAllModals()
+                }}
+              />
+            )
+          })
+        }
+      />
+    </Stack>
+  )
+}
+
+export const SettingsPage: React.FC = () => {
+  const defaultRegistryUrl = config.defaultRegistryUrl
+  const defaultWriteDir = useSWR('defaultWriteDir', () => client.getDefaultWriteDir.query())
+  const defaultGameDir = useSWR('defaultGameDir', () => client.getDefaultGameDir.query())
+
+  const update = useSWR('update', () => client.checkForUpdates.query())
 
   return (
     <Stack>
       <Title order={3}>Settings</Title>
-      <TextInput
-        label="Installation folder"
-        description="This is where we will store the mod files"
-        readOnly
-        placeholder="Set Installation folder"
-        value={settings.writeDir}
-        onClick={handleInstallFolderChange}
-        styles={{ input: { cursor: 'pointer' } }}
-      />
-      <TextInput
-        label="DCS Save Game folder"
-        description="Where the users Mods and Scripts are installed, normally this is '%USERPROFILE%\Saved Games\DCS'"
-        readOnly
-        placeholder="Set Save Game folder"
-        value={settings.saveGameDir}
-        onClick={handleSaveGameFolderChange}
-        styles={{ input: { cursor: 'pointer' } }}
-      />
-      <TextInput
-        label="Registry"
-        description="The registry where the Mod Manager will look for Mods"
-        readOnly
-        placeholder="Set Registry"
-        value={settings.registryUrl}
-        onClick={handleRegistryChange}
-        styles={{ input: { cursor: 'pointer' } }}
-      />
-
       <Group>
-        <Button loading={updateAvailable.loading} onClick={() => fetchUpdate()}>
+        <Button loading={update.isLoading} onClick={() => update.mutate()}>
           Update Application
         </Button>
       </Group>
 
-      {updateAvailable.value && (
-        <Alert color={'green'}>
-          Up to Date! Version: {updateAvailable.value.updateInfo.version}
-        </Alert>
+      {update.data && (
+        <Alert color={'green'}>Up to Date! Version: {update.data.updateInfo.version}</Alert>
       )}
-      {updateAvailable.error && <Alert color={'red'}>{updateAvailable.error.message}</Alert>}
+      {update.error && <Alert color={'red'}>{update.error.message}</Alert>}
+
+      {defaultWriteDir.data && defaultGameDir.data && (
+        <Configurables
+          defaultRegistryUrl={defaultRegistryUrl}
+          defaultWriteDir={defaultWriteDir.data}
+          defaultGameDir={defaultGameDir.data}
+        />
+      )}
+
+      <Title order={3}>RCLONE</Title>
+      <Stack gap={'xs'}>
+        <Text size={'xs'} c={'dimmed'}>
+          RCLONE is a command line utility that we use to interact with cloud storage. It is
+          downloaded automatically to ensure API version compatability.
+        </Text>
+        <Text size={'xs'} c={'dimmed'}>
+          Its run in daemon mode and can be managed via the RCLONE Admin interface (there are no
+          credentials just click login). dcs-dropzone interacts with it using API calls.
+        </Text>
+      </Stack>
+
+      <Group>
+        <Button
+          onClick={() => {
+            window.open('http://localhost:5572/#/dashboard', '_blank')
+          }}
+        >
+          Open RCLONE Admin
+        </Button>
+      </Group>
     </Stack>
   )
-})
+}

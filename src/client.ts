@@ -9,7 +9,6 @@ import * as axios from 'axios'
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import useSwr from 'swr'
 import type { Key, SWRConfiguration } from 'swr'
-import { z } from 'zod'
 export type RunGithubIntegrationParams = {
   /**
    * Integration Token
@@ -24,12 +23,16 @@ export type GetIntegrationTokenParams = {
   id: string
 }
 
-export type EntryInstallMap = {
+export type EntryLatestReleaseAssetsItem = {
+  /** The name of the file # seperates download path and internal zip path */
   source: string
+  /** The name of the installation location relative to install path */
   target: string
 }
 
 export interface EntryLatestRelease {
+  /** The array of files to install */
+  assets: EntryLatestReleaseAssetsItem[]
   content: string
   /** The date of the release */
   date: string
@@ -37,35 +40,9 @@ export interface EntryLatestRelease {
   name: string
   /** The release page of the release */
   releasepage: string
-  /** The version of the release */
-  version: string
   /** The tag of the release */
   tag: string
-  /** The installation instructions */
-  assets: EntryInstallMap[]
-}
-
-export const EntryInstallMapSchema = z.array(
-  z.object({
-    source: z.string(),
-    target: z.string()
-  })
-)
-
-export interface EntryInstallState {
-  installed: boolean
-  installedVersion: string
-  incomplete: boolean
-  latestRelease: EntryLatestRelease
-  entry: EntryIndex
-  missingFiles: string[]
-  enabled: boolean
-}
-
-export interface EachEntryInstallState {
-  id: string
-  installMapArr: EntryInstallMap[]
-  installState: EntryInstallState
+  /** The version of the release */
   version: string
 }
 

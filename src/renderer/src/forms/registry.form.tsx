@@ -3,7 +3,7 @@ import { useForm, zodResolver } from '@mantine/form'
 import React from 'react'
 import { z } from 'zod'
 import { showErrorNotification } from '../utils/notifications'
-import { config } from '../config'
+import { config } from '../../../config'
 import { getRegistryIndex } from '../../../client'
 
 export const RegistryFormSchema = z.object({
@@ -16,11 +16,13 @@ export type RegistryFormProps = {
   initialValues?: RegistryFormValues
   onSubmit: (values: RegistryFormValues) => void
   onCancel: () => void
+  onReset: () => void
 }
 export const RegistryForm: React.FC<RegistryFormProps> = ({
   initialValues,
   onSubmit,
-  onCancel
+  onCancel,
+  onReset
 }) => {
   const form = useForm<RegistryFormValues>({
     initialValues,
@@ -36,10 +38,6 @@ export const RegistryForm: React.FC<RegistryFormProps> = ({
     }
   }
 
-  const handleReset = () => {
-    form.setValues({ url: config.defaultRegistryUrl })
-  }
-
   return (
     <Stack>
       <TextInput
@@ -49,7 +47,7 @@ export const RegistryForm: React.FC<RegistryFormProps> = ({
         {...form.getInputProps('url')}
       />
       <Group justify={'space-between'}>
-        <Button variant={'subtle'} onClick={handleReset}>
+        <Button variant={'subtle'} onClick={onReset}>
           Reset
         </Button>
         <Group justify={'end'}>

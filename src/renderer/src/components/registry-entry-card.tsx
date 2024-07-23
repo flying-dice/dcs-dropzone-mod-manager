@@ -2,22 +2,23 @@ import React from 'react'
 import { Card, Group, Image, Indicator, Stack, Text } from '@mantine/core'
 import { useNavigate } from 'react-router-dom'
 import { RegistryIndexItem } from '../../../client'
-import { useSettings } from '../context/settings.context'
+import { useRegistry } from '../hooks/useRegistry'
 
 export type RegistryEntryCardProps = {
   item: RegistryIndexItem
-  installed: boolean
+  subscribed?: boolean
 }
-export const RegistryEntryCard: React.FC<RegistryEntryCardProps> = ({ item, installed }) => {
-  const settings = useSettings()
+export const RegistryEntryCard: React.FC<RegistryEntryCardProps> = ({ item, subscribed }) => {
+  const registry = useRegistry()
+
   const navigate = useNavigate()
   return (
     <Indicator
       inline
-      label="Installed"
+      label="Subscribed"
       position="top-center"
       size={22}
-      disabled={!installed}
+      disabled={!subscribed}
       withBorder
     >
       <Card
@@ -29,7 +30,7 @@ export const RegistryEntryCard: React.FC<RegistryEntryCardProps> = ({ item, inst
         <Stack gap={0} w={300} justify={'space-between'} h={300}>
           <Stack gap={0}>
             <Card.Section>
-              <Image src={`${settings.registryUrl}/${item.imageUrl}`} height={160} alt="preview" />
+              <Image src={`${registry.url.data}/${item.imageUrl}`} height={160} alt="preview" />
             </Card.Section>
             <Stack gap={0} pl={'md'} pr={'md'}>
               <Group justify="space-between" mt="md" mb="xs">
