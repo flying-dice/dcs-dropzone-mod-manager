@@ -16,6 +16,11 @@ export class ConfigService {
     return config ? { value: config.value, lastModified: config.lastModified } : undefined
   }
 
+  async getConfigValueOrDefault(name: string, defaultValue: string): Promise<string> {
+    const config = await this.getConfigValue(name)
+    return config ? config.value : defaultValue
+  }
+
   async setConfigValue(name: string, value: string): Promise<void> {
     this.logger.debug(`Setting config ${name} to ${value}`)
     await this.configRepo.upsert(

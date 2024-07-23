@@ -7,7 +7,7 @@
     "src/lib/**/*",
     "src/types.ts",
     "src/client.ts",
-    "src/config.ts",
+    "src/config.ts"
   ],
   "compilerOptions": {
     "composite": true,

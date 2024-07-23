@@ -2,18 +2,27 @@ import 'reflect-metadata'
 import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
-import { Logger } from '@nestjs/common'
+import { INestApplicationContext, Logger } from '@nestjs/common'
 import icon from '../../resources/icon.png?asset'
 import { createIPCHandler } from 'electron-trpc/main'
-import { getAppRouter } from './router'
+import { getAppWithRouter } from './router'
+import { ConfigService } from './services/config.service'
 
-async function createWindow(): Promise<BrowserWindow> {
+const windowDefault = JSON.stringify([900, 670, 0, 0])
+
+async function createWindow(app: INestApplicationContext): Promise<BrowserWindow> {
   Logger.log('Creating main window', 'main')
+
+  const [width, height, x, y] = JSON.parse(
+    await app.get(ConfigService).getConfigValueOrDefault('mw_config', windowDefault)
+  )
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width,
+    height,
+    x,
+    y,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -21,6 +30,20 @@ async function createWindow(): Promise<BrowserWindow> {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }
+  })
+
+  mainWindow.on('resized', () => {
+    const [width, height] = mainWindow.getSize()
+    const [x, y] = mainWindow.getPosition()
+
+    app.get(ConfigService).setConfigValue('mw_config', JSON.stringify([width, height, x, y]))
+  })
+
+  mainWindow.on('moved', () => {
+    const [width, height] = mainWindow.getSize()
+    const [x, y] = mainWindow.getPosition()
+
+    app.get(ConfigService).setConfigValue('mw_config', JSON.stringify([width, height, x, y]))
   })
 
   mainWindow.on('ready-to-show', () => {
@@ -57,13 +80,14 @@ app.whenReady().then(async () => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  const mainWindow = await createWindow()
-  createIPCHandler({ router: await getAppRouter(), windows: [mainWindow] })
+  const awr = await getAppWithRouter()
+  const mainWindow = await createWindow(awr.app)
+  createIPCHandler({ router: awr.router, windows: [mainWindow] })
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) createWindow(awr.app)
   })
 })
 
