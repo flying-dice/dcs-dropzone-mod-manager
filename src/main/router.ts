@@ -6,6 +6,8 @@ import { UpdateManager } from './manager/update.manager'
 import { SubscriptionManager } from './manager/subscription.manager'
 import { SettingsManager } from './manager/settings.manager'
 import { FsService } from './services/fs.service'
+import { getDefaultGameDir } from './functions/getDefaultGameDir'
+import { getDefaultWriteDir } from './functions/getDefaultWriteDir'
 
 export async function getAppRouter() {
   const app = await bootstrap()
@@ -50,8 +52,8 @@ export async function getAppRouter() {
       .input(z.object({ name: z.string() }))
       .mutation(async ({ input }) => app.get(ConfigService).clearConfigValue(input.name)),
 
-    getDefaultWriteDir: trpc.procedure.query(async () => app.get(FsService).getDefaultWriteDir()),
-    getDefaultGameDir: trpc.procedure.query(async () => app.get(FsService).getDefaultGameDir()),
+    getDefaultWriteDir: trpc.procedure.query(async () => getDefaultWriteDir()),
+    getDefaultGameDir: trpc.procedure.query(async () => getDefaultGameDir()),
 
     getWriteDir: trpc.procedure.query(async () => app.get(SettingsManager).getWriteDir()),
     getGameDir: trpc.procedure.query(async () => app.get(SettingsManager).getGameDir()),
