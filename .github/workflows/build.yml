@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  release:
+  build-and-test:
     runs-on: windows-latest
     steps:
       - name: Checkout
