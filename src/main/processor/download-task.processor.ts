@@ -1,16 +1,16 @@
-import {
-  AssetTaskEntity,
-  AssetTaskStatus,
-  DownloadTaskPayload
-} from '../entities/asset-task.entity'
-import { Logger } from '@nestjs/common'
-import { TaskProcessor } from './task.processor'
-import { config } from '../../lib/config'
-import { app } from 'electron'
-import { join } from 'path'
-import { RcloneClient } from '../../lib/rclone.client'
-import { ensureDirSync, moveSync, rmdir } from 'fs-extra'
 import { existsSync } from 'node:fs'
+import { join } from 'node:path'
+import { Logger } from '@nestjs/common'
+import { app } from 'electron'
+import { ensureDirSync, moveSync, rmdir } from 'fs-extra'
+import { RcloneClient } from '../../lib/rclone.client'
+import { config } from '../config'
+import {
+  type AssetTaskEntity,
+  AssetTaskStatus,
+  type DownloadTaskPayload
+} from '../entities/asset-task.entity'
+import type { TaskProcessor } from './task.processor'
 
 export class DownloadTaskProcessor implements TaskProcessor<DownloadTaskPayload> {
   protected readonly logger = new Logger(DownloadTaskProcessor.name)
@@ -19,7 +19,9 @@ export class DownloadTaskProcessor implements TaskProcessor<DownloadTaskPayload>
 
   private tempPath: string
 
-  private readonly rcloneClient = new RcloneClient({ baseURL: config.rcloneBaseUrl })
+  private readonly rcloneClient = new RcloneClient({
+    baseURL: config.rcloneBaseUrl
+  })
 
   async process(task: AssetTaskEntity<DownloadTaskPayload>): Promise<void> {
     this.logger.debug(`[${task.id}] - Processing download task`)
@@ -108,7 +110,9 @@ export class DownloadTaskProcessor implements TaskProcessor<DownloadTaskPayload>
     await this.rcloneClient.configCreate('local', 'local', {})
 
     this.logger.verbose(`[${task.id}] - Creating rclone config for remote`)
-    await this.rcloneClient.configCreate(task.id.toString(), 'http', { url: task.payload.baseUrl })
+    await this.rcloneClient.configCreate(task.id.toString(), 'http', {
+      url: task.payload.baseUrl
+    })
 
     this.logger.verbose(`[${task.id}] - Copying file from remote to local`)
     const { jobid } = await this.rcloneClient.operationsCopyfile(

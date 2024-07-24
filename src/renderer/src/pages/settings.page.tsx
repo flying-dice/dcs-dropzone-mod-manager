@@ -1,16 +1,17 @@
-import React from 'react'
 import { Alert, Button, Group, Stack, Text, Title } from '@mantine/core'
-import { client } from '../client'
-import { config } from '../../../lib/config'
-import { useConfig } from '../hooks/useConfig'
-import useSWR from 'swr'
-import { isEmpty } from 'lodash'
 import { closeAllModals, openModal } from '@mantine/modals'
-import { RegistryForm } from '../forms/registry.form'
+import { isEmpty } from 'lodash'
+import type React from 'react'
+import useSWR from 'swr'
+import { client } from '../client'
 import { SettingEntry } from '../container/setting-entry'
+import { RegistryForm } from '../forms/registry.form'
+import { useConfig } from '../hooks/useConfig'
 
 const Configurables: React.FC = () => {
-  const defaultRegistryUrl = config.defaultRegistryUrl
+  const defaultRegistryUrl = useSWR('defaultRegistryUrl', () =>
+    client.getDefaultRegistryUrl.query()
+  )
   const defaultWriteDir = useSWR('defaultWriteDir', () => client.getDefaultWriteDir.query())
   const defaultGameDir = useSWR('defaultGameDir', () => client.getDefaultGameDir.query())
 
@@ -66,13 +67,15 @@ const Configurables: React.FC = () => {
         name="registryUrl"
         label="Registry"
         description="The registry where the Mod Manager will look for Mods"
-        defaultValue={defaultRegistryUrl}
+        defaultValue={defaultRegistryUrl.data}
         onClick={() =>
           openModal({
             title: 'Registry',
             children: (
               <RegistryForm
-                initialValues={{ url: registryUrl.value.data?.value || defaultRegistryUrl }}
+                initialValues={{
+                  url: registryUrl.value.data?.value || defaultRegistryUrl
+                }}
                 onCancel={closeAllModals}
                 onSubmit={(values) => {
                   registryUrl.set(values.url)

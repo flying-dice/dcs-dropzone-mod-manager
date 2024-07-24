@@ -1,5 +1,5 @@
-import React, { ReactNode } from 'react'
 import { ActionIcon, Stack, Tooltip } from '@mantine/core'
+import type React, { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export type AppNavItem = {

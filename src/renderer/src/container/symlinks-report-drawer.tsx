@@ -1,4 +1,3 @@
-import React from 'react'
 import {
   ActionIcon,
   Button,
@@ -9,9 +8,10 @@ import {
   Table,
   Text
 } from '@mantine/core'
+import type React from 'react'
+import { VscLinkExternal } from 'react-icons/vsc'
 import useSWR from 'swr'
 import { client } from '../client'
-import { VscLinkExternal } from 'react-icons/vsc'
 
 const _SymlinksReportDrawer: React.FC<{ modId: string }> = ({ modId }) => {
   const assets = useSWR(`/mods/${modId}/symlinks`, () => client.getModAssets.query({ modId }))

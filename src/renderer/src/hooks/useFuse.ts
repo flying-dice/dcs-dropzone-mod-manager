@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
 import Fuse from 'fuse.js'
+import { useMemo, useState } from 'react'
 
 export const useFuse = <T>(
   items: T[],

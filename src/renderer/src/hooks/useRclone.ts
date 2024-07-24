@@ -1,6 +1,6 @@
 import useSwr from 'swr'
-import { config } from '../../../lib/config'
-import { RcloneClient, RcloneStats } from '../../../lib/rclone.client'
+import { RcloneClient, type RcloneStats } from '../../../lib/rclone.client'
+import { config } from '../config'
 
 const rcloneClient = new RcloneClient({ baseURL: config.rcloneBaseUrl })
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { dialog, OpenDialogReturnValue, shell } from 'electron'
+import { dialog, type OpenDialogReturnValue, shell } from 'electron'
 import { expandPathWithEnvars } from '../functions/expandPathWithEnvars'
 
 /**

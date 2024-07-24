@@ -1,17 +1,18 @@
-import React, { useMemo } from 'react'
-import { Alert, Group, LoadingOverlay, Stack, Text, TextInput, Title } from '@mantine/core'
+import { CodeHighlight } from '@mantine/code-highlight'
+import { Alert, Group, Stack, Text, TextInput, Title } from '@mantine/core'
+import { pick } from 'lodash'
+import type React from 'react'
+import { useMemo } from 'react'
 import { VscSearch, VscWarning } from 'react-icons/vsc'
+import { stringify } from 'yaml'
+import { Collapsible } from '../components/collapsible'
 import { RegistryEntryCard } from '../components/registry-entry-card'
 import { useFuse } from '../hooks/useFuse'
+import { useRegistryIndex } from '../hooks/useRegistryIndex'
 import { useSubscriptions } from '../hooks/useSubscriptions'
-import { CodeHighlight } from '@mantine/code-highlight'
-import { stringify } from 'yaml'
-import { pick } from 'lodash'
-import { Collapsible } from '../components/collapsible'
-import { useRegistry } from '../hooks/useRegistry'
 
 export const LibraryPage: React.FC = () => {
-  const registry = useRegistry()
+  const registry = useRegistryIndex()
   const subscribed = useSubscriptions()
   const { setSearch, results } = useFuse(registry.index.data?.data || [])
 
@@ -19,7 +20,6 @@ export const LibraryPage: React.FC = () => {
 
   return (
     <Stack>
-      <LoadingOverlay visible={registry.url.isLoading || registry.index.isLoading} />
       <Title order={3}>Library</Title>
       <TextInput
         label={'Search'}
@@ -29,13 +29,7 @@ export const LibraryPage: React.FC = () => {
         pb={'lg'}
       />
 
-      <Group>
-        {results?.map((it) => (
-          <RegistryEntryCard key={it.id} item={it} subscribed={subscribedIds?.includes(it.id)} />
-        ))}
-      </Group>
-
-      {!registry.url.isLoading && !registry.index.isLoading && registry.index.error && (
+      {registry.index.error ? (
         <Alert icon={<VscWarning />} color={'red'} title={'Failed to get library content'}>
           <Stack gap={0}>
             <Text>An error occurred while fetching the library content from the registry.</Text>
@@ -52,6 +46,12 @@ export const LibraryPage: React.FC = () => {
             </Collapsible>
           </Stack>
         </Alert>
+      ) : (
+        <Group>
+          {results?.map((it) => (
+            <RegistryEntryCard key={it.id} item={it} subscribed={subscribedIds?.includes(it.id)} />
+          ))}
+        </Group>
       )}
     </Stack>
   )

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+import type { Repository } from 'typeorm'
 import { ConfigEntity } from '../entities/config.entity'
-import { Repository } from 'typeorm'
 
 @Injectable()
 export class ConfigService {
@@ -12,7 +12,9 @@ export class ConfigService {
   ) {}
 
   async getConfigValue(name: string): Promise<{ value: string; lastModified: number } | undefined> {
+    this.logger.debug(`Getting config ${name}`)
     const config = await this.configRepo.findOneBy({ name })
+    this.logger.debug(`Got config`, config?.value)
     return config ? { value: config.value, lastModified: config.lastModified } : undefined
   }
 

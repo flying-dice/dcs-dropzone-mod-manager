@@ -5,10 +5,11 @@
  * DCS Dropzone Registry API
  * OpenAPI spec version: 1.0.0
  */
-import * as axios from 'axios'
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
-import useSwr from 'swr'
+import * as axios from 'axios'
 import type { Key, SWRConfiguration } from 'swr'
+import useSwr from 'swr'
+
 export type RunGithubIntegrationParams = {
   /**
    * Integration Token

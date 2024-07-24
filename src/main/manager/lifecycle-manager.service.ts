@@ -1,16 +1,16 @@
+import { existsSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
 import { ensureDirSync, rm, symlink } from 'fs-extra'
-import { dirname, join } from 'path'
-import { existsSync } from 'fs'
-import { SubscriptionEntity } from '../entities/subscription.entity'
-import { ReleaseEntity } from '../entities/release.entity'
+import type { Repository } from 'typeorm'
 import { ReleaseAssetEntity } from '../entities/release-asset.entity'
-import { WriteDirectoryService } from '../services/write-directory.service'
-import { SettingsManager } from './settings.manager'
+import { ReleaseEntity } from '../entities/release.entity'
+import { SubscriptionEntity } from '../entities/subscription.entity'
+import type { FsService } from '../services/fs.service'
+import type { WriteDirectoryService } from '../services/write-directory.service'
 import { HashPath } from '../utils/hash-path'
-import { FsService } from '../services/fs.service'
+import type { SettingsManager } from './settings.manager'
 
 /**
  * Manages the toggling of a mod between enabled and disabled states
@@ -125,8 +125,12 @@ export class LifecycleManager {
    * @private
    */
   private async getSubscriptionWithReleaseOrThrow(modId: string) {
-    const subscription = await this.subscriptionRepository.findOneByOrFail({ modId })
-    const release = await this.releaseRepository.findOneByOrFail({ subscription })
+    const subscription = await this.subscriptionRepository.findOneByOrFail({
+      modId
+    })
+    const release = await this.releaseRepository.findOneByOrFail({
+      subscription
+    })
 
     return { subscription, release }
   }
@@ -142,7 +146,9 @@ export class LifecycleManager {
   }
 
   async openAssetInExplorer(assetId: number) {
-    const asset = await this.releaseAssetRepository.findOneByOrFail({ id: assetId })
+    const asset = await this.releaseAssetRepository.findOneByOrFail({
+      id: assetId
+    })
     if (!asset.symlinkPath) throw new Error(`Symlink path not present, is the mod enabled?`)
     this.logger.debug(`Opening asset in explorer: ${asset.id}`)
 

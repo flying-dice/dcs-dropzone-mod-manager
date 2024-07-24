@@ -1,11 +1,11 @@
+import { Injectable } from '@nestjs/common'
 import {
-  EntryLatestRelease,
+  type EntryLatestRelease,
   getRegistryEntry,
   getRegistryEntryLatestRelease,
-  RegistryIndexItem
+  type RegistryIndexItem
 } from '../../lib/client'
-import { SettingsManager } from '../manager/settings.manager'
-import { Injectable } from '@nestjs/common'
+import type { SettingsManager } from '../manager/settings.manager'
 
 @Injectable()
 export class RegistryService {

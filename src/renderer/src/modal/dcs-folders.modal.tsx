@@ -1,9 +1,9 @@
-import React from 'react'
+import { Alert, Modal, Stack, Text, Title } from '@mantine/core'
+import type React from 'react'
 import useSWR from 'swr'
 import { client } from '../client'
-import { Alert, Modal, Stack, Text, Title } from '@mantine/core'
-import { useConfig } from '../hooks/useConfig'
 import { SettingEntry } from '../container/setting-entry'
+import { useConfig } from '../hooks/useConfig'
 
 export type DcsFoldersModalProps = {}
 export const DcsFoldersModal: React.FC<DcsFoldersModalProps> = ({}) => {

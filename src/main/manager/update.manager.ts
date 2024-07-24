@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { autoUpdater, UpdateCheckResult } from 'electron-updater'
+import { autoUpdater, type UpdateCheckResult } from 'electron-updater'
 
 @Injectable()
 export class UpdateManager {

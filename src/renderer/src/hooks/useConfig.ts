@@ -2,7 +2,7 @@ import useSWR from 'swr'
 import { client } from '../client'
 
 export const useConfig = (name: string) => {
-  const _value = useSWR(name, (name) => client.getConfigValue.query({ name }))
+  const _value = useSWR(`configs/${name}`, () => client.getConfigValue.query({ name }))
 
   return {
     value: _value,

@@ -4,11 +4,9 @@ DCS Dropzone is an Electron application built with the following technologies:
 
 - [TypeScript](https://www.typescriptlang.org/) - Language
 
-
 - [Electron](https://www.electronjs.org/) - Desktop Application
 - [Electron Vite](https://electron-vite.org/) - Development and Build Tools
 - [Electron TRPC](https://electron-trpc.dev/) - RPC between renderer and main
-
 
 - [React](https://reactjs.org/) - UI Framework
 - [Mantine](https://mantine.dev/) - UI Components
@@ -32,7 +30,6 @@ The following is a brief overview of the project structure:
 - `src/preload` - Contains the preload script for the renderer process.
   - `src/preload/index.ts` - Contains the preload script that is executed before the renderer process which exposes trpc procedures to the renderer.
 - `src/lib` - Contains shared code between the main and renderer processes.
-
 
 ### Install
 
@@ -65,11 +62,13 @@ $ npm run build
 This will generate a `dist` folder with the compiled files.
 
 The installer is present in:
+
 ```text
 \dist\dcs-dropzone-{VERSION}-setup.exe
 ```
 
 The unpacked contents can be ran without installing from:
+
 ```text
 \dist\win-unpacked\dcs-dropzone.exe
 ```
@@ -118,4 +117,3 @@ The `Router` is responsible for exposing trpc procedures to the renderer process
 For the most part the Router will call the appropriate Manager to perform the operation.
 
 Some procedures however will call services directly, i.e. the Get and Set values for configs or the electron updater.
-

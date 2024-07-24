@@ -1,10 +1,10 @@
 import 'reflect-metadata'
-import { app, BrowserWindow, shell } from 'electron'
-import { join } from 'path'
+import { join } from 'node:path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
-import { INestApplicationContext, Logger } from '@nestjs/common'
-import icon from '../../resources/icon.png?asset'
+import { type INestApplicationContext, Logger } from '@nestjs/common'
+import { app, BrowserWindow, shell } from 'electron'
 import { createIPCHandler } from 'electron-trpc/main'
+import icon from '../../resources/icon.png?asset'
 import { getAppWithRouter } from './router'
 import { ConfigService } from './services/config.service'
 
@@ -84,7 +84,7 @@ app.whenReady().then(async () => {
   const mainWindow = await createWindow(awr.app)
   createIPCHandler({ router: awr.router, windows: [mainWindow] })
 
-  app.on('activate', function () {
+  app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow(awr.app)

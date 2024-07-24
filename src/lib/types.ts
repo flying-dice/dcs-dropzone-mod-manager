@@ -1,5 +1,5 @@
-import { getAppWithRouter } from '../main/router'
-import { inferAsyncReturnType } from '@trpc/server'
+import type { inferAsyncReturnType } from '@trpc/server'
+import type { getAppWithRouter } from '../main/router'
 
 export type TaskState = 'Pending' | 'In Progress' | 'Completed' | 'Failed'
 

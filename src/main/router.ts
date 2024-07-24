@@ -1,17 +1,18 @@
+import { initTRPC } from '@trpc/server'
+import type { UpdateCheckResult } from 'electron-updater'
 import { z } from 'zod'
+import type { TaskState } from '../lib/types'
 import { bootstrap } from './app'
-import { ConfigService } from './services/config.service'
-import { UpdateManager } from './manager/update.manager'
-import { SubscriptionManager } from './manager/subscription.manager'
-import { SettingsManager } from './manager/settings.manager'
-import { FsService } from './services/fs.service'
+import { config } from './config'
+import type { SubscriptionEntity } from './entities/subscription.entity'
 import { getDefaultGameDir } from './functions/getDefaultGameDir'
 import { getDefaultWriteDir } from './functions/getDefaultWriteDir'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
-import { SubscriptionEntity } from './entities/subscription.entity'
-import { TaskState } from '../lib/types'
-import { UpdateCheckResult } from 'electron-updater'
-import { initTRPC } from '@trpc/server'
+import { SettingsManager } from './manager/settings.manager'
+import { SubscriptionManager } from './manager/subscription.manager'
+import { UpdateManager } from './manager/update.manager'
+import { ConfigService } from './services/config.service'
+import { FsService } from './services/fs.service'
 
 export const trpc = initTRPC.create()
 
@@ -115,6 +116,9 @@ export async function getAppWithRouter() {
       getDefaultWriteDir: trpc.procedure.query(async (): Promise<string> => getDefaultWriteDir()),
       getDefaultGameDir: trpc.procedure.query(
         async (): Promise<string | undefined> => getDefaultGameDir()
+      ),
+      getDefaultRegistryUrl: trpc.procedure.query(
+        async (): Promise<string> => config.defaultRegistryUrl
       ),
 
       getWriteDir: trpc.procedure.query(

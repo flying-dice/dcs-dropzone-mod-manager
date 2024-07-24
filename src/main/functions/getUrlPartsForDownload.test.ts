@@ -1,4 +1,4 @@
-import { test, expect } from 'vitest'
+import { expect, test } from 'vitest'
 import { getUrlPartsForDownload } from './getUrlPartsForDownload'
 
 test('correctly splits a URL with hash routing into its parts', ({}) => {

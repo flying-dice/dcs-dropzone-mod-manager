@@ -1,4 +1,4 @@
-import { basename, dirname, extname } from 'path'
+import { basename, dirname, extname } from 'node:path'
 import { _7zip } from '../tools/7zip'
 
 export class HashPath {

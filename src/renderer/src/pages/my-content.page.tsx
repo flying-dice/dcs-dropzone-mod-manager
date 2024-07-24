@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
 import { Stack, Title } from '@mantine/core'
+import type React from 'react'
+import { useState } from 'react'
 import { Subscriptions } from '../container/subscriptions'
 import { SymlinksReportDrawer } from '../container/symlinks-report-drawer'
 

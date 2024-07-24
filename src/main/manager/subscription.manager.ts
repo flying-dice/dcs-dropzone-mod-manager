@@ -1,27 +1,27 @@
+import { extname, join } from 'node:path'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { RegistryService } from '../services/registry.service'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
-import { extname, join } from 'path'
+import Aigle from 'aigle'
 import { ensureDirSync, rmdir } from 'fs-extra'
-import { SubscriptionEntity } from '../entities/subscription.entity'
-import { FsService } from '../services/fs.service'
-import { ReleaseEntity } from '../entities/release.entity'
-import { ReleaseAssetEntity } from '../entities/release-asset.entity'
+import { flatten } from 'lodash'
+import type { Repository } from 'typeorm'
+import type { TaskState } from '../../lib/types'
 import {
   AssetTaskEntity,
   AssetTaskStatus,
   AssetTaskType,
-  DownloadTaskPayload,
-  ExtractTaskPayload
+  type DownloadTaskPayload,
+  type ExtractTaskPayload
 } from '../entities/asset-task.entity'
+import { ReleaseAssetEntity } from '../entities/release-asset.entity'
+import { ReleaseEntity } from '../entities/release.entity'
+import { SubscriptionEntity } from '../entities/subscription.entity'
 import { getUrlPartsForDownload } from '../functions/getUrlPartsForDownload'
+import type { FsService } from '../services/fs.service'
+import type { RegistryService } from '../services/registry.service'
+import type { WriteDirectoryService } from '../services/write-directory.service'
 import { _7zip } from '../tools/7zip'
-import Aigle from 'aigle'
-import { flatten } from 'lodash'
-import { TaskState } from '../../lib/types'
-import { WriteDirectoryService } from '../services/write-directory.service'
-import { LifecycleManager } from './lifecycle-manager.service'
+import type { LifecycleManager } from './lifecycle-manager.service'
 
 @Injectable()
 export class SubscriptionManager {
@@ -70,7 +70,9 @@ export class SubscriptionManager {
         label?: string
       }
   > {
-    const subscription = await this.subscriptionRepository.findOneBy({ modId: modId })
+    const subscription = await this.subscriptionRepository.findOneBy({
+      modId: modId
+    })
     if (!subscription) return undefined
     const release = await this.releaseRepository.findOneBy({ subscription })
 

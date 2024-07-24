@@ -1,6 +1,6 @@
-import { join } from 'path'
-import { config } from '../../lib/config'
+import { join } from 'node:path'
 import { app } from 'electron'
+import { config } from '../config'
 
 /**
  * Get the default write directory for mods

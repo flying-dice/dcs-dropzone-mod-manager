@@ -1,15 +1,15 @@
-import React from 'react'
 import { Card, Group, Image, Indicator, Stack, Text } from '@mantine/core'
+import type React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { RegistryIndexItem } from '../../../lib/client'
-import { useRegistry } from '../hooks/useRegistry'
+import type { RegistryIndexItem } from '../../../lib/client'
+import { useRegistryUrl } from '../hooks/useRegistryUrl'
 
 export type RegistryEntryCardProps = {
   item: RegistryIndexItem
   subscribed?: boolean
 }
 export const RegistryEntryCard: React.FC<RegistryEntryCardProps> = ({ item, subscribed }) => {
-  const registry = useRegistry()
+  const url = useRegistryUrl()
 
   const navigate = useNavigate()
   return (
@@ -30,7 +30,9 @@ export const RegistryEntryCard: React.FC<RegistryEntryCardProps> = ({ item, subs
         <Stack gap={0} w={300} justify={'space-between'} h={300}>
           <Stack gap={0}>
             <Card.Section>
-              <Image src={`${registry.url.data}/${item.imageUrl}`} height={160} alt="preview" />
+              {url.data && (
+                <Image src={`${url.data}/${item.imageUrl}`} height={160} alt="preview" />
+              )}
             </Card.Section>
             <Stack gap={0} pl={'md'} pr={'md'}>
               <Group justify="space-between" mt="md" mb="xs">

@@ -1,10 +1,14 @@
-import { AssetTaskEntity, AssetTaskStatus, ExtractTaskPayload } from '../entities/asset-task.entity'
+import type { ChildProcessWithoutNullStreams } from 'node:child_process'
+import { extname, join } from 'node:path'
 import { Logger } from '@nestjs/common'
-import { TaskProcessor } from './task.processor'
-import { get7zip } from '../tools/7zip'
-import { extname, join } from 'path'
-import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { rm } from 'fs-extra'
+import {
+  type AssetTaskEntity,
+  AssetTaskStatus,
+  type ExtractTaskPayload
+} from '../entities/asset-task.entity'
+import { get7zip } from '../tools/7zip'
+import type { TaskProcessor } from './task.processor'
 
 export class ExtractTaskProcessor implements TaskProcessor<ExtractTaskPayload> {
   protected readonly logger = new Logger(ExtractTaskProcessor.name)

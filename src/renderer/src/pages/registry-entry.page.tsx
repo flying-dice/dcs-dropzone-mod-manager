@@ -1,4 +1,3 @@
-import React from 'react'
 import {
   Alert,
   Anchor,
@@ -20,15 +19,16 @@ import {
   Tooltip,
   TypographyStylesProvider
 } from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
 import { marked } from 'marked'
-import { useNavigate, useParams } from 'react-router-dom'
-import { ReleaseSummary } from '../components/release-summary'
-import { EntryIndex, EntryLatestRelease } from '../../../lib/client'
+import type React from 'react'
 import { MdOutlineCategory } from 'react-icons/md'
 import { VscCheck, VscClose } from 'react-icons/vsc'
-import { useDisclosure } from '@mantine/hooks'
-import { useRegistrySubscriber } from '../hooks/useRegistrySubscriber'
+import { useNavigate, useParams } from 'react-router-dom'
+import type { EntryIndex, EntryLatestRelease } from '../../../lib/client'
+import { ReleaseSummary } from '../components/release-summary'
 import { useRegistryEntry } from '../hooks/useRegistryEntry'
+import { useRegistrySubscriber } from '../hooks/useRegistrySubscriber'
 
 export const RegistryEntryPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -68,7 +68,11 @@ export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, la
         <Anchor size={'sm'}>{entry.name}</Anchor>
       </Breadcrumbs>
       <TypographyStylesProvider className={'readme'} pl={'xs'}>
-        <div dangerouslySetInnerHTML={{ __html: marked.parse(atob(entry.content)) }} />
+        <div
+          dangerouslySetInnerHTML={{
+            __html: marked.parse(atob(entry.content))
+          }}
+        />
       </TypographyStylesProvider>
       <AppShell.Aside>
         <ScrollArea>

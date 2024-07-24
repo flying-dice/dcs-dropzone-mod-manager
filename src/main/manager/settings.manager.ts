@@ -1,8 +1,8 @@
-import { config } from '../../lib/config'
-import { Inject, Injectable } from '@nestjs/common'
-import { ConfigService } from '../services/config.service'
+import { Inject, Injectable, Logger } from '@nestjs/common'
+import { config } from '../config'
 import { getDefaultGameDir } from '../functions/getDefaultGameDir'
 import { getDefaultWriteDir } from '../functions/getDefaultWriteDir'
+import { ConfigService } from '../services/config.service'
 
 /**
  * Settings manager for handling settings related to the application at the implementation level
@@ -13,6 +13,8 @@ import { getDefaultWriteDir } from '../functions/getDefaultWriteDir'
  */
 @Injectable()
 export class SettingsManager {
+  private readonly logger = new Logger(SettingsManager.name)
+
   @Inject(ConfigService)
   private configGateway: ConfigService
 
@@ -20,9 +22,9 @@ export class SettingsManager {
    * Get the registry URL from the settings repository, or the default value if not set
    */
   async getRegistryUrl(): Promise<string> {
-    return (
-      (await this.configGateway.getConfigValue('registryUrl'))?.value || config.defaultRegistryUrl
-    )
+    const url = (await this.configGateway.getConfigValue('registryUrl'))?.value
+    this.logger.log(`Using registry URL: ${url}`)
+    return url || config.defaultRegistryUrl
   }
 
   /**

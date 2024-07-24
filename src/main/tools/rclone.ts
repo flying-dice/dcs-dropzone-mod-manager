@@ -1,14 +1,14 @@
-import { get7zip } from './7zip'
 import { spawn } from 'child_process'
-import { ChildProcessWithoutNullStreams } from 'node:child_process'
-import { ensureDir, readJsonSync, rmdir, writeJsonSync } from 'fs-extra'
-import Downloader from 'nodejs-file-downloader'
-import { join } from 'path'
-import { app } from 'electron'
-import { config } from '../../lib/config'
-import { glob } from 'glob'
-import { Logger } from '@nestjs/common'
+import type { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { existsSync } from 'node:fs'
+import { join } from 'node:path'
+import { Logger } from '@nestjs/common'
+import { app } from 'electron'
+import { ensureDir, readJsonSync, rmdir, writeJsonSync } from 'fs-extra'
+import { glob } from 'glob'
+import Downloader from 'nodejs-file-downloader'
+import { config } from '../config'
+import { get7zip } from './7zip'
 
 const logger = new Logger('rclone')
 const rootDir = join(
@@ -127,7 +127,10 @@ export async function getrclone(): Promise<Rclone> {
   logger.log(`Extracting rclone to ${rootDir}`)
   await _7zip.extract(downloaded.filePath, rootDir)
 
-  const [rcloneExe] = await glob('**/rclone.exe', { cwd: rootDir, absolute: true })
+  const [rcloneExe] = await glob('**/rclone.exe', {
+    cwd: rootDir,
+    absolute: true
+  })
 
   if (!rcloneExe || !existsSync(rcloneExe)) {
     throw new Error('Failed to extract rclone, file path not found or file does not exist')

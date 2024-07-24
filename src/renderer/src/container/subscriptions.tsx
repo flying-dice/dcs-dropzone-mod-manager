@@ -1,5 +1,3 @@
-import React from 'react'
-import { useSubscriptions } from '../hooks/useSubscriptions'
 import {
   ActionIcon,
   Alert,
@@ -11,12 +9,14 @@ import {
   TextInput,
   Tooltip
 } from '@mantine/core'
-import { useFuse } from '../hooks/useFuse'
-import { client } from '../client'
-import { BsThreeDotsVertical } from 'react-icons/bs'
-import { showErrorNotification, showSuccessNotification } from '../utils/notifications'
+import type React from 'react'
 import { BiCheckbox, BiCheckboxChecked } from 'react-icons/bi'
+import { BsThreeDotsVertical } from 'react-icons/bs'
+import { client } from '../client'
+import { useFuse } from '../hooks/useFuse'
 import { useSubscriptionRelease } from '../hooks/useSubscriptionRelease'
+import { useSubscriptions } from '../hooks/useSubscriptions'
+import { showErrorNotification, showSuccessNotification } from '../utils/notifications'
 
 const SubscriptionRow: React.FC<{
   modId: string

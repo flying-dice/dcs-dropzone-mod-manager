@@ -1,6 +1,6 @@
+import { join } from 'node:path'
 import { Inject, Injectable } from '@nestjs/common'
-import { SettingsManager } from '../manager/settings.manager'
-import { join } from 'path'
+import type { SettingsManager } from '../manager/settings.manager'
 
 @Injectable()
 export class WriteDirectoryService {

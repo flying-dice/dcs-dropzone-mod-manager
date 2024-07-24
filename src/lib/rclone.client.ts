@@ -1,6 +1,5 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
+import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
 import { z } from 'zod'
-import { config } from './config'
 
 export const rcloneTransferringStatsSchema = z.object({
   bytes: z.number().optional(),
@@ -71,7 +70,9 @@ export class RcloneClient {
   }
 
   async jobStatus(jobid: number): Promise<RcloneJobStatus> {
-    const status = await this.instance.post<RcloneJobStatus>('/job/status', { jobid })
+    const status = await this.instance.post<RcloneJobStatus>('/job/status', {
+      jobid
+    })
 
     return rcloneJobStatusSchema.parse(status.data)
   }
@@ -96,8 +97,7 @@ export class RcloneClient {
         srcRemote,
         dstFs,
         dstRemote
-      },
-      { baseURL: config.rcloneBaseUrl }
+      }
     )
 
     return rcloneOperationsCopyfileResponseSchema.parse(data)
