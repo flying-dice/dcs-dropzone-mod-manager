@@ -3,7 +3,7 @@ import {
   getRegistryEntry,
   getRegistryEntryLatestRelease,
   RegistryIndexItem
-} from '../../client'
+} from '../../lib/client'
 import { SettingsManager } from '../manager/settings.manager'
 import { Injectable } from '@nestjs/common'
 

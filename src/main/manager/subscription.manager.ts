@@ -19,7 +19,7 @@ import { getUrlPartsForDownload } from '../functions/getUrlPartsForDownload'
 import { _7zip } from '../tools/7zip'
 import Aigle from 'aigle'
 import { flatten } from 'lodash'
-import { TaskState } from '../../types'
+import { TaskState } from '../../lib/types'
 import { WriteDirectoryService } from '../services/write-directory.service'
 import { LifecycleManager } from './lifecycle-manager.service'
 

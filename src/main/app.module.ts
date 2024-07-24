@@ -1,5 +1,5 @@
 import { join } from 'path'
-import { config } from '../config'
+import { config } from '../lib/config'
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { AssetTaskEntity } from './entities/asset-task.entity'

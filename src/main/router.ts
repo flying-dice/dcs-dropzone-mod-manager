@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { trpc } from './trpc'
 import { bootstrap } from './app'
 import { ConfigService } from './services/config.service'
 import { UpdateManager } from './manager/update.manager'
@@ -10,8 +9,11 @@ import { getDefaultGameDir } from './functions/getDefaultGameDir'
 import { getDefaultWriteDir } from './functions/getDefaultWriteDir'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { SubscriptionEntity } from './entities/subscription.entity'
-import { TaskState } from '../types'
+import { TaskState } from '../lib/types'
 import { UpdateCheckResult } from 'electron-updater'
+import { initTRPC } from '@trpc/server'
+
+export const trpc = initTRPC.create()
 
 export async function getAppWithRouter() {
   const app = await bootstrap()

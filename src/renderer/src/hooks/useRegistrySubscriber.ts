@@ -1,4 +1,4 @@
-import { EntryIndex } from '../../../client'
+import { EntryIndex } from '../../../lib/client'
 import { showErrorNotification, showSuccessNotification } from '../utils/notifications'
 import { client } from '../client'
 import { useSubscriptions } from './useSubscriptions'

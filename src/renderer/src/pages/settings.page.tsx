@@ -1,7 +1,7 @@
 import React from 'react'
 import { Alert, Button, Group, Stack, Text, Title } from '@mantine/core'
 import { client } from '../client'
-import { config } from '../../../config'
+import { config } from '../../../lib/config'
 import { useConfig } from '../hooks/useConfig'
 import useSWR from 'swr'
 import { isEmpty } from 'lodash'

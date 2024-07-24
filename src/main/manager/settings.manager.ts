@@ -1,4 +1,4 @@
-import { config } from '../../config'
+import { config } from '../../lib/config'
 import { Inject, Injectable } from '@nestjs/common'
 import { ConfigService } from '../services/config.service'
 import { getDefaultGameDir } from '../functions/getDefaultGameDir'

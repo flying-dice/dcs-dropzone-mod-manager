@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
 import { z } from 'zod'
-import { config } from '../config'
+import { config } from './config'
 
 export const rcloneTransferringStatsSchema = z.object({
   bytes: z.number().optional(),

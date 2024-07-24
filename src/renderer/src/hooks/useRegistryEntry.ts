@@ -1,6 +1,6 @@
 import { client } from '../client'
 import useSwr from 'swr'
-import { useGetRegistryEntry, useGetRegistryEntryLatestRelease } from '../../../client'
+import { useGetRegistryEntry, useGetRegistryEntryLatestRelease } from '../../../lib/client'
 import { useEffect } from 'react'
 
 export const useRegistryEntry = (modId: string) => {

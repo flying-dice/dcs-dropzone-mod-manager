@@ -1,7 +1,5 @@
 [![Join Discord](https://img.shields.io/badge/Join-blue?logo=discord&label=Discord)](https://discord.gg/bT7BEHn5RD)
 [![Discord](https://img.shields.io/discord/738118932937834566?logo=discord&label=Discord)](https://discord.com/channels/738118932937834566/1178991295260278785)
-[![tslua-codebot](https://img.shields.io/badge/CodeBot-tslua%20dcs-blue?logo=openai)](https://chat.openai.com/g/g-6643nUbup-tslua-dcs-codebot)
-[![patreon](https://img.shields.io/badge/Patreon-flyingdice-red?logo=patreon)](https://patreon.com/flyingdice)
 
 ![heading.svg](resources%2Fheading.svg)
 
@@ -20,23 +18,12 @@ Create an Issue on the registry repo to request a mod be added to the list or ra
 
 > At the heart of our mission lies a strong belief in the ethos of Patreon - forging powerful bonds between creators and their followers. We're dedicated to assisting creators in showcasing their sponsorship avenues, making community support more accessible than ever.
 
-## Project Setup
+## Installation
 
-### Install
+Download the latest version of DROPZONE from the [releases page](https://github.com/flying-dice/dcs-dropzone-mod-manager/releases) and run the setup.exe file.
 
-```bash
-$ npm install
-```
+## Usage
 
-### Development
+> TBC
 
-```bash
-$ npm run dev
-```
-
-### Build
-
-```bash
-# For windows
-$ npm run build:win
-```
+> - See the [Contributing Guide](CONTRIBUTING.md) for more information on how to contribute.

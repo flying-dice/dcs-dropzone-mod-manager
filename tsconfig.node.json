@@ -4,10 +4,7 @@
     "electron.vite.config.*",
     "src/main/**/*",
     "src/preload/**/*",
-    "src/lib/**/*",
-    "src/types.ts",
-    "src/client.ts",
-    "src/config.ts"
+    "src/lib/**/*"
   ],
   "compilerOptions": {
     "composite": true,

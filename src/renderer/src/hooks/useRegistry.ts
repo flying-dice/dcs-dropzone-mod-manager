@@ -1,6 +1,6 @@
 import { client } from '../client'
 import useSwr from 'swr'
-import { useGetRegistryIndex } from '../../../client'
+import { useGetRegistryIndex } from '../../../lib/client'
 import { useEffect } from 'react'
 
 export const useRegistry = () => {

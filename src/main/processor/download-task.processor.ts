@@ -5,7 +5,7 @@ import {
 } from '../entities/asset-task.entity'
 import { Logger } from '@nestjs/common'
 import { TaskProcessor } from './task.processor'
-import { config } from '../../config'
+import { config } from '../../lib/config'
 import { app } from 'electron'
 import { join } from 'path'
 import { RcloneClient } from '../../lib/rclone.client'

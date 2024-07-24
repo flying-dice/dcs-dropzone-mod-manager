@@ -23,7 +23,7 @@ import {
 import { marked } from 'marked'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ReleaseSummary } from '../components/release-summary'
-import { EntryIndex, EntryLatestRelease } from '../../../client'
+import { EntryIndex, EntryLatestRelease } from '../../../lib/client'
 import { MdOutlineCategory } from 'react-icons/md'
 import { VscCheck, VscClose } from 'react-icons/vsc'
 import { useDisclosure } from '@mantine/hooks'

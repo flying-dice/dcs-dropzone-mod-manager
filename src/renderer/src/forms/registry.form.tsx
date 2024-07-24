@@ -3,8 +3,8 @@ import { useForm, zodResolver } from '@mantine/form'
 import React from 'react'
 import { z } from 'zod'
 import { showErrorNotification } from '../utils/notifications'
-import { config } from '../../../config'
-import { getRegistryIndex } from '../../../client'
+import { config } from '../../../lib/config'
+import { getRegistryIndex } from '../../../lib/client'
 
 export const RegistryFormSchema = z.object({
   url: z.string().url()
