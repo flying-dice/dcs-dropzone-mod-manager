@@ -19,9 +19,7 @@ export class DownloadTaskProcessor implements TaskProcessor<DownloadTaskPayload>
 
   private tempPath: string
 
-  private readonly rcloneClient = new RcloneClient({
-    baseURL: config.rcloneBaseUrl
-  })
+  private readonly rcloneClient = new RcloneClient(config.rcloneInstance)
 
   async process(task: AssetTaskEntity<DownloadTaskPayload>): Promise<void> {
     this.logger.debug(`[${task.id}] - Processing download task`)

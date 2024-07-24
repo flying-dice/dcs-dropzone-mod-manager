@@ -13,6 +13,9 @@ import { client } from './client'
 import '@fontsource/genos/700.css'
 import '@fontsource/dela-gothic-one/400.css'
 import '@fontsource/montserrat/600-italic.css'
+import { trackEvent } from '@aptabase/electron/renderer'
+
+trackEvent('app_rendered')
 
 const theme = createTheme({
   components: {

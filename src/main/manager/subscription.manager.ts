@@ -22,6 +22,7 @@ import { RegistryService } from '../services/registry.service'
 import { WriteDirectoryService } from '../services/write-directory.service'
 import { _7zip } from '../tools/7zip'
 import { LifecycleManager } from './lifecycle-manager.service'
+import { trackEvent } from '@aptabase/electron/main'
 
 @Injectable()
 export class SubscriptionManager {
@@ -190,6 +191,8 @@ export class SubscriptionManager {
         })
       }
     }
+
+    await trackEvent('mod_subscribed', { mod_id: modId, mod_version: latestRelease.version })
   }
 
   async unsubscribe(modId: string): Promise<void> {

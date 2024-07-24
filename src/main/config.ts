@@ -13,6 +13,7 @@ export type MainConfig = {
   defaultRegistryUrl: string
   appDataName: string
   appData: string
+  aptabaseAppKey?: string
   rcloneInstance: AxiosRequestConfig
   typeOrm: TypeOrmModuleOptions
   appOptions: NestApplicationContextOptions
@@ -25,6 +26,7 @@ export const config: MainConfig = {
   defaultRegistryUrl: 'https://develop.dcs-mod-manager-registry.pages.dev/',
   appDataName,
   appData,
+  aptabaseAppKey: import.meta.env.MAIN_VITE_APTABASE_APP_KEY,
   rcloneInstance: {
     baseURL: 'http://127.0.0.1:5572'
   },

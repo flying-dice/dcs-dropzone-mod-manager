@@ -3,10 +3,22 @@ import { join } from 'node:path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { type INestApplicationContext, Logger } from '@nestjs/common'
 import { app, BrowserWindow, shell } from 'electron'
+import { initialize, trackEvent } from '@aptabase/electron/main'
 import { createIPCHandler } from 'electron-trpc/main'
 import icon from '../../resources/icon.png?asset'
 import { getAppWithRouter } from './router'
 import { ConfigService } from './services/config.service'
+import { config } from './config'
+import { getrclone } from './tools/rclone'
+
+if (config.aptabaseAppKey) {
+  Logger.log('Initializing Aptabase', 'main')
+  initialize(config.aptabaseAppKey).then(() =>
+    Logger.log(`Aptabase initialized ${config.aptabaseAppKey?.replace(/\d/g, '*')}`, 'main')
+  )
+} else {
+  Logger.warn('No Aptabase app key provided, skipping initialization', 'main')
+}
 
 const windowDefault = JSON.stringify([900, 670, 0, 0])
 
@@ -63,6 +75,12 @@ async function createWindow(app: INestApplicationContext): Promise<BrowserWindow
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 
+  trackEvent('app_window_created')
+    .then(() => Logger.log('Aptabase event sent for app_window_created', 'main'))
+    .catch((err) =>
+      Logger.error(`Aptabase event failed for app_window_created ${err.toString()}`, 'main')
+    )
+
   return mainWindow
 }
 
@@ -94,11 +112,16 @@ app.whenReady().then(async () => {
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    Logger.log('All windows closed, quitting app', 'main')
-    app.quit()
-  }
+app.on('window-all-closed', async () => {
+  Logger.log('All windows closed, quitting app', 'main')
+  await trackEvent('app_quit')
+    .then(() => Logger.log('Aptabase event sent for app_quit', 'main'))
+    .catch((err) => Logger.error(`Aptabase event failed for app_quit ${err.toString()}`, 'main'))
+
+  const rclone = await getrclone()
+  await rclone.stopDaemon()
+
+  app.quit()
 })
 
 // In this file you can include the rest of your app"s specific main process

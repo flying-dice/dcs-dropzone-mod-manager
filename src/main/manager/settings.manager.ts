@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import { config } from '../config'
 import { getDefaultGameDir } from '../functions/getDefaultGameDir'
 import { getDefaultWriteDir } from '../functions/getDefaultWriteDir'
@@ -13,8 +13,6 @@ import { ConfigService } from '../services/config.service'
  */
 @Injectable()
 export class SettingsManager {
-  private readonly logger = new Logger(SettingsManager.name)
-
   @Inject(ConfigService)
   private configGateway: ConfigService
 
@@ -23,7 +21,6 @@ export class SettingsManager {
    */
   async getRegistryUrl(): Promise<string> {
     const url = (await this.configGateway.getConfigValue('registryUrl'))?.value
-    this.logger.log(`Using registry URL: ${url}`)
     return url || config.defaultRegistryUrl
   }
 

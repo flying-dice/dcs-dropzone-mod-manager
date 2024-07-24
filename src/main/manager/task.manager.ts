@@ -11,6 +11,8 @@ import { AssetTaskEntity, AssetTaskStatus, AssetTaskType } from '../entities/ass
 import { DownloadTaskProcessor } from '../processor/download-task.processor'
 import { ExtractTaskProcessor } from '../processor/extract-task.processor'
 import { TaskProcessor } from '../processor/task.processor'
+import { trackEvent } from '@aptabase/electron/main'
+import { formatError } from '../functions/formatError'
 
 @Injectable()
 export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -49,15 +51,17 @@ export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdow
 
   async checkForPendingTasks() {
     // Get the current task being processed
-    let task = await this.assetTaskRepository.findOneBy({
-      status: AssetTaskStatus.IN_PROGRESS
+    let task = await this.assetTaskRepository.findOne({
+      where: { status: AssetTaskStatus.IN_PROGRESS },
+      relations: ['releaseAsset', 'releaseAsset.release', 'releaseAsset.release.subscription']
     })
 
     // If there is no task being processed, get the next pending task by going in ID descending order sequentially
     if (!task) {
       task = await this.assetTaskRepository.findOne({
         where: { status: AssetTaskStatus.PENDING },
-        order: { id: 'asc', sequence: 'asc' }
+        order: { id: 'asc', sequence: 'asc' },
+        relations: ['releaseAsset', 'releaseAsset.release', 'releaseAsset.release.subscription']
       })
     }
 
@@ -85,6 +89,15 @@ export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdow
       await processor.process(task)
     } catch (error) {
       this.logger.error(`Error processing task ${task.id}`, error)
+      await trackEvent('task_process_error', {
+        task_id: task.id,
+        task_type: task.type,
+        mod_id: task.releaseAsset.release.subscription.modId,
+        mod_version: task.releaseAsset.release.version,
+        asset_source: task.releaseAsset.source,
+        asset_target: task.releaseAsset.target,
+        ...formatError(error as Error)
+      })
       task.status = AssetTaskStatus.FAILED
     }
 
@@ -95,6 +108,15 @@ export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdow
         await processor.postProcess(task)
       } catch (error) {
         this.logger.error(`Error post processing task ${task.id}`, error)
+        await trackEvent('task_post_process_error', {
+          task_id: task.id,
+          task_type: task.type,
+          mod_id: task.releaseAsset.release.subscription.modId,
+          mod_version: task.releaseAsset.release.version,
+          asset_source: task.releaseAsset.source,
+          asset_target: task.releaseAsset.target,
+          ...formatError(error as Error)
+        })
       }
       this.taskProcessors.delete(task.id)
     }
