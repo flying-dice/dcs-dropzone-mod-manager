@@ -14,6 +14,7 @@ asarUnpack:
 win:
   icon: build/icon.png
   executableName: dcs-dropzone
+  requestedExecutionLevel: requireAdministrator
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
