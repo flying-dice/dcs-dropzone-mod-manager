@@ -45,7 +45,7 @@ export const RegistryForm: React.FC<RegistryFormProps> = ({
   return (
     <Stack>
       <TextInput
-        label={'Registry RL'}
+        label={'Registry URL'}
         description={'Enter a registry URL to use for mods'}
         placeholder={defaultRegistryUrl.data}
         {...form.getInputProps('url')}

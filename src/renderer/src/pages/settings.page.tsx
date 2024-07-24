@@ -74,7 +74,7 @@ const Configurables: React.FC = () => {
             children: (
               <RegistryForm
                 initialValues={{
-                  url: registryUrl.value.data?.value || defaultRegistryUrl
+                  url: registryUrl.value.data?.value || defaultRegistryUrl.data || ''
                 }}
                 onCancel={closeAllModals}
                 onSubmit={(values) => {
