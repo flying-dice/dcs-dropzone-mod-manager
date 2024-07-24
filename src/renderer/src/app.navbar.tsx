@@ -1,5 +1,5 @@
 import { AppShell, useMantineTheme } from '@mantine/core'
-import type React from 'react'
+import React from 'react'
 import { AppNav } from './components/app-nav'
 import { config } from './config'
 

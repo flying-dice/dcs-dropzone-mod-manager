@@ -8,7 +8,7 @@ import {
   Table,
   Text
 } from '@mantine/core'
-import type React from 'react'
+import React from 'react'
 import { VscLinkExternal } from 'react-icons/vsc'
 import useSWR from 'swr'
 import { client } from '../client'

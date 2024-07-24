@@ -1,6 +1,6 @@
 import { AppShell, Divider, Group, Stack, Text, Title, useMantineTheme } from '@mantine/core'
 import bytes from 'bytes'
-import type React from 'react'
+import React from 'react'
 import { useRclone } from './hooks/useRclone'
 
 export type AppHeaderProps = {}

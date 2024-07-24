@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ScheduleModule } from '@nestjs/schedule'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import type { EntitySchema } from 'typeorm'
+import { EntitySchema } from 'typeorm'
 import { config } from './config'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { SettingsManager } from './manager/settings.manager'

@@ -1,7 +1,7 @@
 import { Alert, Button, Group, Stack, Text, Title } from '@mantine/core'
 import { closeAllModals, openModal } from '@mantine/modals'
 import { isEmpty } from 'lodash'
-import type React from 'react'
+import React from 'react'
 import useSWR from 'swr'
 import { client } from '../client'
 import { SettingEntry } from '../container/setting-entry'

@@ -6,11 +6,11 @@ import {
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import Aigle from 'aigle'
-import type { Repository } from 'typeorm'
+import { Repository } from 'typeorm'
 import { AssetTaskEntity, AssetTaskStatus, AssetTaskType } from '../entities/asset-task.entity'
 import { DownloadTaskProcessor } from '../processor/download-task.processor'
 import { ExtractTaskProcessor } from '../processor/extract-task.processor'
-import type { TaskProcessor } from '../processor/task.processor'
+import { TaskProcessor } from '../processor/task.processor'
 
 @Injectable()
 export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdown {

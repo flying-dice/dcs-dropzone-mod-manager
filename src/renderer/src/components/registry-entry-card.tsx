@@ -1,7 +1,7 @@
 import { Card, Group, Image, Indicator, Stack, Text } from '@mantine/core'
-import type React from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import type { RegistryIndexItem } from '../../../lib/client'
+import { RegistryIndexItem } from '../../../lib/client'
 import { useRegistryUrl } from '../hooks/useRegistryUrl'
 
 export type RegistryEntryCardProps = {

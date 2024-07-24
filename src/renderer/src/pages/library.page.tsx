@@ -1,7 +1,7 @@
 import { CodeHighlight } from '@mantine/code-highlight'
 import { Alert, Group, Stack, Text, TextInput, Title } from '@mantine/core'
 import { pick } from 'lodash'
-import type React from 'react'
+import React from 'react'
 import { useMemo } from 'react'
 import { VscSearch, VscWarning } from 'react-icons/vsc'
 import { stringify } from 'yaml'

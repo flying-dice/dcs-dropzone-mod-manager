@@ -1,5 +1,5 @@
 import { Alert, Modal, Stack, Text, Title } from '@mantine/core'
-import type React from 'react'
+import React from 'react'
 import useSWR from 'swr'
 import { client } from '../client'
 import { SettingEntry } from '../container/setting-entry'

@@ -1,6 +1,6 @@
 import { Button, type ButtonProps, Collapse, type CollapseProps, Stack } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import type React from 'react'
+import React from 'react'
 import { VscChevronDown, VscChevronRight } from 'react-icons/vsc'
 
 export type CollapsibleProps = {

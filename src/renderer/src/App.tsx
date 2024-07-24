@@ -1,5 +1,5 @@
 import { AppShell } from '@mantine/core'
-import type { FC } from 'react'
+import { FC } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { AppHeader } from './app.header'
 import { AppNavbar } from './app.navbar'

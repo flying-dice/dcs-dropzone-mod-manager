@@ -1,5 +1,5 @@
 import { spawn } from 'child_process'
-import type { ChildProcessWithoutNullStreams } from 'node:child_process'
+import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { Logger } from '@nestjs/common'

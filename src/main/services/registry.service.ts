@@ -1,26 +1,27 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import {
   type EntryLatestRelease,
   getRegistryEntry,
   getRegistryEntryLatestRelease,
   type RegistryIndexItem
 } from '../../lib/client'
-import type { SettingsManager } from '../manager/settings.manager'
+import { SettingsManager } from '../manager/settings.manager'
 
 @Injectable()
 export class RegistryService {
-  constructor(protected settingsService: SettingsManager) {}
+  @Inject()
+  protected settingsManager: SettingsManager
 
   async getRegistryIndex(modId: string): Promise<RegistryIndexItem> {
     const { data } = await getRegistryEntry(modId, {
-      baseURL: await this.settingsService.getRegistryUrl()
+      baseURL: await this.settingsManager.getRegistryUrl()
     })
     return data
   }
 
   async getLatestRelease(modId: string): Promise<EntryLatestRelease> {
     const { data } = await getRegistryEntryLatestRelease(modId, {
-      baseURL: await this.settingsService.getRegistryUrl()
+      baseURL: await this.settingsManager.getRegistryUrl()
     })
     return data
   }

@@ -1,6 +1,6 @@
 import { Button, Group, Stack, TextInput } from '@mantine/core'
 import { useForm, zodResolver } from '@mantine/form'
-import type React from 'react'
+import React from 'react'
 import useSWR from 'swr'
 import { z } from 'zod'
 import { getRegistryIndex } from '../../../lib/client'

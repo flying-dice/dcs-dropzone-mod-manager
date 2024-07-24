@@ -1,12 +1,12 @@
 import { Combobox, TextInput } from '@mantine/core'
-import type React, { ReactNode } from 'react'
+import React from 'react'
 import { useConfig } from '../hooks/useConfig'
 import ClearButton = Combobox.ClearButton
 
 export type SettingEntryProps = {
   name: string
-  label: ReactNode
-  description: ReactNode
+  label: React.ReactNode
+  description: React.ReactNode
   defaultValue?: string
   onClick: () => void
   disabled?: boolean

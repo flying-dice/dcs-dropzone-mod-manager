@@ -4,24 +4,24 @@ import { InjectRepository } from '@nestjs/typeorm'
 import Aigle from 'aigle'
 import { ensureDirSync, rmdir } from 'fs-extra'
 import { flatten } from 'lodash'
-import type { Repository } from 'typeorm'
-import type { TaskState } from '../../lib/types'
+import { Repository } from 'typeorm'
+import { TaskState } from '../../lib/types'
 import {
   AssetTaskEntity,
   AssetTaskStatus,
   AssetTaskType,
-  type DownloadTaskPayload,
-  type ExtractTaskPayload
+  DownloadTaskPayload,
+  ExtractTaskPayload
 } from '../entities/asset-task.entity'
 import { ReleaseAssetEntity } from '../entities/release-asset.entity'
 import { ReleaseEntity } from '../entities/release.entity'
 import { SubscriptionEntity } from '../entities/subscription.entity'
 import { getUrlPartsForDownload } from '../functions/getUrlPartsForDownload'
-import type { FsService } from '../services/fs.service'
-import type { RegistryService } from '../services/registry.service'
-import type { WriteDirectoryService } from '../services/write-directory.service'
+import { FsService } from '../services/fs.service'
+import { RegistryService } from '../services/registry.service'
+import { WriteDirectoryService } from '../services/write-directory.service'
 import { _7zip } from '../tools/7zip'
-import type { LifecycleManager } from './lifecycle-manager.service'
+import { LifecycleManager } from './lifecycle-manager.service'
 
 @Injectable()
 export class SubscriptionManager {

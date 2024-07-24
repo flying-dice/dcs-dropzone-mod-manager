@@ -3,14 +3,14 @@ import { dirname, join } from 'node:path'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { ensureDirSync, rm, symlink } from 'fs-extra'
-import type { Repository } from 'typeorm'
+import { Repository } from 'typeorm'
 import { ReleaseAssetEntity } from '../entities/release-asset.entity'
 import { ReleaseEntity } from '../entities/release.entity'
 import { SubscriptionEntity } from '../entities/subscription.entity'
-import type { FsService } from '../services/fs.service'
-import type { WriteDirectoryService } from '../services/write-directory.service'
+import { FsService } from '../services/fs.service'
+import { WriteDirectoryService } from '../services/write-directory.service'
 import { HashPath } from '../utils/hash-path'
-import type { SettingsManager } from './settings.manager'
+import { SettingsManager } from './settings.manager'
 
 /**
  * Manages the toggling of a mod between enabled and disabled states

@@ -9,7 +9,7 @@ import {
   TextInput,
   Tooltip
 } from '@mantine/core'
-import type React from 'react'
+import React from 'react'
 import { BiCheckbox, BiCheckboxChecked } from 'react-icons/bi'
 import { BsThreeDotsVertical } from 'react-icons/bs'
 import { client } from '../client'

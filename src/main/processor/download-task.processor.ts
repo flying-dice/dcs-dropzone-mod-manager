@@ -10,7 +10,7 @@ import {
   AssetTaskStatus,
   type DownloadTaskPayload
 } from '../entities/asset-task.entity'
-import type { TaskProcessor } from './task.processor'
+import { TaskProcessor } from './task.processor'
 
 export class DownloadTaskProcessor implements TaskProcessor<DownloadTaskPayload> {
   protected readonly logger = new Logger(DownloadTaskProcessor.name)
