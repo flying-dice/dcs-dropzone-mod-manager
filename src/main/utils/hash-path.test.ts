@@ -1,5 +1,11 @@
-import { describe, expect, it } from 'vitest'
+import { vi, describe, expect, it } from 'vitest'
 import { HashPath } from './hash-path'
+
+vi.mock('electron', () => ({
+  app: {
+    getPath: (path) => `C:\\TEST\\${path}`
+  }
+}))
 
 describe('HashPath', () => {
   it('should correctly identify hash paths', () => {

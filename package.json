@@ -43,7 +43,8 @@
     "dev": "electron-vite dev",
     "build": "rimraf dist && electron-vite build && electron-builder --win --config",
     "generate-client": "orval --config ./orval.config.js",
-    "test": "vitest --no-watch"
+    "test:main": "vitest --no-watch --config vitest.config.main.ts",
+    "test": "npm run test:main"
   },
   "dependencies": {
     "@aptabase/electron": "^0.3.1",
@@ -95,6 +96,7 @@
     "swr": "^2.2.4",
     "ts-pattern": "^5.0.6",
     "typeorm": "^0.3.20",
+    "unplugin-swc": "^1.5.1",
     "unzipper": "^0.10.14",
     "winston": "^3.13.0",
     "workerpool": "^9.1.0",
@@ -111,7 +113,7 @@
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^9.2.6",
     "@semantic-release/release-notes-generator": "^12.1.0",
-    "@swc/core": "^1.7.0",
+    "@swc/core": "^1.7.1",
     "@types/glob": "^8.1.0",
     "@types/lodash": "^4.17.0",
     "@types/node": "^18.17.5",
@@ -129,6 +131,6 @@
     "semantic-release": "^22.0.12",
     "typescript": "5.1.6",
     "vite": "^4.4.9",
-    "vitest": "^1.4.0"
+    "vitest": "2.0.4"
   }
 }
