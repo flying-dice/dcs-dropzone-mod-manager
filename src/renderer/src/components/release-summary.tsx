@@ -1,7 +1,7 @@
-import React from 'react'
 import { Anchor, Badge, Group, Stack, Text } from '@mantine/core'
 import ms from 'ms'
-import { EntryLatestRelease } from '../../../client'
+import React from 'react'
+import { EntryLatestRelease } from '../../../lib/client'
 
 export type ReleaseSummaryProps = {
   latest?: boolean

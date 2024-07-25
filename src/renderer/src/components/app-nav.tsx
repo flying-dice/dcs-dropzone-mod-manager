@@ -1,11 +1,11 @@
-import React, { ReactNode } from 'react'
 import { ActionIcon, Stack, Tooltip } from '@mantine/core'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export type AppNavItem = {
   path: string
   tooltip: string
-  icon: ReactNode
+  icon: React.ReactNode
 }
 export type AppNavProps = {
   items: AppNavItem[]

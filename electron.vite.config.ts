@@ -1,13 +1,20 @@
-import { resolve } from 'path'
-import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
+import { resolve } from 'node:path'
 import react from '@vitejs/plugin-react'
+import { defineConfig, externalizeDepsPlugin, swcPlugin } from 'electron-vite'
+import swc from 'unplugin-swc'
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [
+      externalizeDepsPlugin(),
+      swcPlugin(),
+      swc.vite({
+        tsconfigFile: './tsconfig.node.json'
+      })
+    ]
   },
   preload: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin(), swcPlugin()]
   },
   renderer: {
     resolve: {

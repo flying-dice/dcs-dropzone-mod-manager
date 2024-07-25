@@ -5,7 +5,11 @@ export interface ErrorWithDetails extends Error {
 }
 
 export const showErrorNotification = (error: ErrorWithDetails) => {
-  showNotification({ color: 'red', title: error.title || 'Error', message: error.message })
+  showNotification({
+    color: 'red',
+    title: error.title || 'Error',
+    message: error.message
+  })
 }
 
 export const showSuccessNotification = (message: string) => {
