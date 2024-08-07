@@ -3,6 +3,7 @@
   "include": [
     "src/renderer/src/env.d.ts",
     "src/renderer/src/**/*",
+    "src/renderer/src/**/*.tsx",
     "src/preload/*.d.ts",
     "src/main/*.d.ts",
     "src/lib/**/*"
@@ -11,6 +12,8 @@
     "composite": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "useUnknownInCatchVariables": false,
     "strictPropertyInitialization": false,
     "paths": {
