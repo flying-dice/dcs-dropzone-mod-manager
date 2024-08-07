@@ -10,6 +10,13 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/ban-types': 'off',
     'no-empty-pattern': 'off',
-    '@typescript-eslint/no-explicit-any': 'off'
+    '@typescript-eslint/no-explicit-any': 'off',
+    'linebreak-style': ['error', 'windows'],
+    'prettier/prettier': [
+      'error',
+      {
+        endOfLine: 'crlf'
+      }
+    ]
   }
 }
