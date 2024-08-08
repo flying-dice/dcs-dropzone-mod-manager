@@ -3,6 +3,7 @@
 DCS Dropzone is an Electron application built with the following technologies:
 
 - [TypeScript](https://www.typescriptlang.org/) - Language
+- [PNPM](https://pnpm.io/) - Package Manager
 
 - [Electron](https://www.electronjs.org/) - Desktop Application
 - [Electron Vite](https://electron-vite.org/) - Development and Build Tools
@@ -36,7 +37,7 @@ The following is a brief overview of the project structure:
 To get started clone the project and run the following command to install the project dependencies:
 
 ```bash
-$ npm install
+$ pnpm install
 ```
 
 ### Development
@@ -44,7 +45,7 @@ $ npm install
 To run the project in development mode, run:
 
 ```bash
-$ npm run dev
+$ pnpm run dev
 ```
 
 This will enable hot-reloading (for the renderer) and open the application in a new window.
@@ -56,7 +57,7 @@ Hot Reloading for the main process is not supported at the moment, so you will n
 To build the project, run:
 
 ```bash
-$ npm run build
+$ pnpm run build
 ```
 
 This will generate a `dist` folder with the compiled files.

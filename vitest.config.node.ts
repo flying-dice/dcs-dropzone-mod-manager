@@ -1,12 +1,9 @@
-import swc from 'unplugin-swc'
+// vitest.config.ts
 import { defineConfig } from 'vitest/config'
+import { swcPlugin } from 'electron-vite'
 
 export default defineConfig({
-  plugins: [
-    swc.vite({
-      tsconfigFile: './tsconfig.node.json'
-    }) as any
-  ],
+  plugins: [swcPlugin()],
   test: {
     setupFiles: ['./vitest.setup.ts'],
     globals: true

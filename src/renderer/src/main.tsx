@@ -10,8 +10,6 @@ import { Notifications } from '@mantine/notifications'
 import { HashRouter } from 'react-router-dom'
 import { App } from './App'
 import { client } from './client'
-import '@fontsource/genos/700.css'
-import '@fontsource/dela-gothic-one/400.css'
 import '@fontsource/montserrat/600-italic.css'
 import { trackEvent } from '@aptabase/electron/renderer'
 

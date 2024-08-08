@@ -9,7 +9,16 @@ module.exports = {
   rules: {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/ban-types': 'off',
+    '@typescript-eslint/no-empty-object-type': 'off',
+    '@typescript-eslint/no-duplicate-enum-values': 'off',
     'no-empty-pattern': 'off',
-    '@typescript-eslint/no-explicit-any': 'off'
+    '@typescript-eslint/no-explicit-any': 'off',
+    'linebreak-style': ['error', 'windows'],
+    'prettier/prettier': [
+      'error',
+      {
+        endOfLine: 'crlf'
+      }
+    ]
   }
 }
