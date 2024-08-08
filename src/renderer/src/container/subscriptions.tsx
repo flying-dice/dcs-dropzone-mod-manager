@@ -17,6 +17,7 @@ import { useFuse } from '../hooks/useFuse'
 import { useSubscriptionRelease } from '../hooks/useSubscriptionRelease'
 import { useSubscriptions } from '../hooks/useSubscriptions'
 import { showErrorNotification, showSuccessNotification } from '../utils/notifications'
+import { useNavigate } from 'react-router-dom'
 
 const SubscriptionRow: React.FC<{
   modId: string
@@ -25,6 +26,7 @@ const SubscriptionRow: React.FC<{
   onOpenSymlinksModal: (modId: string) => void
 }> = ({ modId, modName, created, onOpenSymlinksModal }) => {
   const subscriptions = useSubscriptions()
+  const navigate = useNavigate()
   const release = useSubscriptionRelease(modId)
 
   async function handleUnsubscribe(modId: string, name: string) {
@@ -99,7 +101,8 @@ const SubscriptionRow: React.FC<{
             >
               {release.data?.enabled ? 'Disable' : 'Enable'}
             </Menu.Item>
-            <Menu.Item onClick={() => onOpenSymlinksModal(modId)}>View Details</Menu.Item>
+            <Menu.Item onClick={() => navigate(`/library/${modId}`)}>View Mod Page</Menu.Item>
+            <Menu.Item onClick={() => onOpenSymlinksModal(modId)}>View Install Details</Menu.Item>
             <Menu.Item onClick={() => client.openInExplorer.mutate({ modId: modId })}>
               Open in Explorer
             </Menu.Item>
