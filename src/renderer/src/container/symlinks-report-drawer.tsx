@@ -21,8 +21,8 @@ const _SymlinksReportDrawer: React.FC<{ modId: string }> = ({ modId }) => {
       <Table>
         <Table.Thead>
           <Table.Tr>
-            <Table.Th>Source</Table.Th>
-            <Table.Th>Installed Path</Table.Th>
+            <Table.Th>True Source</Table.Th>
+            <Table.Th>Linked DCS Location</Table.Th>
             <Table.Th>Open</Table.Th>
           </Table.Tr>
         </Table.Thead>
@@ -33,13 +33,14 @@ const _SymlinksReportDrawer: React.FC<{ modId: string }> = ({ modId }) => {
                 <Text size={'sm'}>{asset.source}</Text>
               </Table.Td>
               <Table.Td>
-                <Text size={'sm'}>{asset.symlinkPath || 'Not Installed'}</Text>
+                <Text size={'sm'}>{asset.symlinkPath || 'Unlinked'}</Text>
               </Table.Td>
               <Table.Td w={64}>
                 <ActionIcon
                   onClick={() => client.openAssetInExplorer.mutate({ assetId: asset.id })}
                   variant={'transparent'}
                   size={'sm'}
+                  disabled={!asset.symlinkPath}
                 >
                   <VscLinkExternal />
                 </ActionIcon>
