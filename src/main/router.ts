@@ -71,6 +71,11 @@ export async function getAppWithRouter() {
         .mutation(
           async ({ input }): Promise<void> => app.get(SubscriptionManager).unsubscribe(input.modId)
         ),
+      update: trpc.procedure
+        .input(z.object({ modId: z.string() }))
+        .mutation(
+          async ({ input }): Promise<void> => app.get(SubscriptionManager).update(input.modId)
+        ),
       openInExplorer: trpc.procedure
         .input(z.object({ modId: z.string() }))
         .mutation(
