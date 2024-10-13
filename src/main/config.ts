@@ -23,7 +23,7 @@ const appDataName = 'dcs-dropzone'
 const appData = app.getPath('appData')
 
 export const config: MainConfig = {
-  defaultRegistryUrl: 'https://develop.dcs-mod-manager-registry.pages.dev/',
+  defaultRegistryUrl: 'https://dcs-mod-manager-registry.pages.dev/',
   appDataName,
   appData,
   aptabaseAppKey: import.meta.env.MAIN_VITE_APTABASE_APP_KEY,
