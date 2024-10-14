@@ -215,4 +215,14 @@ export class SubscriptionManager {
       )
     }
   }
+
+  async update(modId: string) {
+    this.logger.log(`Updating mod ${modId}`)
+
+    this.logger.debug(`Unsubscribing from mod ${modId}`)
+    await this.unsubscribe(modId)
+
+    this.logger.debug(`Subscribing to mod ${modId}`)
+    await this.subscribe(modId)
+  }
 }

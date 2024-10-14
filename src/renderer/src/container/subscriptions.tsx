@@ -1,6 +1,8 @@
 import {
   ActionIcon,
   Alert,
+  Badge,
+  Group,
   Menu,
   Progress,
   Stack,
@@ -18,6 +20,7 @@ import { useSubscriptionRelease } from '../hooks/useSubscriptionRelease'
 import { useSubscriptions } from '../hooks/useSubscriptions'
 import { showErrorNotification, showSuccessNotification } from '../utils/notifications'
 import { useNavigate } from 'react-router-dom'
+import { useRegistryEntry } from '@renderer/hooks/useRegistryEntry'
 
 const SubscriptionRow: React.FC<{
   modId: string
@@ -28,6 +31,8 @@ const SubscriptionRow: React.FC<{
   const subscriptions = useSubscriptions()
   const navigate = useNavigate()
   const release = useSubscriptionRelease(modId)
+  const registryEntry = useRegistryEntry(modId)
+  const isUpToDate = release.data?.version === registryEntry.latestRelease.data?.data.version
 
   async function handleUnsubscribe(modId: string, name: string) {
     try {
@@ -68,7 +73,12 @@ const SubscriptionRow: React.FC<{
       <Table.Td>
         <Text>{modName}</Text>
       </Table.Td>
-      <Table.Td>{release.data?.version}</Table.Td>
+      <Table.Td>
+        <Group>
+          <Text>{release.data?.version}</Text>
+          <Badge>{isUpToDate ? 'Latest' : 'Outdated'}</Badge>
+        </Group>
+      </Table.Td>
       <Table.Td>
         {release.data?.status === 'In Progress' || release.data?.status === 'Pending' ? (
           <Tooltip label={release.data.label}>
@@ -95,6 +105,9 @@ const SubscriptionRow: React.FC<{
             </ActionIcon>
           </Menu.Target>
           <Menu.Dropdown>
+            {!isUpToDate && (
+              <Menu.Item onClick={() => client.update.mutate({ modId })}>Update</Menu.Item>
+            )}
             <Menu.Item
               onClick={() => handleToggleMod(modId)}
               disabled={release.data?.status !== 'Completed'}
@@ -103,7 +116,7 @@ const SubscriptionRow: React.FC<{
             </Menu.Item>
             <Menu.Item onClick={() => navigate(`/library/${modId}`)}>View Mod Page</Menu.Item>
             <Menu.Item onClick={() => onOpenSymlinksModal(modId)}>View Install Details</Menu.Item>
-            <Menu.Item onClick={() => client.openInExplorer.mutate({ modId: modId })}>
+            <Menu.Item onClick={() => client.openInExplorer.mutate({ modId })}>
               Open in Explorer
             </Menu.Item>
             <Menu.Item onClick={() => handleUnsubscribe(modId, modName)}>Unsubscribe</Menu.Item>
