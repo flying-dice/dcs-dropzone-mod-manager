@@ -45,6 +45,8 @@ export interface EntryLatestRelease {
   tag: string
   /** The version of the release */
   version: string
+  /** The path to the exe if one exists */
+  exePath?: string
 }
 
 /**

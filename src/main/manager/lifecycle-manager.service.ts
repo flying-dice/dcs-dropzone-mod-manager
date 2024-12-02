@@ -10,7 +10,7 @@ import { SubscriptionEntity } from '../entities/subscription.entity'
 import { FsService } from '../services/fs.service'
 import { WriteDirectoryService } from '../services/write-directory.service'
 import { HashPath } from '../utils/hash-path'
-import { SettingsManager } from './settings.manager'
+import { SettingsManager } from './settings.manager' 
 
 /**
  * Manages the toggling of a mod between enabled and disabled states

@@ -134,7 +134,13 @@ export async function getAppWithRouter() {
       ),
       getRegistryUrl: trpc.procedure.query(
         async (): Promise<string> => app.get(SettingsManager).getRegistryUrl()
-      )
+      ),
+      runExe: trpc.procedure
+        .input(z.object({ modId: z.string(), exePath: z.string() }))
+        .mutation(
+          ({ input }): Promise<void> =>
+            app.get(SubscriptionManager).runExe(input.modId, input.exePath)
+        )
     })
   }
 }

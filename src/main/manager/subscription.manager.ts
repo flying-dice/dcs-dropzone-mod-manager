@@ -23,6 +23,7 @@ import { WriteDirectoryService } from '../services/write-directory.service'
 import { _7zip } from '../tools/7zip'
 import { LifecycleManager } from './lifecycle-manager.service'
 import { trackEvent } from '@aptabase/electron/main'
+import { execFile } from 'node:child_process'
 
 @Injectable()
 export class SubscriptionManager {
@@ -126,7 +127,8 @@ export class SubscriptionManager {
     this.logger.debug(`Saving subscription for mod ${modId}`)
     const subscription = await this.subscriptionRepository.save({
       modId: mod.id,
-      modName: mod.name
+      modName: mod.name,
+      exePath: latestRelease.exePath
     })
 
     this.logger.debug(`Saving latest release for mod ${modId}`)
@@ -213,6 +215,16 @@ export class SubscriptionManager {
       await this.fsService.openFolder(
         await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription.id)
       )
+    }
+  }
+
+  async runExe(modId: string, exePath: string) {
+    this.logger.debug(`Running exe: ${modId}, ${exePath}`)
+    const subscription = await this.subscriptionRepository.findOneBy({ modId })
+    if (subscription) {
+      execFile(exePath, {
+        cwd: await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription.id)
+      })
     }
   }
 
