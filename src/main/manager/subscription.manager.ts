@@ -1,4 +1,4 @@
-import { extname, join } from 'node:path'
+import { extname, join, dirname } from 'node:path'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import Aigle from 'aigle'
@@ -222,9 +222,27 @@ export class SubscriptionManager {
     this.logger.debug(`Running exe: ${modId}, ${exePath}`)
     const subscription = await this.subscriptionRepository.findOneBy({ modId })
     if (subscription) {
-      execFile(exePath, {
-        cwd: await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription.id)
-      })
+      const release = await this.releaseRepository.findOneBy({ subscription })
+      if (release) {
+        const cwd = await this.writeDirectoryService.getWriteDirectoryForRelease(
+          subscription.id,
+          release?.id
+        )
+        const fullpath = join(cwd, exePath)
+        const path = dirname(fullpath)
+
+        execFile(fullpath, [], { cwd: path }, (error, stdout, stderr) => {
+          if (error) {
+            this.logger.error(`Error running exe: ${error}`)
+          }
+          if (stdout) {
+            this.logger.debug(`stdout: ${stdout}`)
+          }
+          if (stderr) {
+            this.logger.error(`stderr: ${stderr}`)
+          }
+        })
+      }
     }
   }
 
