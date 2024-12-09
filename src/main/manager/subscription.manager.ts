@@ -152,16 +152,7 @@ export class SubscriptionManager {
       })
 
       this.logger.debug('Creating Release Asset Tasks')
-      let source = releaseAsset.source
-
-      /** Should be moved to the integration pipeline when generating index.md from releases */
-      if (mod.integration) {
-        switch (mod.integration.type) {
-          case 'github':
-            source = `https://github.com/${mod.integration.owner}/${mod.integration.repo}/releases/download/${latestRelease.version}/${releaseAsset.source}`
-            break
-        }
-      }
+      const source = releaseAsset.source
 
       const { baseUrl, file } = getUrlPartsForDownload(source)
       const downloadTaskPayload: DownloadTaskPayload = {
