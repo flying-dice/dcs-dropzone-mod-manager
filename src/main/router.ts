@@ -138,8 +138,7 @@ export async function getAppWithRouter() {
       runExe: trpc.procedure
         .input(z.object({ modId: z.string(), exePath: z.string() }))
         .mutation(
-          ({ input }): Promise<void> =>
-            app.get(SubscriptionManager).runExe(input.modId, input.exePath)
+          ({ input }): Promise<void> => app.get(LifecycleManager).runExe(input.modId, input.exePath)
         )
     })
   }

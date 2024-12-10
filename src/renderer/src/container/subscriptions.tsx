@@ -83,7 +83,7 @@ const SubscriptionRow: React.FC<{
         {exePath && (
           <ActionIcon
             size={'md'}
-            disabled={release.data?.status !== 'Completed'}
+            disabled={release.data?.status !== 'Completed' || !release.data?.enabled}
             variant={'subtle'}
             onClick={() => handleRunExe(modId, exePath)}
           >

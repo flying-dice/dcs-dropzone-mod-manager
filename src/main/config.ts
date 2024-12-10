@@ -42,7 +42,7 @@ export const config: MainConfig = {
   },
   appOptions: {
     // Uncomment this line to enable verbose logging
-    // logger: ['log', 'error', 'warn', 'debug', 'verbose']
-    logger: ['log', 'error', 'warn']
+    logger: ['fatal', 'error', 'warn', 'log', 'debug', 'verbose']
+    // logger: ['error', 'warn', 'log']
   }
 }

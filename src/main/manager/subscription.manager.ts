@@ -1,4 +1,4 @@
-import { extname, join, dirname } from 'node:path'
+import { extname, join } from 'node:path'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import Aigle from 'aigle'
@@ -23,7 +23,6 @@ import { WriteDirectoryService } from '../services/write-directory.service'
 import { _7zip } from '../tools/7zip'
 import { LifecycleManager } from './lifecycle-manager.service'
 import { trackEvent } from '@aptabase/electron/main'
-import { execFile } from 'node:child_process'
 
 @Injectable()
 export class SubscriptionManager {
@@ -154,16 +153,7 @@ export class SubscriptionManager {
       })
 
       this.logger.debug('Creating Release Asset Tasks')
-      let source = releaseAsset.source
-
-      /** Should be moved to the integration pipeline when generating index.md from releases */
-      if (mod.integration) {
-        switch (mod.integration.type) {
-          case 'github':
-            source = `https://github.com/${mod.integration.owner}/${mod.integration.repo}/releases/download/${latestRelease.version}/${releaseAsset.source}`
-            break
-        }
-      }
+      const source = releaseAsset.source
 
       const { baseUrl, file } = getUrlPartsForDownload(source)
       const downloadTaskPayload: DownloadTaskPayload = {
@@ -171,6 +161,7 @@ export class SubscriptionManager {
         file,
         folder: releaseWriteDir
       }
+
       await this.assetTaskRepository.save({
         releaseAsset,
         type: AssetTaskType.DOWNLOAD,
@@ -215,34 +206,6 @@ export class SubscriptionManager {
       await this.fsService.openFolder(
         await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription.id)
       )
-    }
-  }
-
-  async runExe(modId: string, exePath: string) {
-    this.logger.debug(`Running exe: ${modId}, ${exePath}`)
-    const subscription = await this.subscriptionRepository.findOneBy({ modId })
-    if (subscription) {
-      const release = await this.releaseRepository.findOneBy({ subscription })
-      if (release) {
-        const cwd = await this.writeDirectoryService.getWriteDirectoryForRelease(
-          subscription.id,
-          release?.id
-        )
-        const fullpath = join(cwd, exePath)
-        const path = dirname(fullpath)
-
-        execFile(fullpath, [], { cwd: path }, (error, stdout, stderr) => {
-          if (error) {
-            this.logger.error(`Error running exe: ${error}`)
-          }
-          if (stdout) {
-            this.logger.debug(`stdout: ${stdout}`)
-          }
-          if (stderr) {
-            this.logger.error(`stderr: ${stderr}`)
-          }
-        })
-      }
     }
   }
 
