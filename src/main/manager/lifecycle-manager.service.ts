@@ -10,7 +10,9 @@ import { SubscriptionEntity } from '../entities/subscription.entity'
 import { FsService } from '../services/fs.service'
 import { WriteDirectoryService } from '../services/write-directory.service'
 import { HashPath } from '../utils/hash-path'
-import { SettingsManager } from './settings.manager'
+import { VariablesService } from '../services/variables.service'
+import { getUrlPartsForDownload } from '../functions/getUrlPartsForDownload'
+import { execFile } from 'node:child_process'
 
 /**
  * Manages the toggling of a mod between enabled and disabled states
@@ -34,12 +36,10 @@ export class LifecycleManager {
   private readonly writeDirectoryService: WriteDirectoryService
 
   @Inject()
-  private readonly settingsManager: SettingsManager
-
-  @Inject()
   private readonly fsService: FsService
 
-  /**
+  @Inject(VariablesService)
+  private variablesService: VariablesService /**
    * Toggles the mod between enabled and disabled states
    * If the mod is enabled, it will be disabled
    * If the mod is disabled, it will be enabled
@@ -67,9 +67,11 @@ export class LifecycleManager {
     for (const releaseAsset of releaseAssets) {
       this.logger.debug(`Enabling release asset: ${releaseAsset.id}`)
 
+      const { baseUrl } = getUrlPartsForDownload(releaseAsset.source)
+
       let srcPath = join(
         await this.writeDirectoryService.getWriteDirectoryForRelease(subscription.id, release.id),
-        releaseAsset.source
+        releaseAsset.source.replace(baseUrl, '')
       )
 
       // If the source is a hash path, we need to extract the base path and make sure the symlink is for the exploded folder including internal route
@@ -79,7 +81,7 @@ export class LifecycleManager {
         srcPath = join(hashPath.basePathWithoutExt, hashPath.hashPath)
       }
 
-      const targetPath = join(await this.settingsManager.getGameDir(), releaseAsset.target)
+      const targetPath = await this.variablesService.replaceVariables(releaseAsset.target)
       this.logger.debug(
         `Creating Symlink for release asset: ${releaseAsset.id} from ${srcPath} to ${targetPath}`
       )
@@ -116,6 +118,30 @@ export class LifecycleManager {
     }
     release.enabled = false
     await this.releaseRepository.save(release)
+  }
+
+  async runExe(modId: string, exePath: string) {
+    this.logger.debug(`Running exe: ${modId}, ${exePath}`)
+    const subscription = await this.subscriptionRepository.findOneByOrFail({ modId })
+    const release = await this.releaseRepository.findOneByOrFail({ subscription })
+
+    if (!release.enabled) {
+      throw new Error(`Mod is not enabled, please enable it first and try again`)
+    }
+
+    const path = await this.variablesService.replaceVariables(exePath)
+
+    execFile(path, [], { cwd: dirname(path) }, (error, stdout, stderr) => {
+      if (error) {
+        this.logger.error(`Error running exe: ${error}`)
+      }
+      if (stdout) {
+        this.logger.debug(`stdout: ${stdout}`)
+      }
+      if (stderr) {
+        this.logger.error(`stderr: ${stderr}`)
+      }
+    })
   }
 
   /**

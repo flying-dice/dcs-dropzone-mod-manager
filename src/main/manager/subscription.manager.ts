@@ -126,7 +126,8 @@ export class SubscriptionManager {
     this.logger.debug(`Saving subscription for mod ${modId}`)
     const subscription = await this.subscriptionRepository.save({
       modId: mod.id,
-      modName: mod.name
+      modName: mod.name,
+      exePath: latestRelease.exePath
     })
 
     this.logger.debug(`Saving latest release for mod ${modId}`)
@@ -152,16 +153,7 @@ export class SubscriptionManager {
       })
 
       this.logger.debug('Creating Release Asset Tasks')
-      let source = releaseAsset.source
-
-      /** Should be moved to the integration pipeline when generating index.md from releases */
-      if (mod.integration) {
-        switch (mod.integration.type) {
-          case 'github':
-            source = `https://github.com/${mod.integration.owner}/${mod.integration.repo}/releases/download/${latestRelease.version}/${releaseAsset.source}`
-            break
-        }
-      }
+      const source = releaseAsset.source
 
       const { baseUrl, file } = getUrlPartsForDownload(source)
       const downloadTaskPayload: DownloadTaskPayload = {
@@ -169,6 +161,7 @@ export class SubscriptionManager {
         file,
         folder: releaseWriteDir
       }
+
       await this.assetTaskRepository.save({
         releaseAsset,
         type: AssetTaskType.DOWNLOAD,

@@ -16,7 +16,6 @@ import {
   Textarea,
   TextInput,
   Title,
-  Tooltip,
   TypographyStylesProvider
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
@@ -138,11 +137,9 @@ export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, la
               </Title>
               <AvatarGroup>
                 {entry.authors.map((it) => (
-                  <Tooltip key={it.name} label={it.name}>
-                    <Avatar src={it.url} alt={it.name}>
-                      {it.name.slice(0, 2)}
-                    </Avatar>
-                  </Tooltip>
+                  <Avatar key={it.name} src={it.url} alt={it.name}>
+                    {it.name.slice(0, 2)}
+                  </Avatar>
                 ))}
               </AvatarGroup>
             </Stack>

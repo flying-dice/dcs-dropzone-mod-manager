@@ -12,7 +12,7 @@ import {
   Tooltip
 } from '@mantine/core'
 import React from 'react'
-import { BiCheckbox, BiCheckboxChecked } from 'react-icons/bi'
+import { BiCheckbox, BiCheckboxChecked, BiPlay } from 'react-icons/bi'
 import { BsThreeDotsVertical } from 'react-icons/bs'
 import { client } from '../client'
 import { useFuse } from '../hooks/useFuse'
@@ -26,8 +26,9 @@ const SubscriptionRow: React.FC<{
   modId: string
   modName: string
   created: number
+  exePath: string | null
   onOpenSymlinksModal: (modId: string) => void
-}> = ({ modId, modName, created, onOpenSymlinksModal }) => {
+}> = ({ modId, modName, created, onOpenSymlinksModal, exePath }) => {
   const subscriptions = useSubscriptions()
   const navigate = useNavigate()
   const release = useSubscriptionRelease(modId)
@@ -54,21 +55,41 @@ const SubscriptionRow: React.FC<{
     }
   }
 
+  async function handleRunExe(modId: string, exePath: string) {
+    try {
+      await client.runExe.mutate({ modId, exePath })
+    } catch (err) {
+      showErrorNotification(err)
+    }
+  }
+
   return (
     <Table.Tr c={release.data?.enabled ? undefined : 'dimmed'}>
       <Table.Td>
-        <ActionIcon
-          size={'md'}
-          disabled={release.data?.status !== 'Completed'}
-          variant={'subtle'}
-          onClick={() => handleToggleMod(modId)}
-        >
-          {release.data?.enabled ? (
-            <BiCheckboxChecked size={'1.25em'} />
-          ) : (
-            <BiCheckbox size={'1.25em'} />
-          )}
-        </ActionIcon>
+        {!exePath && (
+          <ActionIcon
+            size={'md'}
+            disabled={release.data?.status !== 'Completed'}
+            variant={'subtle'}
+            onClick={() => handleToggleMod(modId)}
+          >
+            {release.data?.enabled ? (
+              <BiCheckboxChecked size={'1.25em'} />
+            ) : (
+              <BiCheckbox size={'1.25em'} />
+            )}
+          </ActionIcon>
+        )}
+        {exePath && (
+          <ActionIcon
+            size={'md'}
+            disabled={release.data?.status !== 'Completed' || !release.data?.enabled}
+            variant={'subtle'}
+            onClick={() => handleRunExe(modId, exePath)}
+          >
+            <BiPlay size={'1.25em'} />
+          </ActionIcon>
+        )}
       </Table.Td>
       <Table.Td>
         <Text>{modName}</Text>
@@ -166,6 +187,7 @@ export const Subscriptions: React.FC<SubscriptionsProps> = ({ onOpenSymlinksModa
                 modName={element.modName}
                 created={element.created}
                 onOpenSymlinksModal={onOpenSymlinksModal}
+                exePath={element.exePath}
               />
             ))}
           </Table.Tbody>

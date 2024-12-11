@@ -13,6 +13,9 @@ export class SubscriptionEntity {
   @Column()
   modName: string
 
+  @Column({ type: 'varchar', nullable: true })
+  exePath: string | null
+
   @Column({
     default: () => Date.now()
   })

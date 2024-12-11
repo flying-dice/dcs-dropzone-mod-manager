@@ -12,6 +12,7 @@ import { ConfigService } from './services/config.service'
 import { FsService } from './services/fs.service'
 import { RegistryService } from './services/registry.service'
 import { WriteDirectoryService } from './services/write-directory.service'
+import { VariablesService } from './services/variables.service'
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { WriteDirectoryService } from './services/write-directory.service'
     SubscriptionManager,
     TaskManager,
     LifecycleManager,
-    WriteDirectoryService
+    WriteDirectoryService,
+    VariablesService
   ]
 })
 export class AppModule {}
