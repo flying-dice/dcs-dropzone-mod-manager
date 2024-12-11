@@ -192,10 +192,18 @@ export class SubscriptionManager {
     const subscription = await this.subscriptionRepository.findOneBy({ modId })
     await this.toggleManager.disableMod(modId)
     if (subscription) {
-      await rmdir(
-        await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription.id),
-        { recursive: true }
-      )
+      try {
+        await rmdir(
+          await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription.id),
+          { recursive: true }
+        )
+      } catch (error) {
+        if (error.code === 'ENOENT') {
+          this.logger.warn(`Directory for subscription ${subscription.id} not found`)
+        } else {
+          throw error
+        }
+      }
       await this.subscriptionRepository.remove(subscription)
     }
   }
