@@ -1,44 +1,38 @@
-import { extname, join } from 'node:path'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-import Aigle from 'aigle'
 import { ensureDirSync, rmdir } from 'fs-extra'
-import { flatten } from 'lodash'
-import { Repository } from 'typeorm'
 import { TaskState } from '../../lib/types'
-import {
-  AssetTaskEntity,
-  AssetTaskStatus,
-  AssetTaskType,
-  DownloadTaskPayload,
-  ExtractTaskPayload
-} from '../entities/asset-task.entity'
-import { ReleaseAssetEntity } from '../entities/release-asset.entity'
-import { ReleaseEntity } from '../entities/release.entity'
-import { SubscriptionEntity } from '../entities/subscription.entity'
-import { getUrlPartsForDownload } from '../functions/getUrlPartsForDownload'
 import { FsService } from '../services/fs.service'
 import { RegistryService } from '../services/registry.service'
 import { WriteDirectoryService } from '../services/write-directory.service'
-import { _7zip } from '../tools/7zip'
 import { LifecycleManager } from './lifecycle-manager.service'
 import { trackEvent } from '@aptabase/electron/main'
+import { Subscription } from '../schemas/subscription.schema'
+import { Release } from '../schemas/release.schema'
+import { SubscriptionService } from '../services/subscription.service'
+import { ReleaseService } from '../services/release.service'
+import { Log } from '../utils/log'
+import { existsSync } from 'node:fs'
+import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
+import { getReleaseAsset } from '../utils/get-release-asset'
+
+export type SubscriptionReleaseState = {
+  enabled: boolean
+  version: string
+  status: TaskState
+  progress: number
+  label?: string
+  exePath?: string
+}
 
 @Injectable()
 export class SubscriptionManager {
   private readonly logger = new Logger(SubscriptionManager.name)
 
-  @InjectRepository(SubscriptionEntity)
-  private readonly subscriptionRepository: Repository<SubscriptionEntity>
+  @Inject(SubscriptionService)
+  private readonly subscriptionService: SubscriptionService
 
-  @InjectRepository(ReleaseEntity)
-  private readonly releaseRepository: Repository<ReleaseEntity>
-
-  @InjectRepository(ReleaseAssetEntity)
-  private readonly releaseAssetRepository: Repository<ReleaseAssetEntity>
-
-  @InjectRepository(AssetTaskEntity)
-  private readonly assetTaskRepository: Repository<AssetTaskEntity>
+  @Inject(ReleaseService)
+  private readonly releaseService: ReleaseService
 
   @Inject()
   private readonly registryService: RegistryService
@@ -52,42 +46,24 @@ export class SubscriptionManager {
   @Inject()
   private readonly toggleManager: LifecycleManager
 
-  async getAllSubscriptions(): Promise<SubscriptionEntity[]> {
-    return this.subscriptionRepository.find()
+  @Log()
+  async getAllSubscriptions(): Promise<Subscription[]> {
+    return this.subscriptionService.findAll()
   }
 
   /**
    * Gets the subscription and release for the mod or throws an error if not found
    * This is primarily used on the MyContent page to render the current subscriptions and their status
-   * @param modId
    */
-  async getSubscriptionReleaseState(modId: string): Promise<
-    | undefined
-    | {
-        enabled: boolean
-        version: string
-        status: TaskState
-        progress: number
-        label?: string
-      }
-  > {
-    const subscription = await this.subscriptionRepository.findOneBy({
-      modId: modId
-    })
-    if (!subscription) return undefined
-    const release = await this.releaseRepository.findOneBy({ subscription })
+  @Log()
+  async getSubscriptionReleaseState(id: string): Promise<SubscriptionReleaseState | undefined> {
+    const release = await this.releaseService.findBySubscriptionIdOrThrow(id)
 
     if (!release) return undefined
+    const releaseAssetTasks = await this.releaseService.findAssetTasksByRelease(release.id)
 
-    const allTasks: AssetTaskEntity[] = flatten(
-      await Aigle.map(
-        await this.releaseAssetRepository.findBy({ release }),
-        async (releaseAsset) => await this.assetTaskRepository.findBy({ releaseAsset })
-      )
-    )
-
-    const taskStatuses = allTasks.map((it) => it.status)
-    const taskProgress = allTasks.map((it) => it.progress)
+    const taskStatuses = releaseAssetTasks.map((it) => it.status)
+    const taskProgress = releaseAssetTasks.map((it) => it.progress)
 
     let status: TaskState = 'Pending'
 
@@ -110,10 +86,12 @@ export class SubscriptionManager {
       version: release.version,
       status,
       progress,
-      label: allTasks.find((it) => it.status === AssetTaskStatus.IN_PROGRESS)?.label
+      label: releaseAssetTasks.find((it) => it.status === AssetTaskStatus.IN_PROGRESS)?.label,
+      exePath: release.exePath
     }
   }
 
+  @Log()
   async subscribe(modId: string): Promise<void> {
     this.logger.log(`Subscribing to mod ${modId}`)
 
@@ -123,92 +101,93 @@ export class SubscriptionManager {
     this.logger.debug(`Getting latest release for mod ${modId}`)
     const latestRelease = await this.registryService.getLatestRelease(modId)
 
-    this.logger.debug(`Saving subscription for mod ${modId}`)
-    const subscription = await this.subscriptionRepository.save({
-      modId: mod.id,
-      modName: mod.name,
-      exePath: latestRelease.exePath
-    })
+    if (!latestRelease) {
+      throw new Error(`No releases found for mod ${modId}`)
+    }
 
-    this.logger.debug(`Saving latest release for mod ${modId}`)
-    const latestReleaseEntity = await this.releaseRepository.save({
+    this.logger.debug(`Building Subscription and Release data for ${modId}`)
+    const subscription: Subscription = {
+      id: crypto.randomUUID(),
+      modId: mod.id,
+      modName: mod.name!,
+      deleted: false,
+      created: Date.now()
+    }
+    const release: Release = {
+      id: crypto.randomUUID(),
+      subscriptionId: subscription.id,
+      version: latestRelease.version!,
+      enabled: false,
+      exePath: latestRelease.exePath
+    }
+
+    this.logger.debug(`Determining write directory for mod ${modId}`)
+    const releaseWriteDir = await this.writeDirectoryService.getWriteDirectoryForRelease(
       subscription,
-      version: latestRelease.version
-    })
+      release
+    )
+    this.logger.verbose(`Release write directory: ${releaseWriteDir}`)
+
+    const assets = latestRelease.assets.map((asset) =>
+      getReleaseAsset(release, asset, releaseWriteDir)
+    )
 
     this.logger.debug(`Creating write directories`)
-    const modWriteDir = await this.writeDirectoryService.getWriteDirectoryForSubscription(
-      subscription.id
-    )
-    const releaseWriteDir = join(modWriteDir, latestReleaseEntity.id.toString())
-    ensureDirSync(modWriteDir)
     ensureDirSync(releaseWriteDir)
 
+    this.logger.debug(`Saving subscription for mod ${modId}`)
+    await this.subscriptionService.save(subscription)
+
+    this.logger.debug(`Saving release ${latestRelease.version} for mod ${modId}`)
+    await this.releaseService.save(release)
+
     this.logger.debug(`Saving release assets for mod ${modId}`)
-    for (const asset of latestRelease.assets) {
-      const releaseAsset = await this.releaseAssetRepository.save({
-        release: latestReleaseEntity,
-        source: asset.source,
-        target: asset.target
-      })
-
-      this.logger.debug('Creating Release Asset Tasks')
-      const source = releaseAsset.source
-
-      const { baseUrl, file } = getUrlPartsForDownload(source)
-      const downloadTaskPayload: DownloadTaskPayload = {
-        baseUrl,
-        file,
-        folder: releaseWriteDir
-      }
-
-      await this.assetTaskRepository.save({
-        releaseAsset,
-        type: AssetTaskType.DOWNLOAD,
-        sequence: 1,
-        payload: downloadTaskPayload,
-        label: `Downloading ${file}`
-      })
-
-      if (_7zip.SUPPORTED_ARCHIVE_EXTENSIONS.map((ext) => `.${ext}`).includes(extname(file))) {
-        const extractTaskPayload: ExtractTaskPayload = {
-          file,
-          folder: releaseWriteDir
-        }
-        await this.assetTaskRepository.save({
-          releaseAsset,
-          sequence: 2,
-          type: AssetTaskType.EXTRACT,
-          payload: extractTaskPayload,
-          label: `Unpacking ${file}`
-        })
+    for (const asset of assets) {
+      await this.releaseService.saveAsset(asset)
+      for (const task of asset.tasks) {
+        await this.releaseService.saveAssetTask(task)
       }
     }
 
-    await trackEvent('mod_subscribed', { mod_id: modId, mod_version: latestRelease.version })
+    this.logger.log(`Subscribed to mod ${modId}`)
+
+    await trackEvent('mod_subscribed', { mod_id: modId, mod_version: latestRelease.version! })
   }
 
+  @Log()
   async unsubscribe(modId: string): Promise<void> {
-    const subscription = await this.subscriptionRepository.findOneBy({ modId })
+    this.logger.debug(`Finding subscription for mod ${modId}`)
+    const subscription = await this.subscriptionService.findByModId(modId)
+
+    if (!subscription) {
+      this.logger.warn(`Subscription for mod ${modId} not found`)
+      return
+    }
+
+    this.logger.debug(`Disabling mod ${modId}`)
     await this.toggleManager.disableMod(modId)
-    if (subscription) {
-      await rmdir(
-        await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription.id),
-        { recursive: true }
-      )
-      await this.subscriptionRepository.remove(subscription)
+
+    const modDir = await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription)
+
+    if (existsSync(modDir)) {
+      this.logger.debug(`Deleting write directory for mod ${modId}`)
+      await rmdir(modDir, { recursive: true })
     }
+
+    this.logger.debug(`Deleting subscription for mod ${modId}`)
+    await this.subscriptionService.save({ ...subscription, deleted: true })
   }
 
+  @Log()
   async openInExplorer(modId: string): Promise<void> {
-    const subscription = await this.subscriptionRepository.findOneBy({ modId })
+    const subscription = await this.subscriptionService.findByModId(modId)
     if (subscription) {
-      await this.fsService.openFolder(
-        await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription.id)
-      )
+      const modDir = await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription)
+      await this.fsService.openFolder(modDir)
     }
   }
 
+  @Log()
   async update(modId: string) {
     this.logger.log(`Updating mod ${modId}`)
 

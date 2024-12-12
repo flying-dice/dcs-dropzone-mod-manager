@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import useSWR from 'swr'
-import { getRegistryEntry, getRegistryEntryLatestRelease } from '../../../lib/client'
+import { getRegistryEntry } from '../../../lib/client'
 import { client } from '../client'
 import { useRegistryUrl } from './useRegistryUrl'
 
@@ -12,20 +12,11 @@ export const useRegistryEntry = (modId: string) => {
     return getRegistryEntry(modId || '', { baseURL: registryUrl })
   })
 
-  const latestRelease = useSWR(`registry/${modId}/latest`, async () => {
-    const registryUrl = await client.getRegistryUrl.query()
-    return getRegistryEntryLatestRelease(modId || '', {
-      baseURL: registryUrl
-    })
-  })
-
   useEffect(() => {
     index.mutate()
-    latestRelease.mutate()
   }, [registryUrl.data])
 
   return {
-    index,
-    latestRelease
+    index
   }
 }

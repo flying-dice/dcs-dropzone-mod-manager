@@ -1,6 +1,8 @@
 import { join } from 'node:path'
 import { Inject, Injectable } from '@nestjs/common'
 import { SettingsManager } from '../manager/settings.manager'
+import { Subscription } from '../schemas/subscription.schema'
+import { Release } from '../schemas/release.schema'
 
 @Injectable()
 export class WriteDirectoryService {
@@ -11,11 +13,11 @@ export class WriteDirectoryService {
     return this.settingsManager.getWriteDir()
   }
 
-  async getWriteDirectoryForSubscription(id: number): Promise<string> {
-    return join(await this.getWriteDirectory(), id.toString())
+  async getWriteDirectoryForSubscription(subscription: Subscription): Promise<string> {
+    return join(await this.getWriteDirectory(), subscription.id)
   }
 
-  async getWriteDirectoryForRelease(subscriptionId: number, releaseId: number): Promise<string> {
-    return join(await this.getWriteDirectoryForSubscription(subscriptionId), releaseId.toString())
+  async getWriteDirectoryForRelease(subscription: Subscription, release: Release): Promise<string> {
+    return join(await this.getWriteDirectoryForSubscription(subscription), release.id)
   }
 }

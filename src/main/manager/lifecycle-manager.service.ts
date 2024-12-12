@@ -1,18 +1,17 @@
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
 import { ensureDirSync, rm, symlink } from 'fs-extra'
-import { Repository } from 'typeorm'
-import { ReleaseAssetEntity } from '../entities/release-asset.entity'
-import { ReleaseEntity } from '../entities/release.entity'
-import { SubscriptionEntity } from '../entities/subscription.entity'
 import { FsService } from '../services/fs.service'
 import { WriteDirectoryService } from '../services/write-directory.service'
 import { HashPath } from '../utils/hash-path'
 import { VariablesService } from '../services/variables.service'
 import { getUrlPartsForDownload } from '../functions/getUrlPartsForDownload'
 import { execFile } from 'node:child_process'
+import { SubscriptionService } from '../services/subscription.service'
+import { ReleaseService } from '../services/release.service'
+import { Subscription } from '../schemas/subscription.schema'
+import { Release } from '../schemas/release.schema'
 
 /**
  * Manages the toggling of a mod between enabled and disabled states
@@ -23,14 +22,11 @@ import { execFile } from 'node:child_process'
 export class LifecycleManager {
   private readonly logger = new Logger(LifecycleManager.name)
 
-  @InjectRepository(SubscriptionEntity)
-  private readonly subscriptionRepository: Repository<SubscriptionEntity>
+  @Inject(SubscriptionService)
+  private readonly subscriptionService: SubscriptionService
 
-  @InjectRepository(ReleaseEntity)
-  private readonly releaseRepository: Repository<ReleaseEntity>
-
-  @InjectRepository(ReleaseAssetEntity)
-  private readonly releaseAssetRepository: Repository<ReleaseAssetEntity>
+  @Inject(ReleaseService)
+  private readonly releaseService: ReleaseService
 
   @Inject()
   private readonly writeDirectoryService: WriteDirectoryService
@@ -62,7 +58,7 @@ export class LifecycleManager {
    */
   async enableMod(modId: string): Promise<void> {
     const { release, subscription } = await this.getSubscriptionWithReleaseOrThrow(modId)
-    const releaseAssets = await this.releaseAssetRepository.findBy({ release })
+    const releaseAssets = await this.releaseService.findAssetsByRelease(release.id)
     this.logger.debug(`Enabling mod: ${modId} with ${releaseAssets.length} release assets`)
     for (const releaseAsset of releaseAssets) {
       this.logger.debug(`Enabling release asset: ${releaseAsset.id}`)
@@ -70,7 +66,7 @@ export class LifecycleManager {
       const { baseUrl } = getUrlPartsForDownload(releaseAsset.source)
 
       let srcPath = join(
-        await this.writeDirectoryService.getWriteDirectoryForRelease(subscription.id, release.id),
+        await this.writeDirectoryService.getWriteDirectoryForRelease(subscription, release),
         releaseAsset.source.replace(baseUrl, '')
       )
 
@@ -89,14 +85,14 @@ export class LifecycleManager {
       await symlink(join(srcPath), targetPath)
       if (existsSync(targetPath)) {
         releaseAsset.symlinkPath = targetPath
-        await this.releaseAssetRepository.save(releaseAsset)
+        await this.releaseService.saveAsset(releaseAsset)
       } else {
         throw new Error(`Symlink not created: ${targetPath}`)
       }
     }
 
     release.enabled = true
-    await this.releaseRepository.save(release)
+    await this.releaseService.save(release)
   }
 
   /**
@@ -105,25 +101,24 @@ export class LifecycleManager {
    */
   async disableMod(modId: string): Promise<void> {
     const { release } = await this.getSubscriptionWithReleaseOrThrow(modId)
-    const releaseAssets = await this.releaseAssetRepository.findBy({ release })
+    const releaseAssets = await this.releaseService.findAssetsByRelease(release.id)
 
     this.logger.debug(`Disabling mod: ${modId} with ${releaseAssets.length} release assets`)
     for (const releaseAsset of releaseAssets) {
-      if (releaseAsset.symlinkPath !== null) {
+      if (releaseAsset.symlinkPath) {
         this.logger.debug(`Deleting Symlink for release asset: ${releaseAsset.id}`)
         await rm(releaseAsset.symlinkPath, { force: true, recursive: true })
-        releaseAsset.symlinkPath = null
-        await this.releaseAssetRepository.save(releaseAsset)
+        releaseAsset.symlinkPath = undefined
+        await this.releaseService.saveAsset(releaseAsset)
       }
     }
     release.enabled = false
-    await this.releaseRepository.save(release)
+    await this.releaseService.save(release)
   }
 
   async runExe(modId: string, exePath: string) {
     this.logger.debug(`Running exe: ${modId}, ${exePath}`)
-    const subscription = await this.subscriptionRepository.findOneByOrFail({ modId })
-    const release = await this.releaseRepository.findOneByOrFail({ subscription })
+    const { release } = await this.getSubscriptionWithReleaseOrThrow(modId)
 
     if (!release.enabled) {
       throw new Error(`Mod is not enabled, please enable it first and try again`)
@@ -150,20 +145,18 @@ export class LifecycleManager {
    * @param modId
    * @private
    */
-  private async getSubscriptionWithReleaseOrThrow(modId: string) {
-    const subscription = await this.subscriptionRepository.findOneByOrFail({
-      modId
-    })
-    const release = await this.releaseRepository.findOneByOrFail({
-      subscription
-    })
+  private async getSubscriptionWithReleaseOrThrow(
+    modId: string
+  ): Promise<{ subscription: Subscription; release: Release }> {
+    const subscription = await this.subscriptionService.findByModIdOrThrow(modId)
+    const release = await this.releaseService.findBySubscriptionIdOrThrow(subscription.id)
 
     return { subscription, release }
   }
 
   async getModAssets(modId: string) {
     const { release } = await this.getSubscriptionWithReleaseOrThrow(modId)
-    const releaseAssets = await this.releaseAssetRepository.findBy({ release })
+    const releaseAssets = await this.releaseService.findAssetsByRelease(release.id)
     return releaseAssets.map((it) => ({
       id: it.id,
       source: it.source,
@@ -171,10 +164,8 @@ export class LifecycleManager {
     }))
   }
 
-  async openAssetInExplorer(assetId: number) {
-    const asset = await this.releaseAssetRepository.findOneByOrFail({
-      id: assetId
-    })
+  async openAssetInExplorer(assetId: string) {
+    const asset = await this.releaseService.findAssetByIdOrThrow(assetId)
     if (!asset.symlinkPath) throw new Error(`Symlink path not present, is the mod enabled?`)
     this.logger.debug(`Opening asset in explorer: ${asset.id}`)
 

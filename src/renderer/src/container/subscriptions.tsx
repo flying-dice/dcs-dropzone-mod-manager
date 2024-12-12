@@ -11,7 +11,7 @@ import {
   TextInput,
   Tooltip
 } from '@mantine/core'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { BiCheckbox, BiCheckboxChecked, BiPlay } from 'react-icons/bi'
 import { BsThreeDotsVertical } from 'react-icons/bs'
 import { client } from '../client'
@@ -23,17 +23,19 @@ import { useNavigate } from 'react-router-dom'
 import { useRegistryEntry } from '@renderer/hooks/useRegistryEntry'
 
 const SubscriptionRow: React.FC<{
+  id: string
   modId: string
   modName: string
   created: number
-  exePath: string | null
-  onOpenSymlinksModal: (modId: string) => void
-}> = ({ modId, modName, created, onOpenSymlinksModal, exePath }) => {
+  onOpenSymlinksModal: (id: string) => void
+}> = ({ id, modId, modName, created, onOpenSymlinksModal }) => {
   const subscriptions = useSubscriptions()
   const navigate = useNavigate()
-  const release = useSubscriptionRelease(modId)
+  const release = useSubscriptionRelease(id)
   const registryEntry = useRegistryEntry(modId)
-  const isUpToDate = release.data?.version === registryEntry.latestRelease.data?.data.version
+  const isUpToDate = release.data?.version === registryEntry.index.data?.data.latest
+
+  const exePath = useMemo(() => release.data?.exePath, [release.data])
 
   async function handleUnsubscribe(modId: string, name: string) {
     try {
@@ -183,11 +185,11 @@ export const Subscriptions: React.FC<SubscriptionsProps> = ({ onOpenSymlinksModa
             {results.map((element) => (
               <SubscriptionRow
                 key={element.id}
+                id={element.id}
                 modId={element.modId}
                 modName={element.modName}
                 created={element.created}
                 onOpenSymlinksModal={onOpenSymlinksModal}
-                exePath={element.exePath}
               />
             ))}
           </Table.Tbody>

@@ -24,26 +24,22 @@ import React from 'react'
 import { MdOutlineCategory } from 'react-icons/md'
 import { VscCheck, VscClose } from 'react-icons/vsc'
 import { useNavigate, useParams } from 'react-router-dom'
-import { EntryIndex, EntryLatestRelease } from '../../../lib/client'
+import { EntryIndex } from '../../../lib/client'
 import { ReleaseSummary } from '../components/release-summary'
-import { useRegistryEntry } from '../hooks/useRegistryEntry'
 import { useRegistrySubscriber } from '../hooks/useRegistrySubscriber'
+import { useRegistryEntry } from '../hooks/useRegistryEntry'
 
 export const RegistryEntryPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
-  const { index, latestRelease } = useRegistryEntry(id || '')
+
+  const { index } = useRegistryEntry(id!)
 
   return (
     <>
-      <LoadingOverlay visible={index.isLoading || latestRelease.isLoading} />
-      {index.data?.data && latestRelease.data?.data && (
-        <_RegistryEntryPage entry={index.data.data} latestRelease={latestRelease.data?.data} />
-      )}
-      {index.isLoading && index.error && (
+      <LoadingOverlay visible={index.isLoading} />
+      {index.data && <_RegistryEntryPage entry={index.data.data} />}
+      {!index.isLoading && index.error && (
         <Alert color={'red'}>Registry Entry with ID {id} not found</Alert>
-      )}
-      {latestRelease.isLoading && latestRelease.error && (
-        <Alert color={'red'}>Unable to find latest release for registry Entry with ID {id}</Alert>
       )}
     </>
   )
@@ -51,12 +47,13 @@ export const RegistryEntryPage: React.FC = () => {
 
 export type RegistryEntryPageProps = {
   entry: EntryIndex
-  latestRelease?: EntryLatestRelease
 }
-export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry, latestRelease }) => {
+export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) => {
   const navigate = useNavigate()
   const registrySubscriber = useRegistrySubscriber(entry)
   const [isMouseOver, mouseOver] = useDisclosure(false)
+
+  const latestRelease = entry.versions.find((it) => it.version === entry.latest)
 
   return (
     <Stack>

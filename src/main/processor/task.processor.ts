@@ -1,7 +1,6 @@
-import { AssetTaskEntity, AssetTaskPayload } from '../entities/asset-task.entity'
+import { AssetTask, AssetTaskPayload } from '../schemas/release-asset-task.schema'
 
-export interface TaskProcessor<PAYLOAD = AssetTaskPayload> {
-  process(task: AssetTaskEntity<PAYLOAD>): Promise<void>
-
-  postProcess(task: AssetTaskEntity<PAYLOAD>): Promise<void>
+export interface TaskProcessor<PAYLOAD extends AssetTaskPayload = AssetTaskPayload> {
+  process(task: AssetTask<PAYLOAD>): Promise<void>
+  postProcess(task: AssetTask<PAYLOAD>): Promise<void>
 }

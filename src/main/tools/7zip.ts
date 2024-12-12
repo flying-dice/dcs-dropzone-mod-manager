@@ -79,6 +79,8 @@ export class _7zip {
   }
 
   spawnExtractor(archivePath: string, destDir: string): ChildProcessWithoutNullStreams {
+    logger.log(`Spawning 7zr process with ${archivePath} and ${destDir}`)
+    logger.debug(`- ${this.exePath} -bso0 -bsp1 -y x ${archivePath} -o${destDir}`)
     return spawn(this.exePath, ['-bso0', '-bsp1', '-y', 'x', archivePath, `-o${destDir}`], {
       stdio: 'pipe'
     })

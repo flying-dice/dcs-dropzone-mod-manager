@@ -4,7 +4,6 @@ import { z } from 'zod'
 import { TaskState } from '../lib/types'
 import { bootstrap } from './app'
 import { config } from './config'
-import { SubscriptionEntity } from './entities/subscription.entity'
 import { getDefaultGameDir } from './functions/getDefaultGameDir'
 import { getDefaultWriteDir } from './functions/getDefaultWriteDir'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
@@ -13,6 +12,7 @@ import { SubscriptionManager } from './manager/subscription.manager'
 import { UpdateManager } from './manager/update.manager'
 import { ConfigService } from './services/config.service'
 import { FsService } from './services/fs.service'
+import { Subscription } from './schemas/subscription.schema'
 
 export const trpc = initTRPC.create()
 
@@ -33,21 +33,20 @@ export async function getAppWithRouter() {
         .query(
           async ({
             input
-          }): Promise<{ id: number; source: string; symlinkPath: string | null }[]> =>
+          }): Promise<{ id: string; source: string; symlinkPath: string | undefined }[]> =>
             app.get(LifecycleManager).getModAssets(input.modId)
         ),
       openAssetInExplorer: trpc.procedure
-        .input(z.object({ assetId: z.number() }))
+        .input(z.object({ assetId: z.string() }))
         .mutation(
           ({ input }): Promise<void> => app.get(LifecycleManager).openAssetInExplorer(input.assetId)
         ),
 
       // Subscriptions
       getAllSubscriptions: trpc.procedure.query(
-        async (): Promise<SubscriptionEntity[]> =>
-          app.get(SubscriptionManager).getAllSubscriptions()
+        async (): Promise<Subscription[]> => app.get(SubscriptionManager).getAllSubscriptions()
       ),
-      getSubscriptionRelease: trpc.procedure.input(z.object({ modId: z.string() })).query(
+      getSubscriptionRelease: trpc.procedure.input(z.object({ id: z.string() })).query(
         async ({
           input
         }): Promise<
@@ -57,9 +56,10 @@ export async function getAppWithRouter() {
               status: TaskState
               progress: number
               label?: string | undefined
+              exePath?: string | undefined
             }
           | undefined
-        > => app.get(SubscriptionManager).getSubscriptionReleaseState(input.modId)
+        > => app.get(SubscriptionManager).getSubscriptionReleaseState(input.id)
       ),
       subscribe: trpc.procedure
         .input(z.object({ modId: z.string() }))
@@ -101,7 +101,7 @@ export async function getAppWithRouter() {
       getConfigValue: trpc.procedure
         .input(z.object({ name: z.string() }))
         .query(
-          async ({ input }): Promise<{ value: string; lastModified: number } | undefined> =>
+          async ({ input }): Promise<{ value: string } | undefined> =>
             app.get(ConfigService).getConfigValue(input.name)
         ),
 

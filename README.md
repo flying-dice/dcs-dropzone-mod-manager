@@ -27,3 +27,17 @@ Download the latest version of DROPZONE from the [releases page](https://github.
 > TBC
 
 > - See the [Contributing Guide](CONTRIBUTING.md) for more information on how to contribute.
+
+## Running Tests
+
+Tests are run using vitest. To run the tests, run the following command:
+
+```bash
+npm run test
+```
+
+For running individual tests in the main make sure to use the config, if running within an ide make sure you specify the config in the run configuration. i.e.:
+```bash
+vitest src/main/utils/get-release-asset.test.ts --run --config vitest.config.node.ts
+```
+

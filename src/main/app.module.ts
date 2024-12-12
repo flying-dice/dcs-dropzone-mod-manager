@@ -1,8 +1,5 @@
 import { Module } from '@nestjs/common'
 import { ScheduleModule } from '@nestjs/schedule'
-import { TypeOrmModule } from '@nestjs/typeorm'
-import { EntitySchema } from 'typeorm'
-import { config } from './config'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { SettingsManager } from './manager/settings.manager'
 import { SubscriptionManager } from './manager/subscription.manager'
@@ -13,14 +10,33 @@ import { FsService } from './services/fs.service'
 import { RegistryService } from './services/registry.service'
 import { WriteDirectoryService } from './services/write-directory.service'
 import { VariablesService } from './services/variables.service'
+import { MongooseModule } from '@nestjs/mongoose'
+import { MongooseFactory } from './mongoose.factory'
+import { Config, ConfigSchema } from './schemas/config.schema'
+import { Subscription, SubscriptionSchema } from './schemas/subscription.schema'
+import { Release, ReleaseSchema } from './schemas/release.schema'
+import { SubscriptionService } from './services/subscription.service'
+import { ReleaseService } from './services/release.service'
+import { ReleaseAsset, ReleaseAssetSchema } from './schemas/release-asset.schema'
+import { AssetTask, AssetTaskSchema } from './schemas/release-asset-task.schema'
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    TypeOrmModule.forRoot(config.typeOrm),
-    TypeOrmModule.forFeature(config.typeOrm.entities as EntitySchema[])
+    MongooseModule.forRootAsync({
+      useFactory: MongooseFactory.factory
+    }),
+    MongooseModule.forFeature([
+      { name: Config.name, schema: ConfigSchema },
+      { name: Subscription.name, schema: SubscriptionSchema },
+      { name: Release.name, schema: ReleaseSchema },
+      { name: ReleaseAsset.name, schema: ReleaseAssetSchema },
+      { name: AssetTask.name, schema: AssetTaskSchema }
+    ])
   ],
   providers: [
+    SubscriptionService,
+    ReleaseService,
     ConfigService,
     FsService,
     UpdateManager,
