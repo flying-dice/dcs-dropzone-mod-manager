@@ -12,7 +12,6 @@ DCS Dropzone is an Electron application built with the following technologies:
 - [React](https://reactjs.org/) - UI Framework
 - [Mantine](https://mantine.dev/) - UI Components
 - [NestJS](https://nestjs.com/) - Backend Framework
-- [TypeORM](https://typeorm.io/) - ORM
 - [Vitest](https://vitest.dev/) - Testing Framework
 
 Some level of familiarity with these technologies is recommended before contributing to the project.

@@ -71,7 +71,6 @@
     "@types/bytes": "^3.1.4",
     "aigle": "^1.14.1",
     "axios": "^1.7.3",
-    "better-sqlite3": "^9.6.0",
     "bytes": "^3.1.2",
     "electron-trpc": "^0.6.1",
     "electron-updater": "^6.2.1",
@@ -94,7 +93,6 @@
     "rxjs": "^7.8.1",
     "swr": "^2.2.5",
     "ts-pattern": "^5.2.0",
-    "typeorm": "^0.3.20",
     "yaml": "^2.5.0",
     "zod": "^3.23.8"
   },
