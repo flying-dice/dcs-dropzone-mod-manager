@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
 import { ensureDirSync, rmdir } from 'fs-extra'
 import { TaskState } from '../../lib/types'
 import { FsService } from '../services/fs.service'
@@ -11,9 +11,11 @@ import { Release } from '../schemas/release.schema'
 import { SubscriptionService } from '../services/subscription.service'
 import { ReleaseService } from '../services/release.service'
 import { Log } from '../utils/log'
-import { existsSync } from 'node:fs'
-import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
 import { getReleaseAsset } from '../utils/get-release-asset'
+import { randomUUID } from 'node:crypto'
+import { join } from 'node:path'
+import { existsSync, readdirSync } from 'node:fs'
+import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
 
 export type SubscriptionReleaseState = {
   enabled: boolean
@@ -25,7 +27,7 @@ export type SubscriptionReleaseState = {
 }
 
 @Injectable()
-export class SubscriptionManager {
+export class SubscriptionManager implements OnApplicationBootstrap {
   private readonly logger = new Logger(SubscriptionManager.name)
 
   @Inject(SubscriptionService)
@@ -45,6 +47,11 @@ export class SubscriptionManager {
 
   @Inject()
   private readonly toggleManager: LifecycleManager
+
+  async onApplicationBootstrap(): Promise<any> {
+    this.logger.log('Checking for orphaned subscriptions and releases')
+    await this.removeOrphanedSubscriptionsAndReleases()
+  }
 
   @Log()
   async getAllSubscriptions(): Promise<Subscription[]> {
@@ -107,13 +114,13 @@ export class SubscriptionManager {
 
     this.logger.debug(`Building Subscription and Release data for ${modId}`)
     const subscription: Subscription = {
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       modId: mod.id,
       modName: mod.name!,
       created: Date.now()
     }
     const release: Release = {
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       subscriptionId: subscription.id,
       version: latestRelease.version!,
       enabled: false,
@@ -196,5 +203,42 @@ export class SubscriptionManager {
 
     this.logger.debug(`Subscribing to mod ${modId}`)
     await this.subscribe(modId)
+  }
+
+  @Log()
+  async removeOrphanedSubscriptionsAndReleases() {
+    const writeDirectory = await this.writeDirectoryService.getWriteDirectory()
+    const foldersInWriteDirectory = readdirSync(writeDirectory, { withFileTypes: true }).filter(
+      (it) => it.isDirectory()
+    )
+
+    for (const directory of foldersInWriteDirectory) {
+      const subscription = await this.subscriptionService.findById(directory.name)
+      if (!subscription) {
+        this.logger.warn(`Deleting orphaned directory ${directory.name}`)
+        await rmdir(join(directory.parentPath, directory.name), { recursive: true })
+        continue
+      }
+
+      await this.removeOrphanedReleases(subscription)
+    }
+  }
+
+  @Log()
+  async removeOrphanedReleases(subscription: Subscription) {
+    const subscriptionDirectory =
+      await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription)
+
+    const foldersInSubscriptionDirectory = readdirSync(subscriptionDirectory, {
+      withFileTypes: true
+    }).filter((it) => it.isDirectory())
+
+    for (const directory of foldersInSubscriptionDirectory) {
+      const release = await this.releaseService.findById(directory.name)
+      if (!release) {
+        this.logger.warn(`Deleting orphaned directory ${directory.name}`)
+        await rmdir(join(directory.parentPath, directory.name), { recursive: true })
+      }
+    }
   }
 }

@@ -15,6 +15,14 @@ export class SubscriptionService {
   }
 
   @Log()
+  async findById(id: string): Promise<Subscription | undefined> {
+    return this.subscriptions
+      .findOne({ id })
+      .exec()
+      .then((it) => it?.toJSON() ?? undefined)
+  }
+
+  @Log()
   async findAll(): Promise<Subscription[]> {
     return this.subscriptions
       .find()

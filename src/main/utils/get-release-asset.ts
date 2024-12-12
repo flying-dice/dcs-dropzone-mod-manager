@@ -11,6 +11,7 @@ import {
 } from '../schemas/release-asset-task.schema'
 import { ReleaseAsset } from '../schemas/release-asset.schema'
 import { Release } from '../schemas/release.schema'
+import { randomUUID } from 'node:crypto'
 
 export type HydratedReleaseAsset = ReleaseAsset & { tasks: AssetTask[] }
 
@@ -29,7 +30,7 @@ export function getReleaseAsset(
   releaseWriteDir: string
 ): HydratedReleaseAsset {
   const releaseAsset: HydratedReleaseAsset = {
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     source: asset.source!,
     target: asset.target!,
     releaseId: release.id,
@@ -43,7 +44,7 @@ export function getReleaseAsset(
   const downloadTaskPayload: DownloadTaskPayload = { baseUrl, file, folder: releaseWriteDir }
 
   releaseAsset.tasks.push({
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     type: AssetTaskType.DOWNLOAD,
     sequence: 1,
     payload: downloadTaskPayload,
@@ -61,7 +62,7 @@ export function getReleaseAsset(
       folder: releaseWriteDir
     }
     releaseAsset.tasks.push({
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       sequence: 2,
       type: AssetTaskType.EXTRACT,
       payload: extractTaskPayload,
