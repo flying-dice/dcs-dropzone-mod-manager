@@ -1,11 +1,11 @@
 import { Anchor, Badge, Group, Stack, Text } from '@mantine/core'
 import ms from 'ms'
 import React from 'react'
-import { EntryLatestRelease } from '../../../lib/client'
+import { EntryIndexVersionsItem } from '../../../lib/client'
 
 export type ReleaseSummaryProps = {
   latest?: boolean
-  release: EntryLatestRelease
+  release: EntryIndexVersionsItem
 }
 export const ReleaseSummary: React.FC<ReleaseSummaryProps> = ({ latest, release }) => {
   return (

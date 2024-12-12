@@ -110,7 +110,6 @@ export class SubscriptionManager {
       id: crypto.randomUUID(),
       modId: mod.id,
       modName: mod.name!,
-      deleted: false,
       created: Date.now()
     }
     const release: Release = {

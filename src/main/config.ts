@@ -28,7 +28,7 @@ export const config: MainConfig = {
     baseURL: 'http://127.0.0.1:5572'
   },
   mongo: {
-    port: 27017,
+    port: 57449,
     dbPath: join(appData, appDataName, '__data')
   },
   appOptions: {
