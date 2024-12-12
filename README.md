@@ -1,7 +1,7 @@
 [![Join Discord](https://img.shields.io/badge/Join-blue?logo=discord&label=Discord)](https://discord.gg/bT7BEHn5RD)
 [![Discord](https://img.shields.io/discord/738118932937834566?logo=discord&label=Discord)](https://discord.com/channels/738118932937834566/1178991295260278785)
 
-![heading.svg](resources%2Fheading.svg)
+![index](./index.png)
 
 DROPZONE is a Community Mod Manager for DCS World.
 
@@ -27,3 +27,17 @@ Download the latest version of DROPZONE from the [releases page](https://github.
 > TBC
 
 > - See the [Contributing Guide](CONTRIBUTING.md) for more information on how to contribute.
+
+## Running Tests
+
+Tests are run using vitest. To run the tests, run the following command:
+
+```bash
+npm run test
+```
+
+For running individual tests in the main make sure to use the config, if running within an ide make sure you specify the config in the run configuration. i.e.:
+
+```bash
+vitest src/main/utils/get-release-asset.test.ts --run --config vitest.config.node.ts
+```

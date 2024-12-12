@@ -1,21 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
-import { ConfigEntity } from '../entities/config.entity'
+import { Config } from '../schemas/config.schema'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
 
 @Injectable()
 export class ConfigService {
   private readonly logger = new Logger(ConfigService.name)
 
-  constructor(
-    @InjectRepository(ConfigEntity) private readonly configRepo: Repository<ConfigEntity>
-  ) {}
+  @InjectModel(Config.name)
+  private configs: Model<Config>
 
-  async getConfigValue(name: string): Promise<{ value: string; lastModified: number } | undefined> {
-    this.logger.debug(`Getting config ${name}`)
-    const config = await this.configRepo.findOneBy({ name })
-    this.logger.debug(`Got config`, config?.value)
-    return config ? { value: config.value, lastModified: config.lastModified } : undefined
+  async getConfigValue(name: string): Promise<{ value: string } | undefined> {
+    this.logger.verbose(`Getting config ${name}`)
+    const config = await this.configs.findOne({ name }).exec()
+    this.logger.verbose(`Got config`, config?.value)
+    return config ? { value: config.value } : undefined
   }
 
   async getConfigValueOrDefault(name: string, defaultValue: string): Promise<string> {
@@ -24,19 +23,14 @@ export class ConfigService {
   }
 
   async setConfigValue(name: string, value: string): Promise<void> {
-    this.logger.debug(`Setting config ${name} to ${value}`)
-    await this.configRepo.upsert(
-      { name, value, lastModified: Date.now() },
-      { upsertType: 'on-conflict-do-update', conflictPaths: ['name'] }
-    )
+    this.logger.verbose(`Setting config ${name} to ${value}`)
+    await this.configs
+      .updateOne({ name }, { value, lastModified: Date.now() }, { upsert: true })
+      .exec()
   }
 
   async clearConfigValue(name: string) {
-    this.logger.debug(`Clearing config ${name}`)
-    const row = await this.configRepo.findOneBy({ name })
-    if (row) {
-      this.logger.debug(`Found config with id ${row.id} Removing config ${name}`)
-      await this.configRepo.remove(row)
-    }
+    this.logger.verbose(`Clearing config ${name}`)
+    await this.configs.findOneAndDelete({ name }).exec()
   }
 }

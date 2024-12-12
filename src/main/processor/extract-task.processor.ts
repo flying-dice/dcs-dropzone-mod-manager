@@ -2,13 +2,13 @@ import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { extname, join } from 'node:path'
 import { Logger } from '@nestjs/common'
 import { rm } from 'fs-extra'
-import {
-  type AssetTaskEntity,
-  AssetTaskStatus,
-  type ExtractTaskPayload
-} from '../entities/asset-task.entity'
 import { get7zip } from '../tools/7zip'
 import { TaskProcessor } from './task.processor'
+import {
+  AssetTask,
+  AssetTaskStatus,
+  ExtractTaskPayload
+} from '../schemas/release-asset-task.schema'
 
 export class ExtractTaskProcessor implements TaskProcessor<ExtractTaskPayload> {
   protected readonly logger = new Logger(ExtractTaskProcessor.name)
@@ -21,7 +21,7 @@ export class ExtractTaskProcessor implements TaskProcessor<ExtractTaskPayload> {
 
   private lastStdout: string
 
-  async process(task: AssetTaskEntity<ExtractTaskPayload>): Promise<void> {
+  async process(task: AssetTask<ExtractTaskPayload>): Promise<void> {
     this.logger.debug(`[${task.id}] - Processing extract task`, task.payload)
 
     if (!this.extractProcess) {
@@ -37,7 +37,7 @@ export class ExtractTaskProcessor implements TaskProcessor<ExtractTaskPayload> {
     }
   }
 
-  async postProcess(task: AssetTaskEntity<ExtractTaskPayload>) {
+  async postProcess(task: AssetTask<ExtractTaskPayload>) {
     this.logger.debug(`[${task.id}] - Post processing extract task`)
     await rm(join(task.payload.folder, task.payload.file), { force: true })
     if (this.extractProcess) {
@@ -46,7 +46,7 @@ export class ExtractTaskProcessor implements TaskProcessor<ExtractTaskPayload> {
     }
   }
 
-  async start(task: AssetTaskEntity<ExtractTaskPayload>) {
+  async start(task: AssetTask<ExtractTaskPayload>) {
     const _7zip = await get7zip()
 
     this.extractProcess = _7zip.spawnExtractor(

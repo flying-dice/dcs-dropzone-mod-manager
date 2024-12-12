@@ -62,9 +62,9 @@ async function createWindow(app: INestApplicationContext): Promise<BrowserWindow
     mainWindow.show()
   })
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
-    return { action: 'deny' }
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    event.preventDefault()
+    shell.openExternal(url)
   })
 
   // HMR for renderer base on electron-vite cli.

@@ -27,11 +27,11 @@ export const RegistryEntryCard: React.FC<RegistryEntryCardProps> = ({ item, subs
         style={{ cursor: 'pointer' }}
         onClick={() => navigate(`/library/${item.id}`)}
       >
-        <Stack gap={0} w={300} justify={'space-between'} h={300}>
+        <Stack gap={0} w={300} justify={'space-between'} h={350}>
           <Stack gap={0}>
             <Card.Section>
               {url.data && (
-                <Image src={`${url.data}/${item.imageUrl}`} height={160} alt="preview" />
+                <Image src={`${url.data}/${item.imageUrl}`} height={190} alt="preview" />
               )}
             </Card.Section>
             <Stack gap={0} pl={'md'} pr={'md'}>

@@ -69,6 +69,10 @@ export class RcloneClient {
     await this.instance.post('/config/create', { parameters, name, type })
   }
 
+  async configDelete(name: string): Promise<void> {
+    await this.instance.post('/config/delete', { name })
+  }
+
   async jobStatus(jobid: number): Promise<RcloneJobStatus> {
     const status = await this.instance.post<RcloneJobStatus>('/job/status', {
       jobid
