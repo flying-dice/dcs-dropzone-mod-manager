@@ -1,6 +1,6 @@
 {
   "name": "dcs-dropzone",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "A community Mod Manager for DCS World",
   "main": "./out/main/index.js",
   "author": "Flying Dice",
