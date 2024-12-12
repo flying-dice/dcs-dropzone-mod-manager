@@ -15,7 +15,8 @@ export class MongooseFactory {
       instance: { dbName: 'dropzone', dbPath: config.mongo.dbPath, port: config.mongo.port }
     })
     const options: MongooseModuleFactoryOptions = {
-      uri: MongooseFactory.server.getUri()
+      uri: MongooseFactory.server.getUri(),
+      dbName: 'dropzone'
     }
 
     Logger.log(`Dropzone db ${options.uri}`, 'MongooseModuleFactory')

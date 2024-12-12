@@ -1,7 +1,7 @@
 [![Join Discord](https://img.shields.io/badge/Join-blue?logo=discord&label=Discord)](https://discord.gg/bT7BEHn5RD)
 [![Discord](https://img.shields.io/discord/738118932937834566?logo=discord&label=Discord)](https://discord.com/channels/738118932937834566/1178991295260278785)
 
-![heading.svg](resources%2Fheading.svg)
+![index](./index.png)
 
 DROPZONE is a Community Mod Manager for DCS World.
 
