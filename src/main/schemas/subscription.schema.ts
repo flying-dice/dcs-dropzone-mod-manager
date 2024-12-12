@@ -11,9 +11,6 @@ export class Subscription {
   @Prop({ required: true })
   modName: string
 
-  @Prop({ default: false })
-  deleted: boolean
-
   @Prop({ required: true })
   created: number
 }

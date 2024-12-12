@@ -175,7 +175,8 @@ export class SubscriptionManager {
     }
 
     this.logger.debug(`Deleting subscription for mod ${modId}`)
-    await this.subscriptionService.save({ ...subscription, deleted: true })
+    await this.releaseService.deleteBySubscriptionId(subscription.id)
+    await this.subscriptionService.deleteById(subscription.id)
   }
 
   @Log()

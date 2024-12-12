@@ -143,4 +143,10 @@ export class ReleaseService {
       .exec()
       .then((it) => it?.toJSON())
   }
+
+  async deleteBySubscriptionId(id: string) {
+    await this.assetTasks.deleteMany({ subscriptionId: id }).exec()
+    await this.releaseAssets.deleteMany({ subscriptionId: id }).exec()
+    await this.releases.deleteOne({ subscriptionId: id }).exec()
+  }
 }

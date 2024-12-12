@@ -10,9 +10,15 @@ export class SubscriptionService {
   private readonly subscriptions: Model<Subscription>
 
   @Log()
-  async findAll(deleted = false): Promise<Subscription[]> {
+  async deleteById(id: string): Promise<void> {
+    await this.subscriptions.deleteOne({ id }).exec()
+  }
+
+  @Log()
+  async findAll(): Promise<Subscription[]> {
     return this.subscriptions
-      .find({ deleted })
+      .find()
+      .sort({ created: 1 }) // Sort by created date ascending
       .exec()
       .then((it) => it.map((it) => it.toJSON()))
   }
