@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { Logger, Module, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common'
 import { ScheduleModule } from '@nestjs/schedule'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { SettingsManager } from './manager/settings.manager'
@@ -10,7 +10,7 @@ import { FsService } from './services/fs.service'
 import { RegistryService } from './services/registry.service'
 import { WriteDirectoryService } from './services/write-directory.service'
 import { VariablesService } from './services/variables.service'
-import { MongooseModule } from '@nestjs/mongoose'
+import { InjectConnection, MongooseModule } from '@nestjs/mongoose'
 import { MongooseFactory } from './mongoose.factory'
 import { Config, ConfigSchema } from './schemas/config.schema'
 import { Subscription, SubscriptionSchema } from './schemas/subscription.schema'
@@ -19,6 +19,9 @@ import { SubscriptionService } from './services/subscription.service'
 import { ReleaseService } from './services/release.service'
 import { ReleaseAsset, ReleaseAssetSchema } from './schemas/release-asset.schema'
 import { AssetTask, AssetTaskSchema } from './schemas/release-asset-task.schema'
+import { getrclone } from './tools/rclone'
+import { get7zip } from './tools/7zip'
+import { Connection } from 'mongoose'
 
 @Module({
   imports: [
@@ -49,4 +52,29 @@ import { AssetTask, AssetTaskSchema } from './schemas/release-asset-task.schema'
     VariablesService
   ]
 })
-export class AppModule {}
+export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown {
+  private readonly logger = new Logger(AppModule.name)
+
+  @InjectConnection()
+  private readonly connection: Connection
+
+  async onApplicationBootstrap() {
+    this.logger.log('Fetching 7zip')
+    await get7zip()
+
+    this.logger.log('Fetching rclone')
+    const rclone = await getrclone()
+    await rclone.startDaemon()
+  }
+
+  async onApplicationShutdown() {
+    this.logger.debug('Shutting down app', 'main')
+
+    this.logger.debug('Stopping rclone daemon', 'main')
+    const rclone = await getrclone()
+    await rclone.stopDaemon()
+
+    this.logger.debug('Closing Mongoose connection', 'main')
+    await MongooseFactory.onApplicationShutdown(this.connection)
+  }
+}
