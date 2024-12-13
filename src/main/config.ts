@@ -7,6 +7,7 @@ export type MainConfig = {
   defaultRegistryUrl: string
   appDataName: string
   appData: string
+  appRoamingDir: string
   mongo: {
     port: number
     dbPath: string
@@ -23,6 +24,7 @@ export const config: MainConfig = {
   defaultRegistryUrl: 'https://dcs-mod-manager-registry.pages.dev/',
   appDataName,
   appData,
+  appRoamingDir: join(appData, appDataName),
   aptabaseAppKey: import.meta.env.MAIN_VITE_APTABASE_APP_KEY,
   rcloneInstance: {
     baseURL: 'http://127.0.0.1:5572'
