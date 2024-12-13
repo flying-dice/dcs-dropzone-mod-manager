@@ -128,7 +128,6 @@ export class ReleaseService {
       .then((it) => it.map((it) => it.toJSON()))
   }
 
-  @Log()
   async findInProgressAssetTask(): Promise<AssetTask | undefined> {
     return this.assetTasks
       .findOne({ status: AssetTaskStatus.IN_PROGRESS })
