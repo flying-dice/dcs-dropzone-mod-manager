@@ -1,15 +1,32 @@
 import 'reflect-metadata'
-import { join } from 'node:path'
-import { electronApp, is, optimizer } from '@electron-toolkit/utils'
-import { type INestApplicationContext, Logger } from '@nestjs/common'
-import { app, BrowserWindow, shell } from 'electron'
+import { electronApp, optimizer } from '@electron-toolkit/utils'
+import { INestApplicationContext, Logger } from '@nestjs/common'
+import { app, BrowserWindow, dialog } from 'electron'
 import { initialize, trackEvent } from '@aptabase/electron/main'
 import { createIPCHandler } from 'electron-trpc/main'
-import icon from '../../resources/icon.png?asset'
 import { getAppWithRouter } from './router'
-import { ConfigService } from './services/config.service'
 import { config } from './config'
-import { getrclone } from './tools/rclone'
+import { createWindow } from './create-main-window'
+import { showError } from './utils/show-error'
+import { showDuplicateAppInstance } from './utils/show-duplicate-app-instance'
+import { autoUpdater } from 'electron-updater'
+
+if (!app.requestSingleInstanceLock()) {
+  Logger.debug(
+    'Another instance of the app is running, showing duplicate app instance dialog',
+    'main'
+  )
+  showDuplicateAppInstance()
+  app.quit()
+}
+
+process.on('uncaughtException', (err) => {
+  showError(err)
+})
+
+process.on('unhandledRejection', (err) => {
+  showError(new Error(err as string))
+})
 
 if (config.aptabaseAppKey) {
   Logger.log('Initializing Aptabase', 'main')
@@ -20,69 +37,28 @@ if (config.aptabaseAppKey) {
   Logger.warn('No Aptabase app key provided, skipping initialization', 'main')
 }
 
-const windowDefault = JSON.stringify([900, 670, 0, 0])
+let nestApp: INestApplicationContext
 
-async function createWindow(app: INestApplicationContext): Promise<BrowserWindow> {
-  Logger.log('Creating main window', 'main')
+autoUpdater.checkForUpdatesAndNotify()
 
-  const [width, height, x, y] = JSON.parse(
-    await app.get(ConfigService).getConfigValueOrDefault('mw_config', windowDefault)
-  )
+autoUpdater.on('update-downloaded', (info) => {
+  Logger.log(`Update downloaded: ${info.version}`, 'main')
+  // Show Electron dialog to ask user to restart the app
 
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    width,
-    height,
-    x,
-    y,
-    show: false,
-    autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
-    }
-  })
-
-  mainWindow.on('resized', () => {
-    const [width, height] = mainWindow.getSize()
-    const [x, y] = mainWindow.getPosition()
-
-    app.get(ConfigService).setConfigValue('mw_config', JSON.stringify([width, height, x, y]))
-  })
-
-  mainWindow.on('moved', () => {
-    const [width, height] = mainWindow.getSize()
-    const [x, y] = mainWindow.getPosition()
-
-    app.get(ConfigService).setConfigValue('mw_config', JSON.stringify([width, height, x, y]))
-  })
-
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
-  })
-
-  mainWindow.webContents.on('will-navigate', (event, url) => {
-    event.preventDefault()
-    shell.openExternal(url)
-  })
-
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
-  }
-
-  trackEvent('app_window_created')
-    .then(() => Logger.log('Aptabase event sent for app_window_created', 'main'))
-    .catch((err) =>
-      Logger.error(`Aptabase event failed for app_window_created ${err.toString()}`, 'main')
-    )
-
-  return mainWindow
-}
+  dialog
+    .showMessageBox({
+      type: 'question',
+      title: 'Update Available',
+      message:
+        'A new version of the app is available. Do you want to restart the app now to apply the update?',
+      buttons: ['Install Now', 'Install on Exit']
+    })
+    .then(({ response }) => {
+      if (response === 0) {
+        autoUpdater.quitAndInstall(false)
+      }
+    })
+})
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -99,6 +75,8 @@ app.whenReady().then(async () => {
   })
 
   const awr = await getAppWithRouter()
+  nestApp = awr.app
+
   const mainWindow = await createWindow(awr.app)
   createIPCHandler({ router: awr.router, windows: [mainWindow] })
 
@@ -113,16 +91,15 @@ app.whenReady().then(async () => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', async () => {
-  Logger.log('All windows closed, quitting app', 'main')
+  Logger.log('All windows closed, quitting App', 'main')
+
+  Logger.log('Closing NApp', 'main')
+  await nestApp.close()
+  Logger.log("NApp Closed', 'main")
+
   await trackEvent('app_quit')
     .then(() => Logger.log('Aptabase event sent for app_quit', 'main'))
     .catch((err) => Logger.error(`Aptabase event failed for app_quit ${err.toString()}`, 'main'))
 
-  const rclone = await getrclone()
-  await rclone.stopDaemon()
-
   app.quit()
 })
-
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.
