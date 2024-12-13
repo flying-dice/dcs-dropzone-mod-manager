@@ -25,32 +25,35 @@ export function SubscriptionRow(props: SubscriptionRowProps) {
   return (
     <Table.Tr c={props.enabled ? undefined : 'dimmed'}>
       <Table.Td>
-        {props.onRunExe ? (
-          <ActionIcon
-            size={'md'}
-            disabled={!props.isReady || !props.enabled}
-            variant={'subtle'}
-            onClick={props.onRunExe}
-          >
-            <BiPlay size={'1.25em'} />
-          </ActionIcon>
-        ) : (
-          <ActionIcon
-            size={'md'}
-            disabled={!props.isReady}
-            variant={'subtle'}
-            onClick={props.onToggleMod}
-          >
-            {props.isReady && props.enabled ? (
-              <BiCheckboxChecked size={'1.25em'} />
-            ) : (
-              <BiCheckbox size={'1.25em'} />
-            )}
-          </ActionIcon>
-        )}
+        <ActionIcon
+          size={'md'}
+          disabled={!props.isReady}
+          variant={'subtle'}
+          onClick={props.onToggleMod}
+        >
+          {props.isReady && props.enabled ? (
+            <BiCheckboxChecked size={'1.25em'} />
+          ) : (
+            <BiCheckbox size={'1.25em'} />
+          )}
+        </ActionIcon>
       </Table.Td>
       <Table.Td>
-        <Text>{props.modName}</Text>
+        <Group>
+          {props.onRunExe && (
+            <Tooltip label="Enable Mod to Run" openDelay={500}>
+              <ActionIcon
+                size={'md'}
+                disabled={!props.isReady || !props.enabled}
+                variant={'subtle'}
+                onClick={props.onRunExe}
+              >
+                <BiPlay size={'1.25em'} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+          <Text>{props.modName}</Text>
+        </Group>
       </Table.Td>
       <Table.Td>
         <Group>
