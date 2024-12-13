@@ -95,22 +95,8 @@ const Configurables: React.FC = () => {
 }
 
 export const SettingsPage: React.FC = () => {
-  const update = useSWR('update', () => client.checkForUpdates.query())
-
   return (
     <Stack>
-      <Title order={3}>Settings</Title>
-      <Group>
-        <Button loading={update.isLoading} onClick={() => update.mutate()}>
-          Update DCS Dropzone
-        </Button>
-      </Group>
-
-      {update.data && (
-        <Alert color={'green'}>Up to Date! Version: {update.data.updateInfo.version}</Alert>
-      )}
-      {update.error && <Alert color={'red'}>{update.error.message}</Alert>}
-
       <Configurables />
 
       <Title order={3}>RCLONE</Title>
