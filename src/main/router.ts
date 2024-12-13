@@ -1,5 +1,4 @@
 import { initTRPC } from '@trpc/server'
-import { UpdateCheckResult } from 'electron-updater'
 import { z } from 'zod'
 import { config } from './config'
 import { getDefaultGameDir } from './functions/getDefaultGameDir'
@@ -7,12 +6,12 @@ import { getDefaultWriteDir } from './functions/getDefaultWriteDir'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { SettingsManager } from './manager/settings.manager'
 import { SubscriptionManager, SubscriptionWithState } from './manager/subscription.manager'
-import { UpdateManager } from './manager/update.manager'
 import { ConfigService } from './services/config.service'
 import { FsService } from './services/fs.service'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { RegistryService } from './services/registry.service'
+import { app as electronApp } from 'electron/main'
 
 export const trpc = initTRPC.create()
 
@@ -70,12 +69,7 @@ export async function getAppWithRouter() {
         ),
 
       // Settings
-      checkForUpdates: trpc.procedure.query(
-        async (): Promise<UpdateCheckResult | undefined> => app.get(UpdateManager).checkForUpdates()
-      ),
-      quitAndInstall: trpc.procedure.query(
-        async (): Promise<void> => app.get(UpdateManager).quitAndInstall()
-      ),
+      currentVersion: trpc.procedure.query(async (): Promise<string> => electronApp.getVersion()),
 
       askFolder: trpc.procedure
         .input(z.object({ default: z.string() }))

@@ -1,4 +1,4 @@
-import { Alert, Button, Group, Stack, Text, Title } from '@mantine/core'
+import { ActionIcon, Alert, Stack, Text, TextInput, Title } from '@mantine/core'
 import { closeAllModals, openModal } from '@mantine/modals'
 import { isEmpty } from 'lodash'
 import React from 'react'
@@ -7,6 +7,7 @@ import { client } from '../client'
 import { SettingEntry } from '../container/setting-entry'
 import { RegistryForm } from '../forms/registry.form'
 import { useConfig } from '../hooks/useConfig'
+import { CgExternal } from 'react-icons/cg'
 
 const Configurables: React.FC = () => {
   const defaultRegistryUrl = useSWR('defaultRegistryUrl', () =>
@@ -95,31 +96,47 @@ const Configurables: React.FC = () => {
 }
 
 export const SettingsPage: React.FC = () => {
+  const currentVersion = useSWR('currentVersion', () => client.currentVersion.query())
+
   return (
-    <Stack>
+    <Stack gap={'xl'}>
       <Configurables />
 
-      <Title order={3}>RCLONE</Title>
-      <Stack gap={'xs'}>
-        <Text size={'xs'} c={'dimmed'}>
-          RCLONE is a command line utility that we use to interact with cloud storage. It is
-          downloaded automatically to ensure API version compatability.
-        </Text>
-        <Text size={'xs'} c={'dimmed'}>
-          Its run in daemon mode and can be managed via the RCLONE Admin interface (there are no
-          credentials just click login). dcs-dropzone interacts with it using API calls.
-        </Text>
-      </Stack>
+      <TextInput
+        label="Current Version"
+        value={currentVersion.data}
+        description={'This is the version of the Mod Manager that you are currently running'}
+        readOnly
+      />
 
-      <Group>
-        <Button
-          onClick={() => {
-            window.open('http://localhost:5572/#/dashboard', '_blank')
-          }}
-        >
-          Open RCLONE Admin
-        </Button>
-      </Group>
+      <Stack>
+        <Title order={3}>RCLONE</Title>
+        <TextInput
+          label={'RCLONE'}
+          value={'http://localhost:5572/#/dashboard'}
+          description={
+            <Alert variant={'transparent'} p={2}>
+              <Stack gap={0}>
+                <Text size={'xs'} c={'dimmed'}>
+                  RCLONE is a command line utility that we use to interact with cloud storage. It is
+                  downloaded automatically to ensure API version compatability.
+                </Text>
+                <Text size={'xs'} c={'dimmed'}>
+                  Its run in daemon mode and can be managed via the RCLONE Admin interface (there
+                  are no credentials just click login). dcs-dropzone interacts with it using API
+                  calls.
+                </Text>
+              </Stack>
+            </Alert>
+          }
+          readOnly
+          rightSection={
+            <ActionIcon onClick={() => window.open('http://localhost:5572/#/dashboard', '_blank')}>
+              <CgExternal />
+            </ActionIcon>
+          }
+        />
+      </Stack>
     </Stack>
   )
 }
