@@ -4,7 +4,6 @@ import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { SettingsManager } from './manager/settings.manager'
 import { SubscriptionManager } from './manager/subscription.manager'
 import { TaskManager } from './manager/task.manager'
-import { UpdateManager } from './manager/update.manager'
 import { ConfigService } from './services/config.service'
 import { FsService } from './services/fs.service'
 import { RegistryService } from './services/registry.service'
@@ -42,7 +41,6 @@ import { Connection } from 'mongoose'
     ReleaseService,
     ConfigService,
     FsService,
-    UpdateManager,
     SettingsManager,
     RegistryService,
     SubscriptionManager,
