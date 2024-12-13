@@ -14,6 +14,8 @@ import { formatError } from '../functions/formatError'
 import { AssetTask, AssetTaskStatus, AssetTaskType } from '../schemas/release-asset-task.schema'
 import { ReleaseService } from '../services/release.service'
 import { SubscriptionService } from '../services/subscription.service'
+import { InjectConnection } from '@nestjs/mongoose'
+import { Connection, ConnectionStates } from 'mongoose'
 
 @Injectable()
 export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -24,6 +26,9 @@ export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdow
 
   @Inject(ReleaseService)
   private readonly releaseService: ReleaseService
+
+  @InjectConnection()
+  private readonly connection: Connection
 
   private readonly taskProcessors: Map<string, TaskProcessor> = new Map<string, TaskProcessor>()
 
@@ -39,6 +44,11 @@ export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdow
     Aigle.whilst(
       () => this.active,
       async () => {
+        if (this.connection.readyState !== ConnectionStates.connected) {
+          this.logger.warn('Database connection not ready, waiting...')
+          await Aigle.delay(500)
+          return
+        }
         await this.checkForPendingTasks()
         await Aigle.delay(500)
       }
