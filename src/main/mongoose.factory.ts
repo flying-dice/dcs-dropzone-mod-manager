@@ -12,7 +12,12 @@ export class MongooseFactory {
     Logger.log('Using MongoMemoryServer', 'MongooseModuleFactory')
     ensureDirSync(config.mongo.dbPath)
     MongooseFactory.server = await MongoMemoryServer.create({
-      instance: { dbName: 'dropzone', dbPath: config.mongo.dbPath, port: config.mongo.port }
+      instance: {
+        dbName: 'dropzone',
+        dbPath: config.mongo.dbPath,
+        port: config.mongo.port,
+        ip: '127.0.0.1'
+      }
     })
     const options: MongooseModuleFactoryOptions = {
       uri: MongooseFactory.server.getUri(),
