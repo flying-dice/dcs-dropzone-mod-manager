@@ -17,8 +17,8 @@ export class ReleaseAsset {
   @Prop({ type: String, required: true })
   target: string
 
-  @Prop({ type: String, required: false })
-  symlinkPath?: string
+  @Prop({ type: String, required: true, default: null })
+  symlinkPath: string | null
 }
 
 export const ReleaseAssetSchema = SchemaFactory.createForClass(ReleaseAsset)

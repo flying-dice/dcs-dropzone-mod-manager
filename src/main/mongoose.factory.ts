@@ -19,6 +19,7 @@ export class MongooseFactory {
         ip: '127.0.0.1'
       }
     })
+
     const options: MongooseModuleFactoryOptions = {
       uri: MongooseFactory.server.getUri(),
       dbName: 'dropzone'

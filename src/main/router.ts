@@ -1,23 +1,23 @@
 import { initTRPC } from '@trpc/server'
 import { UpdateCheckResult } from 'electron-updater'
 import { z } from 'zod'
-import { TaskState } from '../lib/types'
-import { bootstrap } from './app'
 import { config } from './config'
 import { getDefaultGameDir } from './functions/getDefaultGameDir'
 import { getDefaultWriteDir } from './functions/getDefaultWriteDir'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { SettingsManager } from './manager/settings.manager'
-import { SubscriptionManager } from './manager/subscription.manager'
+import { SubscriptionManager, SubscriptionWithState } from './manager/subscription.manager'
 import { UpdateManager } from './manager/update.manager'
 import { ConfigService } from './services/config.service'
 import { FsService } from './services/fs.service'
-import { Subscription } from './schemas/subscription.schema'
+import { NestFactory } from '@nestjs/core'
+import { AppModule } from './app.module'
+import { RegistryService } from './services/registry.service'
 
 export const trpc = initTRPC.create()
 
 export async function getAppWithRouter() {
-  const app = await bootstrap()
+  const app = await NestFactory.createApplicationContext(AppModule, config.appOptions)
 
   return {
     app,
@@ -33,7 +33,7 @@ export async function getAppWithRouter() {
         .query(
           async ({
             input
-          }): Promise<{ id: string; source: string; symlinkPath: string | undefined }[]> =>
+          }): Promise<{ id: string; source: string; symlinkPath: string | null }[]> =>
             app.get(LifecycleManager).getModAssets(input.modId)
         ),
       openAssetInExplorer: trpc.procedure
@@ -44,22 +44,8 @@ export async function getAppWithRouter() {
 
       // Subscriptions
       getAllSubscriptions: trpc.procedure.query(
-        async (): Promise<Subscription[]> => app.get(SubscriptionManager).getAllSubscriptions()
-      ),
-      getSubscriptionRelease: trpc.procedure.input(z.object({ id: z.string() })).query(
-        async ({
-          input
-        }): Promise<
-          | {
-              enabled: boolean
-              version: string
-              status: TaskState
-              progress: number
-              label?: string | undefined
-              exePath?: string | undefined
-            }
-          | undefined
-        > => app.get(SubscriptionManager).getSubscriptionReleaseState(input.id)
+        async (): Promise<SubscriptionWithState[]> =>
+          app.get(SubscriptionManager).getAllSubscriptions()
       ),
       subscribe: trpc.procedure
         .input(z.object({ modId: z.string() }))
@@ -139,7 +125,12 @@ export async function getAppWithRouter() {
         .input(z.object({ modId: z.string(), exePath: z.string() }))
         .mutation(
           ({ input }): Promise<void> => app.get(LifecycleManager).runExe(input.modId, input.exePath)
-        )
+        ),
+
+      getRegistryIndex: trpc.procedure.query(() => app.get(RegistryService).getRegistryIndex()),
+      getRegistryEntry: trpc.procedure
+        .input(z.object({ modId: z.string() }))
+        .query(({ input }) => app.get(RegistryService).getRegistryEntryIndex(input.modId))
     })
   }
 }

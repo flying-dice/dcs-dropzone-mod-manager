@@ -108,7 +108,7 @@ export class LifecycleManager {
       if (releaseAsset.symlinkPath) {
         this.logger.debug(`Deleting Symlink for release asset: ${releaseAsset.id}`)
         await rm(releaseAsset.symlinkPath, { force: true, recursive: true })
-        releaseAsset.symlinkPath = undefined
+        releaseAsset.symlinkPath = null
         await this.releaseService.saveAsset(releaseAsset)
       }
     }

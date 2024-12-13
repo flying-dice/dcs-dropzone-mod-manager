@@ -37,7 +37,7 @@ export const RegistryEntryPage: React.FC = () => {
   return (
     <>
       <LoadingOverlay visible={index.isLoading} />
-      {index.data && <_RegistryEntryPage entry={index.data.data} />}
+      {index.data && <_RegistryEntryPage entry={index.data} />}
       {!index.isLoading && index.error && (
         <Alert color={'red'}>Registry Entry with ID {id} not found</Alert>
       )}

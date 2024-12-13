@@ -7,7 +7,7 @@ export const useRegistrySubscriber = (registryEntry: EntryIndex) => {
   const allSubscriptions = useSubscriptions()
 
   return {
-    isSubscribed: allSubscriptions.data?.some((it) => it.modId === registryEntry.id),
+    isSubscribed: allSubscriptions.data?.some((it) => it.subscription.modId === registryEntry.id),
     subscribe: async () => {
       try {
         console.log('Subscribed to registry entry:', registryEntry)

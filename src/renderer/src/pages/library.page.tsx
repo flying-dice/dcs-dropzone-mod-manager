@@ -1,8 +1,7 @@
 import { CodeHighlight } from '@mantine/code-highlight'
 import { Alert, Group, Stack, Text, TextInput, Title } from '@mantine/core'
 import { pick } from 'lodash'
-import React from 'react'
-import { useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { VscSearch, VscWarning } from 'react-icons/vsc'
 import { stringify } from 'yaml'
 import { Collapsible } from '../components/collapsible'
@@ -14,9 +13,12 @@ import { useSubscriptions } from '../hooks/useSubscriptions'
 export const LibraryPage: React.FC = () => {
   const registry = useRegistryIndex()
   const subscribed = useSubscriptions()
-  const { setSearch, results } = useFuse(registry.index.data?.data || [])
+  const { setSearch, results } = useFuse(registry.index.data || [])
 
-  const subscribedIds = useMemo(() => subscribed.data?.map((it) => it.modId), [subscribed.data])
+  const subscribedIds = useMemo(
+    () => subscribed.data?.map((it) => it.subscription.modId),
+    [subscribed.data]
+  )
 
   return (
     <Stack>

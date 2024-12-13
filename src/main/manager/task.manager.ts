@@ -13,7 +13,6 @@ import { trackEvent } from '@aptabase/electron/main'
 import { formatError } from '../functions/formatError'
 import { AssetTask, AssetTaskStatus, AssetTaskType } from '../schemas/release-asset-task.schema'
 import { ReleaseService } from '../services/release.service'
-import { Log } from '../utils/log'
 import { SubscriptionService } from '../services/subscription.service'
 
 @Injectable()
@@ -41,7 +40,7 @@ export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdow
       () => this.active,
       async () => {
         await this.checkForPendingTasks()
-        await Aigle.delay(1000)
+        await Aigle.delay(500)
       }
     )
   }
@@ -51,7 +50,6 @@ export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdow
     this.active = false
   }
 
-  @Log()
   async checkForPendingTasks() {
     // Get the current task being processed
     let task = await this.releaseService.findInProgressAssetTask()

@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
 import { ensureDirSync, rmdir } from 'fs-extra'
-import { TaskState } from '../../lib/types'
+import { ProgressLabel } from '../../lib/types'
 import { FsService } from '../services/fs.service'
 import { RegistryService } from '../services/registry.service'
 import { WriteDirectoryService } from '../services/write-directory.service'
@@ -20,10 +20,18 @@ import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
 export type SubscriptionReleaseState = {
   enabled: boolean
   version: string
-  status: TaskState
+  progressLabel: ProgressLabel
   progress: number
-  label?: string
+  currentTaskLabel?: string
   exePath?: string
+  isLatest: boolean
+  latest?: string
+  isReady: boolean
+}
+
+export type SubscriptionWithState = {
+  subscription: Subscription
+  state: SubscriptionReleaseState
 }
 
 @Injectable()
@@ -54,8 +62,17 @@ export class SubscriptionManager implements OnApplicationBootstrap {
   }
 
   @Log()
-  async getAllSubscriptions(): Promise<Subscription[]> {
-    return this.subscriptionService.findAll()
+  async getAllSubscriptions(): Promise<SubscriptionWithState[]> {
+    const subscriptionsWithState: SubscriptionWithState[] = []
+
+    for (const subscription of await this.subscriptionService.findAll()) {
+      const state = await this.getSubscriptionReleaseState(subscription)
+      if (state) {
+        subscriptionsWithState.push({ subscription, state })
+      }
+    }
+
+    return subscriptionsWithState
   }
 
   /**
@@ -63,38 +80,43 @@ export class SubscriptionManager implements OnApplicationBootstrap {
    * This is primarily used on the MyContent page to render the current subscriptions and their status
    */
   @Log()
-  async getSubscriptionReleaseState(id: string): Promise<SubscriptionReleaseState | undefined> {
-    const release = await this.releaseService.findBySubscriptionIdOrThrow(id)
+  async getSubscriptionReleaseState(
+    subscription: Subscription
+  ): Promise<SubscriptionReleaseState | undefined> {
+    const installed = await this.releaseService.findBySubscriptionIdOrThrow(subscription.id)
+    const latest = await this.registryService.getLatestVersion(subscription.modId)
 
-    if (!release) return undefined
-    const releaseAssetTasks = await this.releaseService.findAssetTasksByRelease(release.id)
+    const assetTasks = await this.releaseService.findAssetTasksByRelease(installed.id)
 
-    const taskStatuses = releaseAssetTasks.map((it) => it.status)
-    const taskProgress = releaseAssetTasks.map((it) => it.progress)
+    const taskStatuses = assetTasks.map((it) => it.status)
+    const taskProgress = assetTasks.map((it) => it.progress)
 
-    let status: TaskState = 'Pending'
+    let progressLabel: ProgressLabel = 'Pending'
 
     if (taskStatuses.every((it) => it === AssetTaskStatus.COMPLETED)) {
-      status = 'Completed'
+      progressLabel = 'Completed'
     }
 
     if (taskStatuses.some((it) => it === AssetTaskStatus.FAILED)) {
-      status = 'Failed'
+      progressLabel = 'Failed'
     }
 
     if (taskStatuses.some((it) => it === AssetTaskStatus.IN_PROGRESS)) {
-      status = 'In Progress'
+      progressLabel = 'In Progress'
     }
 
     const progress = taskProgress.reduce((acc, cur) => acc + cur, 0) / taskProgress.length
 
     return {
-      enabled: release.enabled,
-      version: release.version,
-      status,
+      enabled: installed.enabled,
+      version: installed.version,
+      progressLabel,
       progress,
-      label: releaseAssetTasks.find((it) => it.status === AssetTaskStatus.IN_PROGRESS)?.label,
-      exePath: release.exePath
+      currentTaskLabel: assetTasks.find((it) => it.status === AssetTaskStatus.IN_PROGRESS)?.label,
+      isReady: taskStatuses.every((it) => it === AssetTaskStatus.COMPLETED),
+      exePath: installed.exePath,
+      isLatest: installed.version === latest?.version || true,
+      latest: latest?.version
     }
   }
 
@@ -103,10 +125,10 @@ export class SubscriptionManager implements OnApplicationBootstrap {
     this.logger.log(`Subscribing to mod ${modId}`)
 
     this.logger.debug(`Getting registry index for mod ${modId}`)
-    const mod = await this.registryService.getRegistryIndex(modId)
+    const mod = await this.registryService.getRegistryEntryIndex(modId)
 
     this.logger.debug(`Getting latest release for mod ${modId}`)
-    const latestRelease = await this.registryService.getLatestRelease(modId)
+    const latestRelease = await this.registryService.getLatestVersion(modId)
 
     if (!latestRelease) {
       throw new Error(`No releases found for mod ${modId}`)

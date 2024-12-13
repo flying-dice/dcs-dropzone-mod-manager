@@ -4,7 +4,7 @@ import { autoUpdater, type UpdateCheckResult } from 'electron-updater'
 @Injectable()
 export class UpdateManager {
   async checkForUpdates(): Promise<UpdateCheckResult | undefined> {
-    const update = await autoUpdater.checkForUpdatesAndNotify()
+    const update = await autoUpdater.checkForUpdates()
     return update || undefined
   }
 

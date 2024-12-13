@@ -1,43 +1,27 @@
-import {
-  ActionIcon,
-  Alert,
-  Badge,
-  Group,
-  Menu,
-  Progress,
-  Stack,
-  Table,
-  Text,
-  TextInput,
-  Tooltip
-} from '@mantine/core'
-import React, { useMemo } from 'react'
-import { BiCheckbox, BiCheckboxChecked, BiPlay } from 'react-icons/bi'
-import { BsThreeDotsVertical } from 'react-icons/bs'
+import { Alert, Stack, Table, TextInput } from '@mantine/core'
 import { client } from '../client'
 import { useFuse } from '../hooks/useFuse'
-import { useSubscriptionRelease } from '../hooks/useSubscriptionRelease'
 import { useSubscriptions } from '../hooks/useSubscriptions'
 import { showErrorNotification, showSuccessNotification } from '../utils/notifications'
+import { SubscriptionRow } from '@renderer/components/subscription-row'
 import { useNavigate } from 'react-router-dom'
-import { useRegistryEntry } from '@renderer/hooks/useRegistryEntry'
+import { useEffect } from 'react'
 
-const SubscriptionRow: React.FC<{
-  id: string
-  modId: string
-  modName: string
-  created: number
-  onOpenSymlinksModal: (id: string) => void
-}> = ({ id, modId, modName, created, onOpenSymlinksModal }) => {
-  const subscriptions = useSubscriptions()
+export type SubscriptionsProps = {
+  onOpenSymlinksModal: (modId: string) => void
+}
+export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
   const navigate = useNavigate()
-  const release = useSubscriptionRelease(id)
-  const registryEntry = useRegistryEntry(modId)
-  const isUpToDate = release.data?.version === registryEntry.index.data?.data.latest
+  const subscriptions = useSubscriptions()
+  const { results, search, setSearch } = useFuse(subscriptions.data || [], '', ['modId', 'modName'])
 
-  const exePath = useMemo(() => release.data?.exePath, [release.data])
+  useEffect(() => {
+    if (subscriptions.data?.some(({ state }) => state.progress !== 100)) {
+      setTimeout(() => subscriptions.mutate(), 500)
+    }
+  }, [subscriptions.data])
 
-  async function handleUnsubscribe(modId: string, name: string) {
+  async function handleUnsubscribe(modId: string) {
     try {
       await client.unsubscribe.mutate({ modId })
       await subscriptions.mutate()
@@ -51,7 +35,6 @@ const SubscriptionRow: React.FC<{
     try {
       await client.toggleMod.mutate({ modId })
       await subscriptions.mutate()
-      await release.mutate()
     } catch (err) {
       showErrorNotification(err)
     }
@@ -65,97 +48,9 @@ const SubscriptionRow: React.FC<{
     }
   }
 
-  return (
-    <Table.Tr c={release.data?.enabled ? undefined : 'dimmed'}>
-      <Table.Td>
-        {!exePath && (
-          <ActionIcon
-            size={'md'}
-            disabled={release.data?.status !== 'Completed'}
-            variant={'subtle'}
-            onClick={() => handleToggleMod(modId)}
-          >
-            {release.data?.enabled ? (
-              <BiCheckboxChecked size={'1.25em'} />
-            ) : (
-              <BiCheckbox size={'1.25em'} />
-            )}
-          </ActionIcon>
-        )}
-        {exePath && (
-          <ActionIcon
-            size={'md'}
-            disabled={release.data?.status !== 'Completed' || !release.data?.enabled}
-            variant={'subtle'}
-            onClick={() => handleRunExe(modId, exePath)}
-          >
-            <BiPlay size={'1.25em'} />
-          </ActionIcon>
-        )}
-      </Table.Td>
-      <Table.Td>
-        <Text>{modName}</Text>
-      </Table.Td>
-      <Table.Td>
-        <Group>
-          <Text>{release.data?.version}</Text>
-          <Badge>{isUpToDate ? 'Latest' : 'Outdated'}</Badge>
-        </Group>
-      </Table.Td>
-      <Table.Td>
-        {release.data?.status === 'In Progress' || release.data?.status === 'Pending' ? (
-          <Tooltip label={release.data.label}>
-            <Progress.Root size="lg">
-              <Progress.Section
-                value={release.data?.progress || 0}
-                striped={release.data?.status === 'In Progress'}
-                animated={release.data?.status === 'In Progress'}
-              >
-                <Progress.Label>{release.data?.progress}%</Progress.Label>
-              </Progress.Section>
-            </Progress.Root>
-          </Tooltip>
-        ) : (
-          release.data?.status
-        )}
-      </Table.Td>
-      <Table.Td>{new Date(created).toLocaleString()}</Table.Td>
-      <Table.Td>
-        <Menu>
-          <Menu.Target>
-            <ActionIcon size={'lg'} variant={'subtle'}>
-              <BsThreeDotsVertical />
-            </ActionIcon>
-          </Menu.Target>
-          <Menu.Dropdown>
-            {!isUpToDate && (
-              <Menu.Item onClick={() => client.update.mutate({ modId })}>Update</Menu.Item>
-            )}
-            <Menu.Item
-              onClick={() => handleToggleMod(modId)}
-              disabled={release.data?.status !== 'Completed'}
-            >
-              {release.data?.enabled ? 'Disable' : 'Enable'}
-            </Menu.Item>
-            <Menu.Item onClick={() => navigate(`/library/${modId}`)}>View Mod Page</Menu.Item>
-            <Menu.Item onClick={() => onOpenSymlinksModal(modId)}>View Install Details</Menu.Item>
-            <Menu.Item onClick={() => client.openInExplorer.mutate({ modId })}>
-              Open in Explorer
-            </Menu.Item>
-            <Menu.Item onClick={() => handleUnsubscribe(modId, modName)}>Unsubscribe</Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
-      </Table.Td>
-    </Table.Tr>
-  )
-}
-
-export type SubscriptionsProps = {
-  onOpenSymlinksModal: (modId: string) => void
-}
-export const Subscriptions: React.FC<SubscriptionsProps> = ({ onOpenSymlinksModal }) => {
-  const subscriptions = useSubscriptions()
-  const { results, search, setSearch } = useFuse(subscriptions.data || [], '', ['modId', 'modName'])
+  async function handleUpdate(modId: string) {
+    await client.update.mutate({ modId })
+  }
 
   return (
     <Stack>
@@ -182,14 +77,29 @@ export const Subscriptions: React.FC<SubscriptionsProps> = ({ onOpenSymlinksModa
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {results.map((element) => (
+            {results.map(({ subscription, state }) => (
               <SubscriptionRow
-                key={element.id}
-                id={element.id}
-                modId={element.modId}
-                modName={element.modName}
-                created={element.created}
-                onOpenSymlinksModal={onOpenSymlinksModal}
+                key={subscription.id}
+                modId={subscription.modId}
+                modName={subscription.modName}
+                created={subscription.created}
+                onOpenSymlinksModal={() => onOpenSymlinksModal(subscription.modId)}
+                onUpdate={() => handleUpdate(subscription.modId)}
+                onUnsubscribe={() => handleUnsubscribe(subscription.modId)}
+                onViewModPage={() => navigate(`/library/${subscription.modId}`)}
+                progress={state.progress}
+                isReady={state.isReady}
+                onOpenInExplorer={() => client.openInExplorer.mutate({ modId: subscription.modId })}
+                isLatest={state.isLatest}
+                version={state.version}
+                enabled={state.enabled}
+                onToggleMod={() => handleToggleMod(subscription.modId)}
+                stateLabel={state.currentTaskLabel || state.progressLabel}
+                onRunExe={
+                  state.exePath
+                    ? () => state.exePath && handleRunExe(subscription.modId, state.exePath)
+                    : undefined
+                }
               />
             ))}
           </Table.Tbody>
