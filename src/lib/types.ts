@@ -1,1 +1,1 @@
-export type TaskState = 'Pending' | 'In Progress' | 'Completed' | 'Failed'
+export type ProgressLabel = 'Pending' | 'In Progress' | 'Completed' | 'Failed'
