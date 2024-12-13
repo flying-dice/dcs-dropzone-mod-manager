@@ -71,11 +71,13 @@ export class Rclone {
       })
 
       this.process.stdout.on('data', (data) => {
-        logger.log(data)
+        logger.debug(`rclone stdout: ${data}`)
       })
 
       this.process.stderr.on('data', (data) => {
-        logger.error(data)
+        if (data) {
+          logger.error(`rclone stderr: ${data}`)
+        }
       })
     })
   }

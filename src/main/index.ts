@@ -10,6 +10,7 @@ import { createWindow } from './create-main-window'
 import { showError } from './utils/show-error'
 import { showDuplicateAppInstance } from './utils/show-duplicate-app-instance'
 import { autoUpdater } from 'electron-updater'
+import fs from 'node:fs'
 
 if (!app.requestSingleInstanceLock()) {
   Logger.debug(
@@ -21,11 +22,29 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 process.on('uncaughtException', (err) => {
-  showError(err)
+  Logger.flush()
+  const recentLogs = fs.readFileSync(config.logfile, 'utf-8').split('\n'.slice(-10))
+
+  trackEvent('uncaught_exception', {
+    name: err.name,
+    message: err.message
+  })
+
+  showError(err, recentLogs)
 })
 
 process.on('unhandledRejection', (err) => {
-  showError(new Error(err as string))
+  Logger.flush()
+  const recentLogs = fs.readFileSync(config.logfile, 'utf-8').split('\n').slice(-10)
+
+  const error = new Error(err as string)
+
+  trackEvent('unhandled_rejection', {
+    name: error.name,
+    message: error.message
+  })
+
+  showError(error, recentLogs)
 })
 
 if (config.aptabaseAppKey) {
