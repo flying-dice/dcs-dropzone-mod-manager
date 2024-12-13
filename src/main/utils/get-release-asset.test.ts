@@ -27,6 +27,7 @@ describe('getReleaseAsset', () => {
       source:
         'https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.lua',
       target: '{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua',
+      symlinkPath: null,
       tasks: [
         {
           id: expect.any(String),
@@ -73,6 +74,7 @@ describe('getReleaseAsset', () => {
       source:
         'https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.zip',
       target: '{{DCS_USER_DIR}}/Mods/hello-world',
+      symlinkPath: null,
       tasks: [
         {
           id: expect.any(String),
