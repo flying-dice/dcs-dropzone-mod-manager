@@ -9,7 +9,6 @@ import { ModalsProvider } from '@mantine/modals'
 import { Notifications } from '@mantine/notifications'
 import { HashRouter } from 'react-router-dom'
 import { App } from './App'
-import { client } from './client'
 import '@fontsource/montserrat/600-italic.css'
 import { trackEvent } from '@aptabase/electron/renderer'
 
@@ -25,7 +24,6 @@ const theme = createTheme({
   }
 })
 
-client.checkForUpdates.query()
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <MantineProvider forceColorScheme={'dark'} theme={theme}>
