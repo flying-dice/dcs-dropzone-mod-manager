@@ -117,3 +117,7 @@ The `Router` is responsible for exposing trpc procedures to the renderer process
 For the most part the Router will call the appropriate Manager to perform the operation.
 
 Some procedures however will call services directly, i.e. the Get and Set values for configs or the electron updater.
+
+## Testing the Updater
+
+See [AUTO-UPDATER.md](AUTO-UPDATER.md) for more information on testing the updater.
