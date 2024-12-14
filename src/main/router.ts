@@ -12,6 +12,7 @@ import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { RegistryService } from './services/registry.service'
 import { app as electronApp } from 'electron/main'
+import { WriteDirectoryService } from './services/write-directory.service'
 
 export const trpc = initTRPC.create()
 
@@ -61,6 +62,10 @@ export async function getAppWithRouter() {
         .mutation(
           async ({ input }): Promise<void> => app.get(SubscriptionManager).update(input.modId)
         ),
+      openWriteDirInExplorer: trpc.procedure.mutation(
+        async ({}): Promise<void> =>
+          app.get(FsService).openFolder(await app.get(WriteDirectoryService).getWriteDirectory())
+      ),
       openInExplorer: trpc.procedure
         .input(z.object({ modId: z.string() }))
         .mutation(
