@@ -62,7 +62,17 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
       {subscriptions.data?.length === 0 ? (
         <Alert>
           {/* eslint-disable-next-line react/no-unescaped-entities */}
-          It looks like you haven't subscribed to any mods yet. Visit the Library to get started.
+          It looks like you haven't subscribed to any mods yet. Visit the{' '}
+          <a
+            href=""
+            onClick={(e) => {
+              e.preventDefault()
+              navigate('/library/')
+            }}
+          >
+            <strong>Library</strong>
+          </a>{' '}
+          to get started.
         </Alert>
       ) : (
         <Table>
@@ -103,6 +113,24 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
               />
             ))}
           </Table.Tbody>
+          {results.length === 0 && (
+            <Table.Caption>
+              <Alert>
+                {/* eslint-disable-next-line react/no-unescaped-entities */}
+                Did you subscribe to the mod you're looking for? Check the{' '}
+                <a
+                  href=""
+                  onClick={(e) => {
+                    e.preventDefault()
+                    navigate('/library/')
+                  }}
+                >
+                  <strong>Library</strong>
+                </a>{' '}
+                to get started.
+              </Alert>
+            </Table.Caption>
+          )}
         </Table>
       )}
     </Stack>
