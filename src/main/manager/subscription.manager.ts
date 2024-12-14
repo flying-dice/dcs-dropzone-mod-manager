@@ -13,7 +13,7 @@ import { Log } from '../utils/log'
 import { getReleaseAsset } from '../utils/get-release-asset'
 import { randomUUID } from 'node:crypto'
 import { join } from 'node:path'
-import { existsSync, readdirSync, ensureDirSync, rmdir, pathExistsSync } from 'fs-extra'
+import { existsSync, readdirSync, ensureDirSync, rmdir } from 'fs-extra'
 import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
 
 export type SubscriptionReleaseState = {
@@ -230,7 +230,7 @@ export class SubscriptionManager implements OnApplicationBootstrap {
   async removeOrphanedSubscriptionsAndReleases() {
     const writeDirectory = await this.writeDirectoryService.getWriteDirectory()
 
-    if (!pathExistsSync(writeDirectory)) return
+    if (!existsSync(writeDirectory)) return
 
     const foldersInWriteDirectory = readdirSync(writeDirectory, { withFileTypes: true }).filter(
       (it) => it.isDirectory()
