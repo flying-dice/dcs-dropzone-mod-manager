@@ -6,7 +6,7 @@ import { is } from '@electron-toolkit/utils'
 import { trackEvent } from '@aptabase/electron/main'
 import icon from '../../resources/icon.png?asset'
 
-const windowDefault = JSON.stringify([900, 670, 0, 0])
+const windowDefault = JSON.stringify([1280, 720, 0, 0])
 
 export async function createWindow(app: INestApplicationContext): Promise<BrowserWindow> {
   Logger.log('Creating main window', 'main')
