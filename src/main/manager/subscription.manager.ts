@@ -13,7 +13,7 @@ import { Log } from '../utils/log'
 import { getReleaseAsset } from '../utils/get-release-asset'
 import { randomUUID } from 'node:crypto'
 import { join } from 'node:path'
-import { existsSync, readdirSync, ensureDirSync, rmdir } from 'fs-extra'
+import { pathExists, readdirSync, ensureDirSync, rmdir } from 'fs-extra'
 import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
 
 export type SubscriptionReleaseState = {
@@ -196,7 +196,7 @@ export class SubscriptionManager implements OnApplicationBootstrap {
 
     const modDir = await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription)
 
-    if (existsSync(modDir)) {
+    if (await pathExists(modDir)) {
       this.logger.debug(`Deleting write directory for mod ${modId}`)
       await rmdir(modDir, { recursive: true })
     }
@@ -230,7 +230,7 @@ export class SubscriptionManager implements OnApplicationBootstrap {
   async removeOrphanedSubscriptionsAndReleases() {
     const writeDirectory = await this.writeDirectoryService.getWriteDirectory()
 
-    if (!existsSync(writeDirectory)) return
+    if (!(await pathExists(writeDirectory))) return
 
     const foldersInWriteDirectory = readdirSync(writeDirectory, { withFileTypes: true }).filter(
       (it) => it.isDirectory()
