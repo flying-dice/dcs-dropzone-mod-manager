@@ -1,4 +1,11 @@
-import { VscHome, VscLibrary, VscSettingsGear } from 'react-icons/vsc'
+import {
+  VscCommentDiscussion,
+  VscGithub,
+  VscHeartFilled,
+  VscHome,
+  VscLibrary,
+  VscSettingsGear
+} from 'react-icons/vsc'
 import { LibraryPage } from './pages/library.page'
 import { MyContentPage } from './pages/my-content.page'
 import { RegistryEntryPage } from './pages/registry-entry.page'
@@ -16,6 +23,24 @@ export const config = {
       path: '/library',
       tooltip: 'Library',
       icon: <VscLibrary />
+    },
+    {
+      path: ' https://discord.gg/bT7BEHn5RD',
+      tooltip: 'Discord',
+      icon: <VscCommentDiscussion />,
+      isExternal: true
+    },
+    {
+      path: 'https://github.com/flying-dice/dcs-dropzone-mod-manager',
+      tooltip: 'Github',
+      icon: <VscGithub />,
+      isExternal: true
+    },
+    {
+      path: 'https://www.patreon.com/flyingdice',
+      tooltip: 'Patreon',
+      icon: <VscHeartFilled />,
+      isExternal: true
     },
     {
       path: '/settings',
