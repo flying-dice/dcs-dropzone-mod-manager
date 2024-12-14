@@ -1,5 +1,4 @@
 import { Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
-import { ensureDirSync, rmdir } from 'fs-extra'
 import { ProgressLabel } from '../../lib/types'
 import { FsService } from '../services/fs.service'
 import { RegistryService } from '../services/registry.service'
@@ -14,7 +13,7 @@ import { Log } from '../utils/log'
 import { getReleaseAsset } from '../utils/get-release-asset'
 import { randomUUID } from 'node:crypto'
 import { join } from 'node:path'
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync, readdirSync, ensureDirSync, rmdir, pathExistsSync } from 'fs-extra'
 import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
 
 export type SubscriptionReleaseState = {
@@ -230,6 +229,9 @@ export class SubscriptionManager implements OnApplicationBootstrap {
   @Log()
   async removeOrphanedSubscriptionsAndReleases() {
     const writeDirectory = await this.writeDirectoryService.getWriteDirectory()
+
+    if (!pathExistsSync(writeDirectory)) return
+
     const foldersInWriteDirectory = readdirSync(writeDirectory, { withFileTypes: true }).filter(
       (it) => it.isDirectory()
     )
