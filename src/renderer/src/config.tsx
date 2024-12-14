@@ -1,15 +1,9 @@
-import {
-  VscCommentDiscussion,
-  VscGithub,
-  VscHeartFilled,
-  VscHome,
-  VscLibrary,
-  VscSettingsGear
-} from 'react-icons/vsc'
 import { LibraryPage } from './pages/library.page'
 import { MyContentPage } from './pages/my-content.page'
 import { RegistryEntryPage } from './pages/registry-entry.page'
 import { SettingsPage } from './pages/settings.page'
+import { FaDiscord, FaGear, FaGithub, FaPatreon } from 'react-icons/fa6'
+import { FaHome, FaList } from 'react-icons/fa'
 
 export const config = {
   rcloneBaseUrl: 'http://127.0.0.1:5572',
@@ -17,35 +11,37 @@ export const config = {
     {
       path: '/',
       tooltip: 'My Content',
-      icon: <VscHome />
+      icon: <FaHome />
     },
     {
       path: '/library',
       tooltip: 'Library',
-      icon: <VscLibrary />
+      icon: <FaList />
     },
+    {
+      path: '/settings',
+      tooltip: 'Settings',
+      icon: <FaGear />
+    }
+  ],
+  navbarSecondary: [
     {
       path: ' https://discord.gg/bT7BEHn5RD',
       tooltip: 'Discord',
-      icon: <VscCommentDiscussion />,
+      icon: <FaDiscord />,
       isExternal: true
     },
     {
       path: 'https://github.com/flying-dice/dcs-dropzone-mod-manager',
       tooltip: 'Github',
-      icon: <VscGithub />,
+      icon: <FaGithub />,
       isExternal: true
     },
     {
       path: 'https://www.patreon.com/flyingdice',
       tooltip: 'Patreon',
-      icon: <VscHeartFilled />,
+      icon: <FaPatreon />,
       isExternal: true
-    },
-    {
-      path: '/settings',
-      tooltip: 'Settings',
-      icon: <VscSettingsGear />
     }
   ],
   routes: [

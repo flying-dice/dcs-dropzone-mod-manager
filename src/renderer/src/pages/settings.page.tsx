@@ -1,4 +1,4 @@
-import { ActionIcon, Alert, Stack, Text, TextInput, Title } from '@mantine/core'
+import { ActionIcon, Alert, Stack, Text, TextInput } from '@mantine/core'
 import { closeAllModals, openModal } from '@mantine/modals'
 import { isEmpty } from 'lodash'
 import React from 'react'
@@ -13,34 +13,13 @@ const Configurables: React.FC = () => {
   const defaultRegistryUrl = useSWR('defaultRegistryUrl', () =>
     client.getDefaultRegistryUrl.query()
   )
-  const defaultWriteDir = useSWR('defaultWriteDir', () => client.getDefaultWriteDir.query())
   const defaultGameDir = useSWR('defaultGameDir', () => client.getDefaultGameDir.query())
 
-  const writeDir = useConfig('writeDir')
   const gameDir = useConfig('gameDir')
   const registryUrl = useConfig('registryUrl')
 
   return (
     <Stack>
-      <Title order={3}>Configuration</Title>
-
-      <SettingEntry
-        name="writeDir"
-        label="Mods folder"
-        description="This is where we will store the mod files"
-        defaultValue={defaultWriteDir.data}
-        onClick={() =>
-          client.askFolder.query({ default: defaultWriteDir.data || '' }).then((folder) => {
-            if (!folder) return
-            const [f] = folder.filePaths
-            if (!f) return
-            writeDir.set(f)
-          })
-        }
-      />
-
-      {!defaultWriteDir.data && <Alert color={'red'}>Failed to get default write directory</Alert>}
-
       <SettingEntry
         name="gameDir"
         label="DCS Save Game folder"
@@ -97,20 +76,51 @@ const Configurables: React.FC = () => {
 
 export const SettingsPage: React.FC = () => {
   const currentVersion = useSWR('currentVersion', () => client.currentVersion.query())
+  const defaultWriteDir = useSWR('defaultWriteDir', () => client.getDefaultWriteDir.query())
 
   return (
     <Stack gap={'xl'}>
+      <Stack>
+        <TextInput
+          label="Current Version"
+          value={currentVersion.data}
+          description={'This is the version of the Mod Manager that you are currently running'}
+          readOnly
+          rightSection={
+            <ActionIcon
+              variant={'subtle'}
+              onClick={() =>
+                window.open(
+                  'https://github.com/flying-dice/dcs-dropzone-mod-manager/releases',
+                  '_blank'
+                )
+              }
+            >
+              <CgExternal />
+            </ActionIcon>
+          }
+        />
+
+        {!defaultWriteDir.data && (
+          <Alert color={'red'}>Failed to get default write directory</Alert>
+        )}
+
+        <TextInput
+          label="Mods folder"
+          value={defaultWriteDir.data}
+          description={'This is where we will store the mod files'}
+          readOnly
+          rightSection={
+            <ActionIcon variant={'subtle'} onClick={() => client.openWriteDirInExplorer.mutate()}>
+              <CgExternal />
+            </ActionIcon>
+          }
+        />
+      </Stack>
+
       <Configurables />
 
-      <TextInput
-        label="Current Version"
-        value={currentVersion.data}
-        description={'This is the version of the Mod Manager that you are currently running'}
-        readOnly
-      />
-
       <Stack>
-        <Title order={3}>RCLONE</Title>
         <TextInput
           label={'RCLONE'}
           value={'http://localhost:5572/#/dashboard'}
@@ -131,7 +141,10 @@ export const SettingsPage: React.FC = () => {
           }
           readOnly
           rightSection={
-            <ActionIcon onClick={() => window.open('http://localhost:5572/#/dashboard', '_blank')}>
+            <ActionIcon
+              variant={'subtle'}
+              onClick={() => window.open('http://localhost:5572/#/dashboard', '_blank')}
+            >
               <CgExternal />
             </ActionIcon>
           }
