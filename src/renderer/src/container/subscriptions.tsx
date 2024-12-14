@@ -117,7 +117,7 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
             <Table.Caption>
               <Alert>
                 {/* eslint-disable-next-line react/no-unescaped-entities */}
-                Did you subscribe to the mod your looking for? Check the{' '}
+                Did you subscribe to the mod you're looking for? Check the{' '}
                 <a
                   href=""
                   onClick={(e) => {
