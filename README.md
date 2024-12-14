@@ -3,20 +3,24 @@
 
 ![index](./index.png)
 
-DROPZONE is a Community Mod Manager for DCS World.
+**DROPZONE: The Community Mod Manager for DCS World**
 
-It gets its list of mods from https://github.com/flying-dice/dcs-mod-manager-registry
+DROPZONE simplifies managing mods for DCS World, pulling its curated mod list directly from the [DCS Mod Manager Registry](https://github.com/flying-dice/dcs-mod-manager-registry).
 
-Create an Issue on the registry repo to request a mod be added to the list or raise a PR to add it yourself.
+Mod installation is managed by DROPZONE, it will download, unpack, and symlink mods into your DCS World directories. This allows you to easily enable and disable mods without having to manually manage files.
+
+To suggest a mod or contribute, create an issue or submit a pull request on the registry's GitHub repository.
 
 ### Key Features
 
-- **Direct GitHub Integration**: Releases are pulled directly from GitHub, ensuring that you're always up-to-date with the latest mod versions.
-- **Automatic Updates**: Stay up-to-date effortlessly, as our system automatically syncs with the latest mod versions and updates installed mods.
-- **Enhanced Mod Discovery**: Explore an expansive mod collection with ease.
-- **Promoting Sponsorship**: We're committed to supporting creators in strengthening their bonds with their communities. With an emphasis on platforms like **Patreon** and **GitHub Sponsors**, DCS World Mod Manager simplifies the promotion of sponsorship channels. This not only benefits creators by providing them with a direct support line from their communities but also enhances the overall user experience by integrating community-supported enhancements.
-
-> At the heart of our mission lies a strong belief in the ethos of Patreon - forging powerful bonds between creators and their followers. We're dedicated to assisting creators in showcasing their sponsorship avenues, making community support more accessible than ever.
+- [x] **Initial Release**: The first version of DROPZONE is now available for download with support for mod subscribing, downloading, unpacking, enabling, and disabling.
+- [x] **Mod Library**: Browse and search for mods in the Library, and subscribe to mods to add them to your collection improving discoverability of mods.
+- [ ] **Mod Popularity**: Implement a system to track and display the popularity of mods based on the number of subscribers and downloads.
+- [ ] **Mod Ratings**: Allow users to rate mods and provide feedback to mod creators.
+- [ ] **Mod Comments**: Enable users to leave comments on mods to provide feedback, suggestions and help other users.
+- [ ] **Mod Update Improvements**: Enhance the mod update process to make it more intuitive to transition to the latest version.
+- [ ] **MissionScripting.lua Support**: Integrate support for managing MissionScripting.lua file and historical versions to prevent DCS updates from breaking mods that rely on this file being modified.
+- [ ] **MissionScripting Requirements**: Implement a system to manage the requirements for MissionScripting.lua files, ensuring that the user has the necessary modifications in place to allow mods to function correctly.
 
 ## Installation
 
@@ -24,20 +28,35 @@ Download the latest version of DROPZONE from the [releases page](https://github.
 
 ## Usage
 
-> TBC
+1. **Initial Launch**: When you first launch DROPZONE, you'll be prompted to accept the disclaimer and privacy policy. Once you've accepted these terms, you'll be taken to the My Content page, where you can view your subscribed mods. As a new user, this page will be empty so you'll need to subscribe to mods from the Library.
+2. **Library**: Accessed via the Library tab in the Left Sidebar, this page allows you to browse and search for mods. You can subscribe to mods by clicking on the Subscribe button on each mod card.
+3. **My Content**: Once you've subscribed to mods, you can view them on the My Content page. Here, you can enable, disable, update, or unsubscribe from mods.
+4. **Settings**: Accessible via the Settings tab in the Left Sidebar, this page allows you to configure settings such as the mod installation directory and view the current version of DROPZONE.
 
-> - See the [Contributing Guide](CONTRIBUTING.md) for more information on how to contribute.
+### Key Concepts
 
-## Running Tests
+#### Subscribing to Mods
 
-Tests are run using vitest. To run the tests, run the following command:
+To subscribe to a mod means to download and unpack the mod's assets. With a mod subscribed but not enabled, the assets are downloaded and unpacked but not symlinked into the game's directory. This allows you to manage which mods are active in your game without having to redownload them.
 
-```bash
-npm run test
-```
+#### Enabling and Disabling Mods
 
-For running individual tests in the main make sure to use the config, if running within an ide make sure you specify the config in the run configuration. i.e.:
+Enabling a mod means to symlink the mod's assets into the game's directory. This makes the mod active in your game. Disabling a mod means to remove the symlinks, effectively removing the mod from your game without having to redownload it.
 
-```bash
-vitest src/main/utils/get-release-asset.test.ts --run --config vitest.config.node.ts
-```
+#### Updating Mods
+
+Currently updating a mod is the same as unsubscribing and then resubscribing to the mod. This will download the latest version of the mod and unpack it ready for enabling.
+
+In the future, we want this to be a better experience where you can update a mod alongside the existing version and then switch when you're ready.
+
+## Updating
+
+DROPZONE will automatically check for updates when you launch the application. If an update is available, you'll be prompted to download and install it.
+
+If you chose to proceed to use the application without installing immediately the update will be downloaded and installed the next time you launch the application.
+
+It is recommended to keep DROPZONE up-to-date to ensure you have the latest features and bug fixes.
+
+## Development
+
+See the [CONTRIBUTNG.md](CONTRIBUTNG.md) for more information on how to contribute.
