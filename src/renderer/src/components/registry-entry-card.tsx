@@ -37,7 +37,7 @@ export const RegistryEntryCard: React.FC<RegistryEntryCardProps> = ({ item, subs
             </Card.Section>
             <Stack gap={0} pl={'md'} pr={'md'}>
               <Group justify="space-between" mt="md" mb="xs">
-                <Text fw={500} maw={175} truncate>
+                <Text fw={500} truncate>
                   {item.name}
                 </Text>
               </Group>
