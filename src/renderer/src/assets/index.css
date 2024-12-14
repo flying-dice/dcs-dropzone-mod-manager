@@ -2,6 +2,10 @@
   margin-top: var(--mantine-spacing-md) !important;
 }
 
+.readme pre code {
+  background-color: unset;
+}
+
 @font-face {
   font-family: 'Doctor Glitch';
   src:

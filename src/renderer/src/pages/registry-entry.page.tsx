@@ -63,14 +63,14 @@ export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) 
         </Anchor>
         <Anchor size={'sm'}>{entry.name}</Anchor>
       </Breadcrumbs>
-      <TypographyStylesProvider className={'readme'} pl={'xs'}>
+      <TypographyStylesProvider className={'readme'} pr={300} pb={'xl'}>
         <div
           dangerouslySetInnerHTML={{
             __html: marked.parse(atob(entry.content))
           }}
         />
       </TypographyStylesProvider>
-      <AppShell.Aside>
+      <AppShell.Aside w={300}>
         <ScrollArea>
           <Stack p={'md'}>
             <Stack gap={'xs'}>
