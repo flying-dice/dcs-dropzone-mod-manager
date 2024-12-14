@@ -16,7 +16,7 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
   const { results, search, setSearch } = useFuse(subscriptions.data || [], '', ['modId', 'modName'])
 
   useEffect(() => {
-    if (subscriptions.data?.some(({ state }) => state.progress !== 100)) {
+    if (subscriptions.data?.some(({ state }) => state.progress !== 100 && !state.isFailed)) {
       setTimeout(() => subscriptions.mutate(), 500)
     }
   }, [subscriptions.data])
@@ -110,6 +110,7 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
                     ? () => state.exePath && handleRunExe(subscription.modId, state.exePath)
                     : undefined
                 }
+                isFailed={state.isFailed}
               />
             ))}
           </Table.Tbody>

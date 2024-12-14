@@ -135,17 +135,17 @@ export class ReleaseService {
       .then((it) => it?.toJSON())
   }
 
-  async findPendingAssetTaskSortedBySequence(): Promise<AssetTask | undefined> {
-    return this.assetTasks
-      .findOne({ status: AssetTaskStatus.PENDING })
-      .sort({ sequence: 1, createdAt: 1 })
-      .exec()
-      .then((it) => it?.toJSON())
-  }
-
   async deleteBySubscriptionId(id: string) {
     await this.assetTasks.deleteMany({ subscriptionId: id }).exec()
     await this.releaseAssets.deleteMany({ subscriptionId: id }).exec()
     await this.releases.deleteOne({ subscriptionId: id }).exec()
+  }
+
+  async findAssetTasksByAssetId(id: string): Promise<AssetTask[]> {
+    return this.assetTasks
+      .find({ releaseAssetId: id })
+      .sort({ sequence: 1 })
+      .exec()
+      .then((it) => it.map((it) => it.toJSON()))
   }
 }

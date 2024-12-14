@@ -16,6 +16,7 @@ import { ReleaseService } from '../services/release.service'
 import { SubscriptionService } from '../services/subscription.service'
 import { InjectConnection } from '@nestjs/mongoose'
 import { Connection, ConnectionStates } from 'mongoose'
+import { findFirstPendingTask } from '../utils/find-first-pending-task'
 
 @Injectable()
 export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -61,18 +62,30 @@ export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdow
   }
 
   async checkForPendingTasks() {
-    // Get the current task being processed
     let task = await this.releaseService.findInProgressAssetTask()
 
-    // If there is no task being processed, get the next pending task by going in ID descending order sequentially
     if (!task) {
-      task = await this.releaseService.findPendingAssetTaskSortedBySequence()
+      for (const subscription of await this.subscriptionService.findAll()) {
+        const release = await this.releaseService.findBySubscriptionIdOrThrow(subscription.id)
+        const assets = await this.releaseService.findAssetsByRelease(release.id)
+
+        for (const asset of assets) {
+          const tasks = await this.releaseService.findAssetTasksByAssetId(asset.id)
+          const firstPendingTask = findFirstPendingTask(tasks)
+
+          if (firstPendingTask) {
+            task = firstPendingTask
+            break
+          }
+        }
+
+        if (task) {
+          break
+        }
+      }
     }
 
-    // If there is still no task to process, log a message and return as this means there are no tasks to process in the database
-    if (!task) {
-      return
-    }
+    if (!task) return
 
     // Get the processor for the task to process or create a new one if it doesn't exist
     // Use cache to avoid creating a new processor for the same task multiple times and allow internal state to be maintained

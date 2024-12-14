@@ -27,6 +27,7 @@ export type SubscriptionReleaseState = {
   isLatest: boolean
   latest?: string
   isReady: boolean
+  isFailed: boolean
 }
 
 export type SubscriptionWithState = {
@@ -116,7 +117,8 @@ export class SubscriptionManager implements OnApplicationBootstrap {
       isReady: taskStatuses.every((it) => it === AssetTaskStatus.COMPLETED),
       exePath: installed.exePath,
       isLatest: installed.version === latest?.version || true,
-      latest: latest?.version
+      latest: latest?.version,
+      isFailed: taskStatuses.some((it) => it === AssetTaskStatus.FAILED)
     }
   }
 
