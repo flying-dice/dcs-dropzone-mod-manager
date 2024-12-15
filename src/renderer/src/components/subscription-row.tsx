@@ -17,6 +17,7 @@ export type SubscriptionRowProps = {
   onRunExe?: () => void
   onUnsubscribe: () => void
   isReady: boolean
+  isFailed: boolean
   stateLabel: string
   progress: number
 }
@@ -62,7 +63,7 @@ export function SubscriptionRow(props: SubscriptionRowProps) {
         </Group>
       </Table.Td>
       <Table.Td>
-        {!props.isReady ? (
+        {!props.isReady && !props.isFailed ? (
           <Tooltip label={props.stateLabel}>
             <Progress.Root size="lg">
               <Progress.Section value={props.progress} striped animated>
