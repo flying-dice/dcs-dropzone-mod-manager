@@ -1,10 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  Logger,
-  type OnApplicationBootstrap,
-  type OnApplicationShutdown
-} from '@nestjs/common'
+import { Inject, Injectable, Logger, type OnApplicationShutdown } from '@nestjs/common'
 import Aigle from 'aigle'
 import { DownloadTaskProcessor } from '../processor/download-task.processor'
 import { ExtractTaskProcessor } from '../processor/extract-task.processor'
@@ -20,7 +14,7 @@ import { findFirstPendingTask } from '../utils/find-first-pending-task'
 import { Log } from '../utils/log'
 
 @Injectable()
-export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdown {
+export class TaskManager implements OnApplicationShutdown {
   private readonly logger = new Logger(TaskManager.name)
 
   @Inject(SubscriptionService)
@@ -42,7 +36,7 @@ export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdow
   private active = true
 
   @Log()
-  async onApplicationBootstrap() {
+  async onApplicationReady() {
     this.logger.debug('Starting task manager')
     Aigle.whilst(
       () => this.active,
