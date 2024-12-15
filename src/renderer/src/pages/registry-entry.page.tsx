@@ -20,7 +20,7 @@ import {
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { marked } from 'marked'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { MdOutlineCategory } from 'react-icons/md'
 import { VscCheck, VscClose } from 'react-icons/vsc'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -28,16 +28,32 @@ import { EntryIndex } from '../../../lib/client'
 import { ReleaseSummary } from '../components/release-summary'
 import { useRegistrySubscriber } from '../hooks/useRegistrySubscriber'
 import { useRegistryEntry } from '../hooks/useRegistryEntry'
+import { showNotification } from '@mantine/notifications'
 
 export const RegistryEntryPage: React.FC = () => {
+  const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
 
   const { index } = useRegistryEntry(id!)
 
+  useEffect(() => {
+    if (typeof index.data === 'string') {
+      showNotification({
+        color: 'red',
+        title: 'Error',
+        message: `Registry Entry with ID ${id} not found`
+      })
+      navigate('/library')
+    }
+  }, [id, index.data])
+
   return (
     <>
+      {index.error && <Alert color={'red'}>{index.error.message}</Alert>}
       <LoadingOverlay visible={index.isLoading} />
-      {index.data && <_RegistryEntryPage entry={index.data} />}
+      {typeof index.data !== 'string' && typeof index.data !== 'undefined' && (
+        <_RegistryEntryPage entry={index.data} />
+      )}
       {!index.isLoading && index.error && (
         <Alert color={'red'}>Registry Entry with ID {id} not found</Alert>
       )}

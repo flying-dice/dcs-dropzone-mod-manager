@@ -8,18 +8,37 @@ import { getAppWithRouter } from './router'
 import { config } from './config'
 import { createWindow } from './create-main-window'
 import { showError } from './utils/show-error'
-import { showDuplicateAppInstance } from './utils/show-duplicate-app-instance'
 import { autoUpdater } from 'electron-updater'
 import fs from 'node:fs'
+import { deepLink$ } from './observables'
 
+// Prevent multiple instances of the app from running
+// When calling app.requestSingleInstanceLock() it will return false if another instance is already running and emit the 'second-instance' event
 if (!app.requestSingleInstanceLock()) {
   Logger.debug(
-    'Another instance of the app is running, showing duplicate app instance dialog',
+    "Another instance of the app is already running, quitting this instance as the 'second-instance' event will now have fired",
     'main'
   )
-  showDuplicateAppInstance()
+  Logger.flush()
   app.quit()
+  process.exit(0)
 }
+
+app.on('second-instance', (_event, argv) => {
+  const mainWindow = BrowserWindow.getAllWindows()[0]
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.focus()
+  }
+
+  Logger.log('Second instance detected', 'main')
+
+  const url = argv.find((arg) => arg.startsWith('dropzone://'))
+  if (url) {
+    Logger.log(`Second instance with URL: ${url}`, 'main')
+    deepLink$.next(url)
+  }
+})
 
 process.on('uncaughtException', (err) => {
   Logger.flush()
@@ -56,6 +75,8 @@ if (config.aptabaseAppKey) {
   Logger.warn('No Aptabase app key provided, skipping initialization', 'main')
 }
 
+app.setAsDefaultProtocolClient('dropzone')
+
 let nestApp: INestApplicationContext
 
 autoUpdater.checkForUpdatesAndNotify()
@@ -79,6 +100,11 @@ autoUpdater.on('update-downloaded', (info) => {
     })
 })
 
+app.on('open-url', (event, url) => {
+  event.preventDefault()
+  deepLink$.next(url)
+})
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -98,6 +124,11 @@ app.whenReady().then(async () => {
 
   const mainWindow = await createWindow(awr.app)
   createIPCHandler({ router: awr.router, windows: [mainWindow] })
+
+  deepLink$.subscribe((url) => {
+    Logger.log(`Deep link received: ${url}`, 'main')
+    mainWindow.webContents.send('deep-link', url?.replace('dropzone://', '/'))
+  })
 
   app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the
