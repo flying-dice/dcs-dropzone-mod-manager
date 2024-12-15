@@ -135,6 +135,86 @@ export class ReleaseService {
       .then((it) => it?.toJSON())
   }
 
+  /**
+   * Fetches all subscription IDs associated with releases that contain assets
+   * with tasks in a non-terminal state (either "PENDING" or "IN_PROGRESS"),
+   * and ensures there are no "FAILED" tasks for those assets.
+   *
+   * The method performs the following operations:
+   * - Groups asset tasks by their `releaseAssetId` and collects their statuses.
+   * - Filters to include only assets with at least one task in "PENDING" or "IN_PROGRESS" status.
+   * - Excludes any assets that have tasks with a "FAILED" status.
+   * - Joins the `releaseassets` collection to retrieve associated subscription IDs.
+   * - Returns a unique list of subscription IDs linked to qualifying assets.
+   *
+   * @returns {Promise<string[]>} A promise resolving to an array of subscription IDs
+   *                              meeting the criteria.
+   */
+  async fetchIdsForActiveSubscriptionTasks(): Promise<string[]> {
+    return this.assetTasks
+      .aggregate([
+        {
+          $group: {
+            _id: '$releaseAssetId',
+            status: {
+              $push: '$status'
+            }
+          }
+        },
+        {
+          $match: {
+            status: {
+              $elemMatch: {
+                $in: ['PENDING', 'IN_PROGRESS']
+              }
+            }
+          }
+        },
+        {
+          $match: {
+            status: {
+              $not: {
+                $elemMatch: {
+                  $eq: 'FAILED'
+                }
+              }
+            }
+          }
+        },
+        {
+          $lookup: {
+            from: 'releaseassets',
+            localField: '_id',
+            foreignField: 'id',
+            as: 'releaseAssetDetails'
+          }
+        },
+        {
+          $project: {
+            releaseAssetId: '$_id',
+            status: 1,
+            subscriptionId: {
+              $arrayElemAt: ['$releaseAssetDetails.subscriptionId', 0]
+            },
+            _id: 0
+          }
+        },
+        {
+          $group: {
+            _id: '$subscriptionId'
+          }
+        },
+        {
+          $project: {
+            subscriptionId: '$_id',
+            _id: 0
+          }
+        }
+      ])
+      .exec()
+      .then((it) => it.map((it) => it.subscriptionId))
+  }
+
   async deleteBySubscriptionId(id: string) {
     await this.assetTasks.deleteMany({ subscriptionId: id }).exec()
     await this.releaseAssets.deleteMany({ subscriptionId: id }).exec()

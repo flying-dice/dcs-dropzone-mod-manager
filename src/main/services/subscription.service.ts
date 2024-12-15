@@ -27,6 +27,13 @@ export class SubscriptionService {
       .then((it) => it.map((it) => it.toJSON()))
   }
 
+  async findAllByIds(ids: string[]): Promise<Subscription[]> {
+    return this.subscriptions
+      .find({ id: { $in: ids } })
+      .exec()
+      .then((it) => it.map((it) => it.toJSON()))
+  }
+
   async findByIdOrThrow(id: string): Promise<Subscription> {
     return this.subscriptions
       .findOne({ id })

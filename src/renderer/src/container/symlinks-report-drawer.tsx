@@ -1,41 +1,34 @@
-import {
-  ActionIcon,
-  Button,
-  Drawer,
-  Group,
-  LoadingOverlay,
-  Stack,
-  Table,
-  Text
-} from '@mantine/core'
+import { ActionIcon, Drawer, LoadingOverlay, Stack, Table } from '@mantine/core'
 import React from 'react'
 import { VscLinkExternal } from 'react-icons/vsc'
 import useSWR from 'swr'
 import { client } from '../client'
+import { CodeHighlight } from '@mantine/code-highlight'
 
 const _SymlinksReportDrawer: React.FC<{ modId: string }> = ({ modId }) => {
   const assets = useSWR(`/mods/${modId}/symlinks`, () => client.getModAssets.query({ modId }))
+
   return (
     <Stack>
       <LoadingOverlay visible={assets.isLoading} />
-      <Table>
+      <Table style={{ width: '100%', tableLayout: 'fixed', maxWidth: '100%' }}>
         <Table.Thead>
           <Table.Tr>
-            <Table.Th>True Source</Table.Th>
-            <Table.Th>Linked DCS Location</Table.Th>
-            <Table.Th>Open</Table.Th>
+            <Table.Th>Where It’s From</Table.Th>
+            <Table.Th>Where It’s Linked</Table.Th>
+            <Table.Th w={64}>Open</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
           {assets.data?.map((asset) => (
             <Table.Tr key={asset.id}>
               <Table.Td>
-                <Text size={'sm'}>{asset.source}</Text>
+                <CodeHighlight code={asset.source} language={'text'} />
               </Table.Td>
               <Table.Td>
-                <Text size={'sm'}>{asset.symlinkPath || 'Unlinked'}</Text>
+                <CodeHighlight code={asset.symlinkPath || 'Unlinked'} language={'text'} />
               </Table.Td>
-              <Table.Td w={64}>
+              <Table.Td align={'center'}>
                 <ActionIcon
                   onClick={() => client.openAssetInExplorer.mutate({ assetId: asset.id })}
                   variant={'transparent'}
@@ -49,11 +42,6 @@ const _SymlinksReportDrawer: React.FC<{ modId: string }> = ({ modId }) => {
           ))}
         </Table.Tbody>
       </Table>
-      <Group>
-        <Button variant={'subtle'} onClick={() => client.openInExplorer.mutate({ modId })}>
-          Open in Explorer
-        </Button>
-      </Group>
     </Stack>
   )
 }
@@ -70,7 +58,7 @@ export const SymlinksReportDrawer: React.FC<SymlinksReportDrawerProps> = ({
 }) => {
   return (
     <Drawer
-      size={'xl'}
+      size={'90vw'}
       position={'right'}
       opened={opened}
       title={'Installation Details'}

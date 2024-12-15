@@ -21,6 +21,7 @@ import { AssetTask, AssetTaskSchema } from './schemas/release-asset-task.schema'
 import { getrclone } from './tools/rclone'
 import { get7zip } from './tools/7zip'
 import { Connection } from 'mongoose'
+import { Log } from './utils/log'
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown 
   @InjectConnection()
   private readonly connection: Connection
 
+  @Log()
   async onApplicationBootstrap() {
     this.logger.log('Fetching 7zip')
     await get7zip()
@@ -65,6 +67,7 @@ export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown 
     await rclone.startDaemon()
   }
 
+  @Log()
   async onApplicationShutdown() {
     this.logger.debug('Shutting down app', 'main')
 

@@ -4,32 +4,35 @@ import axios from 'axios'
 /**
  * Tracing decorator to log method execution details.
  */
-export const Log = () => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-  const originalMethod = descriptor.value
-  const logger = new Logger(target.constructor.name)
+export const Log =
+  (logger?: Logger) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+    const originalMethod = descriptor.value
+    const _logger = logger || new Logger(target.constructor.name)
 
-  descriptor.value = async function (...args: any[]) {
-    const startTime = Date.now()
+    descriptor.value = async function (...args: any[]) {
+      const startTime = Date.now()
 
-    logger.verbose(`Method ${propertyKey} called with arguments: ${JSON.stringify(args)}`)
-
-    try {
-      const result = await originalMethod.apply(this, args)
-      const endTime = Date.now()
-      logger.verbose(`Method ${propertyKey} executed successfully in ${endTime - startTime}ms`)
-      return result
-    } catch (error) {
-      const endTime = Date.now()
-      logger.error(
-        `Method ${propertyKey} failed after ${endTime - startTime}ms with error: ${error.message}`
+      _logger.verbose(
+        `Method ${propertyKey} called with arguments: ${args.map((it) => `${it}`).join(', ')}`
       )
 
-      if (axios.isAxiosError(error)) {
-        logger.error(` - AxiosError: ${JSON.stringify(error.response?.data)}`)
-      }
-      throw error
-    }
-  }
+      try {
+        const result = await originalMethod.apply(this, args)
+        const endTime = Date.now()
+        _logger.verbose(`Method ${propertyKey} executed successfully in ${endTime - startTime}ms`)
+        return result
+      } catch (error) {
+        const endTime = Date.now()
+        _logger.error(
+          `Method ${propertyKey} failed after ${endTime - startTime}ms with error: ${error.message}`
+        )
 
-  return descriptor
-}
+        if (axios.isAxiosError(error)) {
+          _logger.error(` - AxiosError: ${JSON.stringify(error.response?.data)}`)
+        }
+        throw error
+      }
+    }
+
+    return descriptor
+  }

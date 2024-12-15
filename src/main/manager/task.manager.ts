@@ -17,6 +17,7 @@ import { SubscriptionService } from '../services/subscription.service'
 import { InjectConnection } from '@nestjs/mongoose'
 import { Connection, ConnectionStates } from 'mongoose'
 import { findFirstPendingTask } from '../utils/find-first-pending-task'
+import { Log } from '../utils/log'
 
 @Injectable()
 export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -40,6 +41,7 @@ export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdow
 
   private active = true
 
+  @Log()
   async onApplicationBootstrap() {
     this.logger.debug('Starting task manager')
     Aigle.whilst(
@@ -56,16 +58,24 @@ export class TaskManager implements OnApplicationBootstrap, OnApplicationShutdow
     )
   }
 
+  @Log()
   async onApplicationShutdown() {
     this.logger.debug('Shutting down task manager')
     this.active = false
+
+    await Aigle.delay(1000)
   }
 
   async checkForPendingTasks() {
+    const subscriptionsWithNonTerminalTasks =
+      await this.releaseService.fetchIdsForActiveSubscriptionTasks()
+
     let task = await this.releaseService.findInProgressAssetTask()
 
     if (!task) {
-      for (const subscription of await this.subscriptionService.findAll()) {
+      for (const subscription of await this.subscriptionService.findAllByIds(
+        subscriptionsWithNonTerminalTasks
+      )) {
         const release = await this.releaseService.findBySubscriptionIdOrThrow(subscription.id)
         const assets = await this.releaseService.findAssetsByRelease(release.id)
 
