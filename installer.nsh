@@ -3,7 +3,7 @@
 !macro customUnInstall
   # Path to the batch file that contains commands to delete symlinks
   Var /GLOBAL BatchFilePath
-  StrCpy $BatchFilePath "$LOCALAPPDATA\dcs-dropzone\mods\del-symlinks.bat"
+  StrCpy $BatchFilePath "$APPDATA\dcs-dropzone\mods\del-symlinks.bat"
 
   # Check if the batch file exists before attempting to execute it
   IfFileExists $BatchFilePath 0 +3
