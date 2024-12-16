@@ -11,11 +11,7 @@ import { config } from '../config'
 import { get7zip } from './7zip'
 
 const logger = new Logger('rclone')
-const rootDir = join(
-  process.env.LOCALAPPDATA || app.getPath('userData'),
-  config.appDataName,
-  'rclone'
-)
+const rootDir = join(app.getPath('userData'), config.appDataName, 'rclone')
 
 const manifestPath = join(rootDir, 'manifest.json')
 

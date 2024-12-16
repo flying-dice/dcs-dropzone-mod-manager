@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { ensureDirSync, rm, symlink } from 'fs-extra'
+import { ensureDirSync, outputFile, rm, stat, symlink } from 'fs-extra'
 import { FsService } from '../services/fs.service'
 import { WriteDirectoryService } from '../services/write-directory.service'
 import { HashPath } from '../utils/hash-path'
@@ -12,6 +12,8 @@ import { SubscriptionService } from '../services/subscription.service'
 import { ReleaseService } from '../services/release.service'
 import { Subscription } from '../schemas/subscription.schema'
 import { Release } from '../schemas/release.schema'
+import { Log } from '../utils/log'
+import Aigle from 'aigle'
 
 /**
  * Manages the toggling of a mod between enabled and disabled states
@@ -93,6 +95,7 @@ export class LifecycleManager {
 
     release.enabled = true
     await this.releaseService.save(release)
+    await this.rebuildUninstallScript()
   }
 
   /**
@@ -114,6 +117,7 @@ export class LifecycleManager {
     }
     release.enabled = false
     await this.releaseService.save(release)
+    await this.rebuildUninstallScript()
   }
 
   async runExe(modId: string, exePath: string) {
@@ -170,5 +174,38 @@ export class LifecycleManager {
     this.logger.debug(`Opening asset in explorer: ${asset.id}`)
 
     return this.fsService.openFolder(dirname(asset.symlinkPath))
+  }
+
+  @Log()
+  private async rebuildUninstallScript() {
+    this.logger.debug(`Rebuilding symlink uninstall script`)
+    const assets = await this.releaseService.findAssetsWithSymlinks()
+    const fileContent: string[] = []
+
+    await Aigle.eachSeries(assets, async (it) => {
+      if (!it.symlinkPath) return
+
+      try {
+        this.logger.debug(`Checking symlink path: ${it.symlinkPath}`)
+        const symlinkPath = resolve(it.symlinkPath)
+        const isFolder = await stat(symlinkPath).then((it) => it.isDirectory())
+        if (isFolder) {
+          this.logger.verbose(`Adding rmdir command for folder: ${symlinkPath}`)
+          fileContent.push(`rmdir /s /q "${symlinkPath}"`)
+        } else {
+          this.logger.verbose(`Adding del command for file: ${symlinkPath}`)
+          fileContent.push(`del /f /q "${symlinkPath}"`)
+        }
+      } catch (e) {
+        this.logger.error(`Error checking symlink path: ${it.symlinkPath}`)
+        this.logger.error(e)
+      }
+    })
+
+    this.logger.debug(`Writing symlink uninstall script`)
+    await outputFile(
+      join(await this.writeDirectoryService.getWriteDirectory(), 'del-symlinks.bat'),
+      fileContent.join('\n')
+    )
   }
 }

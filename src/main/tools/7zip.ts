@@ -22,11 +22,7 @@ const logger = new Logger('_7zip')
 const _7ZR_DOWNLOAD = 'https://www.7-zip.org/a/7zr.exe'
 const _7ZEXTRA_DOWNLOAD = 'https://www.7-zip.org/a/7z2407-extra.7z'
 
-const rootDir = join(
-  process.env.LOCALAPPDATA || app.getPath('userData'),
-  config.appDataName,
-  '7zip'
-)
+const rootDir = join(app.getPath('userData'), config.appDataName, '7zip')
 
 const manifestPath = join(rootDir, 'manifest.json')
 

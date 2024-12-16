@@ -15,8 +15,6 @@ const myFormat = printf(({ level, message, context, timestamp }) => {
 export type MainConfig = {
   defaultRegistryUrl: string
   appDataName: string
-  appData: string
-  appRoamingDir: string
   logfile: string
   mongo: {
     port: number
@@ -28,14 +26,11 @@ export type MainConfig = {
 }
 
 const appDataName = 'dcs-dropzone'
-const appData = app.getPath('appData')
-const logfile = join(appData, appDataName, 'logs', 'main.log')
+const logfile = join(app.getPath('logs'), 'main.log')
 
 export const config: MainConfig = {
   defaultRegistryUrl: 'https://dcs-mod-manager-registry.pages.dev/',
   appDataName,
-  appData,
-  appRoamingDir: join(appData, appDataName),
   logfile,
   aptabaseAppKey: import.meta.env.MAIN_VITE_APTABASE_APP_KEY,
   rcloneInstance: {
@@ -43,7 +38,7 @@ export const config: MainConfig = {
   },
   mongo: {
     port: 57449,
-    dbPath: join(appData, appDataName, '__data')
+    dbPath: join(app.getPath('userData'), '__data')
   },
   appOptions: {
     logger: WinstonModule.createLogger({
@@ -55,7 +50,7 @@ export const config: MainConfig = {
         new winston.transports.File({
           maxsize: bytes('5mb'),
           filename: logfile,
-          level: 'info',
+          level: 'debug',
           format: combine(timestamp(), myFormat)
         })
       ]
