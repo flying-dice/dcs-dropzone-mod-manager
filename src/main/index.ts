@@ -127,7 +127,9 @@ app.whenReady().then(async () => {
 
   deepLink$.subscribe((url) => {
     Logger.log(`Deep link received: ${url}`, 'main')
-    mainWindow.webContents.send('deep-link', url?.replace('dropzone://', '/'))
+    if (url) {
+      mainWindow.webContents.send('deep-link', `${url.replace('dropzone://', '/')}#${Date.now()}`)
+    }
   })
 
   app.on('activate', () => {

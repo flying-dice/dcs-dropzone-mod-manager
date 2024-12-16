@@ -17,7 +17,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({}) => {
     console.log('Deep Links', deepLinks)
     if (deepLinks) {
       console.log('Navigating to', deepLinks)
-      navigate(deepLinks)
+      navigate(deepLinks.split('#')[0])
     }
   }, [deepLinks])
 
