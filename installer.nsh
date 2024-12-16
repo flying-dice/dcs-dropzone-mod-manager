@@ -1,3 +1,5 @@
+# Scripting Reference: http://nsis.sourceforge.net/Docs/Chapter4.html
+
 !macro customUnInstall
   # Path to the batch file that contains commands to delete symlinks
   Var /GLOBAL BatchFilePath
@@ -8,10 +10,10 @@
     ExecWait '"$BatchFilePath"'
 
   # Cleanup other files and directories
-  del /f /q "$LOCALAPPDATA\dcs-dropzone\*.*"
-  del /f /q "$LOCALAPPDATA\dcs-dropzone-updater\*.*"
-  rmdir /r /q "$LOCALAPPDATA\dcs-dropzone"
-  rmdir /r /q "$LOCALAPPDATA\dcs-dropzone-updater"
+  Delete "$LOCALAPPDATA\dcs-dropzone\*.*"
+  Delete "$LOCALAPPDATA\dcs-dropzone-updater\*.*"
+  RMDir /r "$LOCALAPPDATA\dcs-dropzone"
+  RMDir /r "$LOCALAPPDATA\dcs-dropzone-updater"
 
   # Remove the ProtocolHandler registry key HKEY_CURRENT_USER\Software\Classes\dropzone
   DeleteRegKey HKCU "Software\Classes\dropzone"
