@@ -1,4 +1,10 @@
-import { Logger, Module, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common'
+import {
+  Inject,
+  Logger,
+  Module,
+  OnApplicationBootstrap,
+  OnApplicationShutdown
+} from '@nestjs/common'
 import { ScheduleModule } from '@nestjs/schedule'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { SettingsManager } from './manager/settings.manager'
@@ -21,6 +27,8 @@ import { AssetTask, AssetTaskSchema } from './schemas/release-asset-task.schema'
 import { getrclone } from './tools/rclone'
 import { get7zip } from './tools/7zip'
 import { Connection } from 'mongoose'
+import { Log } from './utils/log'
+import Aigle from 'aigle'
 
 @Module({
   imports: [
@@ -56,6 +64,10 @@ export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown 
   @InjectConnection()
   private readonly connection: Connection
 
+  @Inject(TaskManager)
+  private readonly taskManager: TaskManager
+
+  @Log()
   async onApplicationBootstrap() {
     this.logger.log('Fetching 7zip')
     await get7zip()
@@ -63,8 +75,14 @@ export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown 
     this.logger.log('Fetching rclone')
     const rclone = await getrclone()
     await rclone.startDaemon()
+
+    Aigle.delay(5000).then(async () => {
+      this.logger.debug('Starting Task Loop', 'main')
+      await this.taskManager.onApplicationReady()
+    })
   }
 
+  @Log()
   async onApplicationShutdown() {
     this.logger.debug('Shutting down app', 'main')
 

@@ -4,6 +4,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server'
 import type { Connection } from 'mongoose'
 import { config } from './config'
 import { ensureDirSync } from 'fs-extra'
+import { Log } from './utils/log'
 
 export class MongooseFactory {
   static server: MongoMemoryServer | undefined
@@ -34,9 +35,10 @@ export class MongooseFactory {
     return options
   }
 
+  @Log(new Logger(MongooseFactory.name))
   static async onApplicationShutdown(connection: Connection): Promise<void> {
     Logger.log('Application Shutting Down!', 'MongooseFactory')
-    await connection.close(true)
+    await connection.close(false)
 
     Logger.log('Shutting down Dropzone', 'MongooseFactory')
     if (MongooseFactory.server) {

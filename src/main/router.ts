@@ -22,6 +22,11 @@ export async function getAppWithRouter() {
   return {
     app,
     router: trpc.router({
+      getDeepLinkArg: trpc.procedure.query(() => {
+        return process.argv
+          .find((arg) => arg.startsWith('dropzone://'))
+          ?.replace('dropzone://', '/')
+      }),
       // Enable/Disable Toggle
       toggleMod: trpc.procedure
         .input(z.object({ modId: z.string() }))

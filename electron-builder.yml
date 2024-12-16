@@ -15,6 +15,9 @@ win:
   icon: build/icon.png
   executableName: dcs-dropzone
   requestedExecutionLevel: requireAdministrator
+  protocols:
+    - name: Dropzone Protocol
+      schemes: ['dropzone']
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
