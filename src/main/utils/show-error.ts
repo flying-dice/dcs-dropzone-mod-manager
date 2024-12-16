@@ -1,4 +1,4 @@
-import { app, dialog, shell } from 'electron'
+import { dialog, shell } from 'electron'
 import { Logger } from '@nestjs/common'
 import { config } from '../config'
 
@@ -17,7 +17,7 @@ ${error.stack}
 
 
 Please Upload the logs from the following location:
-${config.logfile.replace(app.getPath('appData'), '%APPDATA%')}
+${config.logfileDisplayName}
 
 ---
 ${recentLogs.join('\n')}
