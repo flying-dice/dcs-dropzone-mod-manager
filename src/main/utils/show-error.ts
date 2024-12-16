@@ -17,7 +17,7 @@ ${error.stack}
 
 
 Please Upload the logs from the following location:
-${config.logfile.replace(config.appData, '%APPDATA%')}
+${config.logfileDisplayName}
 
 ---
 ${recentLogs.join('\n')}

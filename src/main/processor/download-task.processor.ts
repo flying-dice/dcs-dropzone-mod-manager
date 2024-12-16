@@ -1,7 +1,6 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { Logger } from '@nestjs/common'
-import { app } from 'electron'
 import { ensureDirSync, moveSync, rmdir } from 'fs-extra'
 import { RcloneClient } from '../../lib/rclone.client'
 import { config } from '../config'
@@ -86,7 +85,7 @@ export class DownloadTaskProcessor implements TaskProcessor<DownloadTaskPayload>
   }
 
   private async createTempFolder(task: AssetTask<DownloadTaskPayload>): Promise<void> {
-    this.tempPath = join(app.getPath('temp'), config.appDataName, task.id.toString())
+    this.tempPath = join(config.tempDir, task.id.toString())
 
     // Clean up the temp path if it exists from a previous run (i.e. if the task was restarted by the app restarting)
     await this.removeTempFolder()

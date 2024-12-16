@@ -3,7 +3,6 @@ import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { Logger } from '@nestjs/common'
-import { app } from 'electron'
 /**
  * This module provides a wrapper around the 7-zip executable it downloads and extracts the 7-zip extra archive from the 7-zip website
  * and provides a class that can be used to extract supported archive types.
@@ -22,11 +21,7 @@ const logger = new Logger('_7zip')
 const _7ZR_DOWNLOAD = 'https://www.7-zip.org/a/7zr.exe'
 const _7ZEXTRA_DOWNLOAD = 'https://www.7-zip.org/a/7z2407-extra.7z'
 
-const rootDir = join(
-  process.env.LOCALAPPDATA || app.getPath('userData'),
-  config.appDataName,
-  '7zip'
-)
+const rootDir = join(config.toolsDir, '7zip')
 
 const manifestPath = join(rootDir, 'manifest.json')
 

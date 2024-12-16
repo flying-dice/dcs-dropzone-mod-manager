@@ -23,6 +23,8 @@ nsis:
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+  deleteAppDataOnUninstall: true
+  include: installer.nsh
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false

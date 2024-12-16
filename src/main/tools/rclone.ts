@@ -3,7 +3,6 @@ import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { Logger } from '@nestjs/common'
-import { app } from 'electron'
 import { ensureDir, readJsonSync, rmdir, writeJsonSync } from 'fs-extra'
 import { glob } from 'glob'
 import Downloader from 'nodejs-file-downloader'
@@ -11,11 +10,7 @@ import { config } from '../config'
 import { get7zip } from './7zip'
 
 const logger = new Logger('rclone')
-const rootDir = join(
-  process.env.LOCALAPPDATA || app.getPath('userData'),
-  config.appDataName,
-  'rclone'
-)
+const rootDir = join(config.toolsDir, 'rclone')
 
 const manifestPath = join(rootDir, 'manifest.json')
 
