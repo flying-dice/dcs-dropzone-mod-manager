@@ -54,7 +54,6 @@ process.on('uncaughtException', (err) => {
 
 process.on('unhandledRejection', (err) => {
   Logger.flush()
-  const recentLogs = fs.readFileSync(config.logfile, 'utf-8').split('\n').slice(-10)
 
   const error = new Error(err as string)
 
@@ -63,7 +62,7 @@ process.on('unhandledRejection', (err) => {
     message: error.message
   })
 
-  showError(error, recentLogs)
+  Logger.error(`Unhandled Rejection: ${error.message}`, 'main')
 })
 
 if (config.aptabaseAppKey) {
