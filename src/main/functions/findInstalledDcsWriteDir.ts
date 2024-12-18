@@ -8,7 +8,7 @@ import { pathExistsSync } from 'fs-extra'
  * - %USERPROFILE%\Saved Games\DCS
  * - %USERPROFILE%\Saved Games\DCS.openbeta
  */
-export function getDefaultGameDir(): string | undefined {
+export function findInstalledDcsWriteDir(): string | undefined {
   if (!process.env.USERPROFILE) {
     return undefined
   }

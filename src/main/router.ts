@@ -1,23 +1,19 @@
 import { initTRPC } from '@trpc/server'
 import { z } from 'zod'
-import { config } from './config'
-import { getDefaultGameDir } from './functions/getDefaultGameDir'
-import { getDefaultWriteDir } from './functions/getDefaultWriteDir'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { SettingsManager } from './manager/settings.manager'
 import { SubscriptionManager, SubscriptionWithState } from './manager/subscription.manager'
-import { ConfigService } from './services/config.service'
+import { SettingsService } from './services/settings.service'
 import { FsService } from './services/fs.service'
-import { NestFactory } from '@nestjs/core'
-import { AppModule } from './app.module'
 import { RegistryService } from './services/registry.service'
 import { app as electronApp } from 'electron/main'
 import { WriteDirectoryService } from './services/write-directory.service'
+import { bootstrap } from './app'
 
 export const trpc = initTRPC.create()
 
 export async function getAppWithRouter() {
-  const app = await NestFactory.createApplicationContext(AppModule, config.appOptions)
+  const app = await bootstrap()
 
   return {
     app,
@@ -92,36 +88,32 @@ export async function getAppWithRouter() {
         .input(z.object({ name: z.string() }))
         .query(
           async ({ input }): Promise<{ value: string } | undefined> =>
-            app.get(ConfigService).getConfigValue(input.name)
+            app.get(SettingsService).getSettingValue(input.name)
         ),
 
       setConfigValue: trpc.procedure
         .input(z.object({ name: z.string(), value: z.string() }))
         .mutation(
           async ({ input }): Promise<void> =>
-            app.get(ConfigService).setConfigValue(input.name, input.value)
+            app.get(SettingsService).setSettingValue(input.name, input.value)
         ),
 
       clearConfigValue: trpc.procedure
         .input(z.object({ name: z.string() }))
         .mutation(
-          async ({ input }): Promise<void> => app.get(ConfigService).clearConfigValue(input.name)
+          async ({ input }): Promise<void> => app.get(SettingsService).clearSettingValue(input.name)
         ),
 
-      getDefaultWriteDir: trpc.procedure.query(async (): Promise<string> => getDefaultWriteDir()),
+      getDefaultWriteDir: trpc.procedure.query(
+        async (): Promise<string> => app.get(SettingsManager).getDefaultWriteDir()
+      ),
       getDefaultGameDir: trpc.procedure.query(
-        async (): Promise<string | undefined> => getDefaultGameDir()
+        async (): Promise<string | undefined> => app.get(SettingsManager).getDefaultGameDir()
       ),
       getDefaultRegistryUrl: trpc.procedure.query(
-        async (): Promise<string> => config.defaultRegistryUrl
+        async (): Promise<string> => app.get(SettingsManager).getDefaultRegistryUrl()
       ),
 
-      getWriteDir: trpc.procedure.query(
-        async (): Promise<string> => app.get(SettingsManager).getWriteDir()
-      ),
-      getGameDir: trpc.procedure.query(
-        async (): Promise<string> => app.get(SettingsManager).getGameDir()
-      ),
       getRegistryUrl: trpc.procedure.query(
         async (): Promise<string> => app.get(SettingsManager).getRegistryUrl()
       ),

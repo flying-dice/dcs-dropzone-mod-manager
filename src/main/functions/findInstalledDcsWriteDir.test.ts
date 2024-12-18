@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 import { pathExistsSync } from 'fs-extra'
-import { getDefaultGameDir } from './getDefaultGameDir'
+import { findInstalledDcsWriteDir } from './findInstalledDcsWriteDir'
 
 vi.mock('fs-extra', () => ({
   pathExistsSync: vi.fn()
@@ -8,7 +8,7 @@ vi.mock('fs-extra', () => ({
 
 describe('getDefaultGameDir', () => {
   let __USERPROFILE: string | undefined
-  const testUserProfile = 'C:\\Users\\TestUser'
+  const testUserProfile = 'C:/Users/TestUser'
 
   beforeAll(() => {
     __USERPROFILE = process.env.USERPROFILE
@@ -20,23 +20,23 @@ describe('getDefaultGameDir', () => {
   })
 
   it('should return the path if DCS folder exists', () => {
-    const defaultPath = `${testUserProfile}\\Saved Games\\DCS`
+    const defaultPath = `${testUserProfile}/Saved Games/DCS`
     vi.mocked(pathExistsSync).mockImplementation((path) => path === defaultPath || false)
-    const result = getDefaultGameDir()
+    const result = findInstalledDcsWriteDir()
     expect(result).toBe(defaultPath)
   })
 
   it('should return the path if DCS.openbeta folder exists and DCS does not exist', () => {
-    process.env.USERPROFILE = 'C:\\Users\\TestUser'
-    const defaultOBPath = `${testUserProfile}\\Saved Games\\DCS.openbeta`
+    process.env.USERPROFILE = 'C:/Users/TestUser'
+    const defaultOBPath = `${testUserProfile}/Saved Games/DCS.openbeta`
     vi.mocked(pathExistsSync).mockImplementation((path) => path === defaultOBPath || false)
-    const result = getDefaultGameDir()
+    const result = findInstalledDcsWriteDir()
     expect(result).toBe(defaultOBPath)
   })
 
   it('should return undefined if neither DCS nor DCS.openbeta folders exist', () => {
     vi.mocked(pathExistsSync).mockImplementation(() => false)
-    const result = getDefaultGameDir()
+    const result = findInstalledDcsWriteDir()
     expect(result).toBeUndefined()
   })
 })

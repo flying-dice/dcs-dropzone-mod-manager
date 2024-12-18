@@ -1,0 +1,115 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`RegistryService > GIVEN default values > should successfully fetch the mod index 1`] = `
+{
+  "authors": [
+    {
+      "name": "Flying Dice",
+    },
+  ],
+  "category": "example",
+  "content": "IyBFeGFtcGxlIEhlbGxvIFdvcmxkIE1vZAoKRENTIHdvcmxkIEhlbGxvIFdvcmxkIE1vZAoKT24gRENTIFN0YXJ0dXAgbG9ncyBoZWxsbyB3b3JsZCB0byB0aGUgY29uc29sZQoKPiBUaGlzIGNvbnRlbnQgaXMgcHJlc2VudGVkIHRvIHRoZSB1c2VyIHdoZW4gdGhleSBvcGVuIHRoZSBtb2QgcGFnZQo=",
+  "description": "A simple mod that logs hello world to the console on DCS startup",
+  "homepage": "https://github.com/flying-dice/hello-world-mod",
+  "id": "example-mod",
+  "imageUrl": "example-mod/index.png",
+  "latest": "0.1.0",
+  "license": "GNU General Public License v3.0",
+  "name": "Hello World Mod",
+  "tags": [
+    "hello",
+  ],
+  "versions": [
+    {
+      "assets": [
+        {
+          "source": "https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.lua",
+          "target": "{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua",
+        },
+      ],
+      "date": "2023-01-07T12:00:00.000Z",
+      "name": "RC1",
+      "releasepage": "https://github.com/flying-dice/hello-world-mod/releases/tag/0.1.0",
+      "version": "0.1.0",
+    },
+  ],
+}
+`;
+
+exports[`RegistryService > GIVEN default values > should successfully subscribe to a mod 1`] = `
+[
+  {
+    "authors": [
+      {
+        "name": "Flying Dice",
+      },
+    ],
+    "category": "example",
+    "description": "A simple mod that logs hello world to the console on DCS startup",
+    "id": "example-mod",
+    "imageUrl": "example-mod/index.png",
+    "latest": "0.1.0",
+    "name": "Hello World Mod",
+    "tags": [
+      "hello",
+    ],
+  },
+]
+`;
+
+exports[`RegistryService > GIVEN overridden values > should successfully fetch the mod index 1`] = `
+{
+  "authors": [
+    {
+      "name": "Flying Dice",
+    },
+  ],
+  "category": "example",
+  "content": "IyBFeGFtcGxlIEhlbGxvIFdvcmxkIE1vZAoKRENTIHdvcmxkIEhlbGxvIFdvcmxkIE1vZAoKT24gRENTIFN0YXJ0dXAgbG9ncyBoZWxsbyB3b3JsZCB0byB0aGUgY29uc29sZQoKPiBUaGlzIGNvbnRlbnQgaXMgcHJlc2VudGVkIHRvIHRoZSB1c2VyIHdoZW4gdGhleSBvcGVuIHRoZSBtb2QgcGFnZQo=",
+  "description": "A simple mod that logs hello world to the console on DCS startup",
+  "homepage": "https://github.com/flying-dice/hello-world-mod",
+  "id": "example-mod",
+  "imageUrl": "example-mod/index.png",
+  "latest": "0.1.0",
+  "license": "GNU General Public License v3.0",
+  "name": "Hello World Mod",
+  "tags": [
+    "hello",
+  ],
+  "versions": [
+    {
+      "assets": [
+        {
+          "source": "https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.lua",
+          "target": "{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua",
+        },
+      ],
+      "date": "2023-01-07T12:00:00.000Z",
+      "name": "RC1",
+      "releasepage": "https://github.com/flying-dice/hello-world-mod/releases/tag/0.1.0",
+      "version": "0.1.0",
+    },
+  ],
+}
+`;
+
+exports[`RegistryService > GIVEN overridden values > should successfully subscribe to a mod 1`] = `
+[
+  {
+    "authors": [
+      {
+        "name": "Flying Dice",
+      },
+    ],
+    "category": "example",
+    "description": "A simple mod that logs hello world to the console on DCS startup",
+    "id": "example-mod",
+    "imageUrl": "example-mod/index.png",
+    "latest": "0.1.0",
+    "name": "Hello World Mod",
+    "tags": [
+      "hello",
+    ],
+  },
+]
+`;
