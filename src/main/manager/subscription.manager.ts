@@ -115,7 +115,7 @@ export class SubscriptionManager implements OnApplicationBootstrap {
       currentTaskLabel: assetTasks.find((it) => it.status === AssetTaskStatus.IN_PROGRESS)?.label,
       isReady: taskStatuses.every((it) => it === AssetTaskStatus.COMPLETED),
       exePath: installed.exePath,
-      isLatest: installed.version === latest?.version || true,
+      isLatest: latest?.version ? installed.version === latest?.version : true,
       latest: latest?.version,
       isFailed: taskStatuses.some((it) => it === AssetTaskStatus.FAILED)
     }

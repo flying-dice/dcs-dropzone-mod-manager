@@ -6,7 +6,7 @@
   "author": "Flying Dice",
   "private": true,
   "engines": {
-    "node": "20.16.0"
+    "node": "^20.16.0"
   },
   "release": {
     "branches": [
@@ -64,7 +64,6 @@
     "@nestjs/common": "^10.3.10",
     "@nestjs/core": "^10.3.10",
     "@nestjs/mongoose": "^10.1.0",
-    "@nestjs/schedule": "^4.1.0",
     "@nestjs/testing": "^10.4.15",
     "@nestjs/typeorm": "^10.0.2",
     "@trpc/client": "^10.45.2",
