@@ -15,8 +15,8 @@ import { randomUUID } from 'node:crypto'
 import { join } from 'node:path'
 import { pathExists, readdirSync, ensureDirSync, rmdir } from 'fs-extra'
 import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
-import { OnEvent } from "@nestjs/event-emitter";
-import { ApplicationReadyEvent } from "../events/application-ready.event";
+import { OnEvent } from '@nestjs/event-emitter'
+import { ApplicationReadyEvent } from '../events/application-ready.event'
 
 export type SubscriptionReleaseState = {
   enabled: boolean
