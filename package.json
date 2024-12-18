@@ -6,7 +6,7 @@
   "author": "Flying Dice",
   "private": true,
   "engines": {
-    "node": "20.16.0"
+    "node": "22.12.0"
   },
   "release": {
     "branches": [
@@ -55,6 +55,7 @@
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
     "@fontsource/montserrat": "^5.0.18",
+    "@golevelup/ts-jest": "^0.6.1",
     "@mantine/code-highlight": "^7.12.0",
     "@mantine/core": "^7.12.0",
     "@mantine/form": "^7.12.0",
@@ -63,13 +64,14 @@
     "@mantine/notifications": "^7.12.0",
     "@nestjs/common": "^10.3.10",
     "@nestjs/core": "^10.3.10",
+    "@nestjs/event-emitter": "^2.1.1",
     "@nestjs/mongoose": "^10.1.0",
-    "@nestjs/schedule": "^4.1.0",
     "@nestjs/testing": "^10.4.15",
     "@nestjs/typeorm": "^10.0.2",
     "@trpc/client": "^10.45.2",
     "@trpc/server": "^10.45.2",
     "@types/bytes": "^3.1.4",
+    "@types/winreg": "^1.2.36",
     "aigle": "^1.14.1",
     "axios": "^1.7.3",
     "bytes": "^3.1.2",
@@ -79,6 +81,7 @@
     "fuse.js": "^7.0.0",
     "glob": "^11.0.0",
     "http-server": "^14.1.1",
+    "jest-when": "^3.7.0",
     "lodash": "^4.17.21",
     "marked": "13.0.3",
     "mongodb-memory-server": "^10.1.2",
@@ -96,7 +99,9 @@
     "rxjs": "^7.8.1",
     "swr": "^2.2.5",
     "ts-pattern": "^5.2.0",
+    "winreg": "^1.2.5",
     "winston": "^3.17.0",
+    "write-file-atomic": "^6.0.0",
     "yaml": "^2.5.0",
     "zod": "^3.23.8"
   },
@@ -112,10 +117,12 @@
     "@semantic-release/release-notes-generator": "^14.0.1",
     "@swc/core": "^1.7.6",
     "@types/glob": "^8.1.0",
+    "@types/jest-when": "^3.5.5",
     "@types/lodash": "^4.17.7",
     "@types/node": "22.1.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@types/write-file-atomic": "^4.0.3",
     "@typescript-eslint/eslint-plugin": "^8.0.1",
     "@vitejs/plugin-react": "^4.3.1",
     "electron": "30.3.1",

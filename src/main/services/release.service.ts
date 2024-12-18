@@ -136,6 +136,14 @@ export class ReleaseService {
       .then((it) => it.map((it) => it.toJSON()))
   }
 
+  @Log()
+  async findAssetsWithRunOnStart(): Promise<ReleaseAsset[]> {
+    return this.releaseAssets
+      .find({ runOnStart: true })
+      .exec()
+      .then((it) => it.map((it) => it.toJSON()))
+  }
+
   async findInProgressAssetTask(): Promise<AssetTask | undefined> {
     return this.assetTasks
       .findOne({ status: AssetTaskStatus.IN_PROGRESS })

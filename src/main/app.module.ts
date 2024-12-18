@@ -5,7 +5,6 @@ import {
   OnApplicationBootstrap,
   OnApplicationShutdown
 } from '@nestjs/common'
-import { ScheduleModule } from '@nestjs/schedule'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { SettingsManager } from './manager/settings.manager'
 import { SubscriptionManager } from './manager/subscription.manager'
@@ -29,10 +28,12 @@ import { get7zip } from './tools/7zip'
 import { Connection } from 'mongoose'
 import { Log } from './utils/log'
 import Aigle from 'aigle'
+import { EventEmitterModule } from '@nestjs/event-emitter'
+import { MissionScriptingManager } from './manager/mission-scripting.manager'
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot(),
     MongooseModule.forRootAsync({
       useFactory: MongooseFactory.factory
     }),
@@ -55,7 +56,8 @@ import Aigle from 'aigle'
     TaskManager,
     LifecycleManager,
     WriteDirectoryService,
-    VariablesService
+    VariablesService,
+    MissionScriptingManager
   ]
 })
 export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -67,6 +69,9 @@ export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown 
   @Inject(TaskManager)
   private readonly taskManager: TaskManager
 
+  @Inject(MissionScriptingManager)
+  private readonly missionScriptingManager: MissionScriptingManager
+
   @Log()
   async onApplicationBootstrap() {
     this.logger.log('Fetching 7zip')
@@ -75,6 +80,8 @@ export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown 
     this.logger.log('Fetching rclone')
     const rclone = await getrclone()
     await rclone.startDaemon()
+
+    await this.missionScriptingManager.rebuildScriptingFile()
 
     Aigle.delay(5000).then(async () => {
       this.logger.debug('Starting Task Loop', 'main')

@@ -36,7 +36,8 @@ export function getReleaseAsset(
     releaseId: release.id,
     subscriptionId: release.subscriptionId,
     tasks: [],
-    symlinkPath: null
+    symlinkPath: null,
+    runOnStart: asset.runonstart
   }
 
   const source = releaseAsset.source

@@ -1,0 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`UninstallBat > should pass a content snapshot test 1`] = `
+"rmdir /s /q "C:\\path\\to\\folder"
+del /f /q "C:\\path\\to\\file"
+del /f /q "C:\\path\\to\\another\\file""
+`;

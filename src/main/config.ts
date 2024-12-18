@@ -5,7 +5,7 @@ import { app } from 'electron'
 import { WinstonModule } from 'nest-winston'
 import winston from 'winston'
 import bytes from 'bytes'
-import { Logger } from "@nestjs/common";
+import { Logger } from '@nestjs/common'
 
 const { combine, timestamp, printf, colorize } = winston.format
 

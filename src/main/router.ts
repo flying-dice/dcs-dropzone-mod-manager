@@ -13,6 +13,8 @@ import { AppModule } from './app.module'
 import { RegistryService } from './services/registry.service'
 import { app as electronApp } from 'electron/main'
 import { WriteDirectoryService } from './services/write-directory.service'
+import { MissionScriptingManager } from './manager/mission-scripting.manager'
+import { getDefaultGameInstallDir } from './functions/getDefaultGameInstallDir'
 
 export const trpc = initTRPC.create()
 
@@ -22,6 +24,12 @@ export async function getAppWithRouter() {
   return {
     app,
     router: trpc.router({
+      validateMissionScriptingFile: trpc.procedure.query(() => {
+        return app.get(MissionScriptingManager).validateMissionScriptingFile()
+      }),
+      repairMissionScriptingFile: trpc.procedure.mutation(async () => {
+        await app.get(MissionScriptingManager).repairMissionScriptingFile()
+      }),
       getDeepLinkArg: trpc.procedure.query(() => {
         return process.argv
           .find((arg) => arg.startsWith('dropzone://'))
@@ -112,6 +120,9 @@ export async function getAppWithRouter() {
       getDefaultGameDir: trpc.procedure.query(
         async (): Promise<string | undefined> => getDefaultGameDir()
       ),
+      getDefaultGameInstallDir: trpc.procedure.query(
+        async (): Promise<string | undefined> => getDefaultGameInstallDir()
+      ),
       getDefaultRegistryUrl: trpc.procedure.query(
         async (): Promise<string> => config.defaultRegistryUrl
       ),
@@ -125,6 +136,29 @@ export async function getAppWithRouter() {
       getRegistryUrl: trpc.procedure.query(
         async (): Promise<string> => app.get(SettingsManager).getRegistryUrl()
       ),
+
+      getSettings: trpc.procedure.query(
+        async (): Promise<{
+          gameDir: string
+          gameInstallDir: string
+          writeDir: string
+          registryUrl: string
+          valid: boolean
+        }> => {
+          const gameDir = await app.get(SettingsManager).getGameDir()
+          const gameInstallDir = await app.get(SettingsManager).getGameInstallDir()
+          const writeDir = await app.get(SettingsManager).getWriteDir()
+          const registryUrl = await app.get(SettingsManager).getRegistryUrl()
+          return {
+            gameDir,
+            gameInstallDir,
+            writeDir,
+            registryUrl,
+            valid: !!(gameDir && gameInstallDir && writeDir && registryUrl)
+          }
+        }
+      ),
+
       runExe: trpc.procedure
         .input(z.object({ modId: z.string(), exePath: z.string() }))
         .mutation(

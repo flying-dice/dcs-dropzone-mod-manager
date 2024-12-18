@@ -3,6 +3,7 @@ import { config } from '../config'
 import { getDefaultGameDir } from '../functions/getDefaultGameDir'
 import { getDefaultWriteDir } from '../functions/getDefaultWriteDir'
 import { ConfigService } from '../services/config.service'
+import { getDefaultGameInstallDir } from '../functions/getDefaultGameInstallDir'
 
 /**
  * Settings manager for handling settings related to the application at the implementation level
@@ -45,6 +46,24 @@ export class SettingsManager {
     if (!value) {
       throw new Error(
         'No game directory configured and default not found, ensure DCS is installed and has been run at least once'
+      )
+    }
+
+    return value
+  }
+
+  /**
+   * Get the game installation directory from the settings repository, or the default value if not set
+   * Defaults to the DCS installation directory
+   */
+  async getGameInstallDir(): Promise<string> {
+    const value =
+      (await this.configGateway.getConfigValue('gameInstallDir'))?.value ||
+      (await getDefaultGameInstallDir())
+
+    if (!value) {
+      throw new Error(
+        'No game install directory configured and default not found, ensure DCS is installed and has been run at least once'
       )
     }
 

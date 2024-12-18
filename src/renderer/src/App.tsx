@@ -1,4 +1,4 @@
-import { AppShell } from '@mantine/core'
+import { Alert, AppShell, LoadingOverlay, useMantineTheme } from '@mantine/core'
 import { Route, Routes } from 'react-router-dom'
 import { AppHeader } from './app.header'
 import { AppNavbar } from './app.navbar'
@@ -6,10 +6,13 @@ import { config } from './config'
 import { DcsFoldersModal } from './modal/dcs-folders.modal'
 import { useMount } from 'react-use'
 import { openConfirmModal } from '@mantine/modals'
-import { LegalDisclaimer } from '@renderer/components/legal-disclaimer'
+import { LegalDisclaimer } from './components/legal-disclaimer'
 import { trackEvent } from '@aptabase/electron/renderer'
+import useSWR from 'swr'
+import { client } from './client'
 
 export function App() {
+  const theme = useMantineTheme()
   useMount(() => {
     const acceptedLegalDisclaimer = localStorage.getItem('accepted_legal')
     if (!acceptedLegalDisclaimer) {
@@ -35,6 +38,8 @@ export function App() {
     }
   })
 
+  const { data, error, isLoading } = useSWR('settings', () => client.getSettings.query())
+
   return (
     <AppShell
       header={{ height: 66 }}
@@ -44,15 +49,19 @@ export function App() {
       }}
       padding="md"
     >
+      <LoadingOverlay visible={isLoading} />
       <AppHeader />
       <AppNavbar />
       <DcsFoldersModal />
-      <AppShell.Main>
-        <Routes>
-          {config.routes.map((route) => (
-            <Route key={route.routerPath} path={route.routerPath} element={route.element()} />
-          ))}
-        </Routes>
+      <AppShell.Main bg={theme.colors.dark[8]}>
+        {data && (
+          <Routes>
+            {config.routes.map((route) => (
+              <Route key={route.routerPath} path={route.routerPath} element={route.element()} />
+            ))}
+          </Routes>
+        )}
+        {error && <Alert title={'Failed to load settings'}>{error.toString()}</Alert>}
       </AppShell.Main>
     </AppShell>
   )

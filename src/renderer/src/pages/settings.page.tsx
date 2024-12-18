@@ -14,8 +14,10 @@ const Configurables: React.FC = () => {
     client.getDefaultRegistryUrl.query()
   )
   const defaultGameDir = useSWR('defaultGameDir', () => client.getDefaultGameDir.query())
+  const defaultGameInstallDir = useSWR('defaultGameInstallDir', () => client.getDefaultGameInstallDir.query())
 
   const gameDir = useConfig('gameDir')
+  const gameInstallDir = useConfig('gameInstallDir')
   const registryUrl = useConfig('registryUrl')
 
   return (
@@ -31,6 +33,20 @@ const Configurables: React.FC = () => {
             const [f] = folder.filePaths
             if (!f) return
             gameDir.set(f)
+          })
+        }
+      />
+      <SettingEntry
+        name="gameInstallDir"
+        label="DCS Game Install folder"
+        description="Where the DCS Game is installed, normally this is 'C:\Program Files\Eagle Dynamics\DCS World'"
+        defaultValue={defaultGameInstallDir.data}
+        onClick={() =>
+          client.askFolder.query({ default: defaultGameInstallDir.data || '' }).then((folder) => {
+            if (!folder) return
+            const [f] = folder.filePaths
+            if (!f) return
+            gameInstallDir.set(f)
           })
         }
       />

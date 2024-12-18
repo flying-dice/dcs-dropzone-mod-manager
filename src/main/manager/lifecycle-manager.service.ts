@@ -14,6 +14,9 @@ import { Subscription } from '../schemas/subscription.schema'
 import { Release } from '../schemas/release.schema'
 import { Log } from '../utils/log'
 import Aigle from 'aigle'
+import { EventEmitter2 } from '@nestjs/event-emitter'
+import { ModEnabledEvent } from '../events/mod-enabled.event'
+import { ModDisabledEvent } from '../events/mod-disabled.event'
 
 /**
  * Manages the toggling of a mod between enabled and disabled states
@@ -33,11 +36,16 @@ export class LifecycleManager {
   @Inject()
   private readonly writeDirectoryService: WriteDirectoryService
 
+  @Inject(EventEmitter2)
+  private readonly eventEmitter: EventEmitter2
+
   @Inject()
   private readonly fsService: FsService
 
   @Inject(VariablesService)
-  private variablesService: VariablesService /**
+  private variablesService: VariablesService
+
+  /**
    * Toggles the mod between enabled and disabled states
    * If the mod is enabled, it will be disabled
    * If the mod is disabled, it will be enabled
@@ -96,6 +104,10 @@ export class LifecycleManager {
     release.enabled = true
     await this.releaseService.save(release)
     await this.rebuildUninstallScript()
+    await this.eventEmitter.emitAsync(
+      ModEnabledEvent.name,
+      new ModEnabledEvent(modId, release.version)
+    )
   }
 
   /**
@@ -118,6 +130,10 @@ export class LifecycleManager {
     release.enabled = false
     await this.releaseService.save(release)
     await this.rebuildUninstallScript()
+    await this.eventEmitter.emitAsync(
+      ModDisabledEvent.name,
+      new ModDisabledEvent(modId, release.version)
+    )
   }
 
   async runExe(modId: string, exePath: string) {

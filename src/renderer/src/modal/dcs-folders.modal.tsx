@@ -8,9 +8,12 @@ import { useConfig } from '../hooks/useConfig'
 export type DcsFoldersModalProps = {}
 export const DcsFoldersModal: React.FC<DcsFoldersModalProps> = ({}) => {
   const gameDir = useConfig('gameDir')
-  const defaultGameDir = useSWR('getDefaultGameDir', () => client.getDefaultGameDir.query(), {
-    refreshInterval: 1000
-  })
+  const gameInstallDir = useConfig('gameInstallDir')
+  const defaultGameDir = useSWR('getDefaultGameDir', () => client.getDefaultGameDir.query())
+  const defaultGameInstallDir = useSWR('getDefaultGameInstallDir', () =>
+    client.getDefaultGameInstallDir.query()
+  )
+  const { data } = useSWR('settings', () => client.getSettings.query())
 
   return (
     <Modal
@@ -18,7 +21,7 @@ export const DcsFoldersModal: React.FC<DcsFoldersModalProps> = ({}) => {
       size={'xl'}
       withCloseButton={false}
       onClose={() => {}}
-      opened={!defaultGameDir.data && !gameDir.value.data}
+      opened={!data}
     >
       <Stack>
         <Stack gap={'xs'}>
@@ -45,6 +48,20 @@ export const DcsFoldersModal: React.FC<DcsFoldersModalProps> = ({}) => {
               const [f] = folder.filePaths
               if (!f) return
               gameDir.set(f)
+            })
+          }
+        />
+        <SettingEntry
+          name="gameInstallDir"
+          label="DCS Installation folder"
+          description="Where the DCS Game is installed, normally this is 'C:\Program Files\Eagle Dynamics\DCS World'"
+          defaultValue={defaultGameInstallDir.data}
+          onClick={() =>
+            client.askFolder.query({ default: defaultGameInstallDir.data || '' }).then((folder) => {
+              if (!folder) return
+              const [f] = folder.filePaths
+              if (!f) return
+              gameInstallDir.set(f)
             })
           }
         />
