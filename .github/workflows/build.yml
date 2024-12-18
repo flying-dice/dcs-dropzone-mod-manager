@@ -26,8 +26,13 @@ jobs:
         with:
           name: coverage
           path: coverage/
-      - name: Build
-        run: npm run build
       - name: 'Report Coverage'
         if: always()
         uses: davelosert/vitest-coverage-report-action@v2
+      - name: Build
+        run: npm run build
+      - name: Upload Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: DCS Dropzone Installer
+          path: dist/dcs-dropzone-*.exe
