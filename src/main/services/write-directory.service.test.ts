@@ -15,7 +15,7 @@ describe('WriteDirectoryService', () => {
         {
           provide: SettingsManager,
           useValue: {
-            getWriteDir: vitest.fn().mockResolvedValue('\\write\\dir')
+            getWriteDir: vitest.fn().mockResolvedValue('/write/dir')
           }
         }
       ]
@@ -25,13 +25,13 @@ describe('WriteDirectoryService', () => {
   })
 
   it('returns the write directory', async () => {
-    await expect(service.getWriteDirectory()).resolves.toBe('\\write\\dir')
+    await expect(service.getWriteDirectory()).resolves.toBe('/write/dir')
   })
 
   it('returns the write directory for a subscription', async () => {
     const subscription: Subscription = { id: 'sub123' } as Subscription
     await expect(service.getWriteDirectoryForSubscription(subscription)).resolves.toBe(
-      '\\write\\dir\\sub123'
+      '/write/dir/sub123'
     )
   })
 
@@ -39,7 +39,7 @@ describe('WriteDirectoryService', () => {
     const subscription: Subscription = { id: 'sub123' } as Subscription
     const release: Release = { id: 'rel456' } as Release
     await expect(service.getWriteDirectoryForRelease(subscription, release)).resolves.toBe(
-      '\\write\\dir\\sub123\\rel456'
+      '/write/dir/sub123/rel456'
     )
   })
 })

@@ -15,10 +15,10 @@ export default defineConfig({
       reportOnFailure: true,
       thresholds: {
         autoUpdate: true,
-        statements: 34.02,
-        branches: 77.25,
+        statements: 34.1,
+        branches: 77.72,
         functions: 74.24,
-        lines: 34.02
+        lines: 34.1
       }
     }
   }

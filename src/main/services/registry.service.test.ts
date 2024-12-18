@@ -43,20 +43,20 @@ describe('RegistryService', () => {
       moduleRef = await bootstrap()
     })
 
-    it('should successfully subscribe to a mod', () => {
+    it('should successfully subscribe to a mod', async () => {
       nock('https://dcs-mod-manager-registry.pages.dev')
         .get('/index.json')
         .reply(200, registryIndex)
 
-      expect(moduleRef.get(RegistryService).getRegistryIndex()).resolves.toMatchSnapshot()
+      await expect(moduleRef.get(RegistryService).getRegistryIndex()).resolves.toMatchSnapshot()
     })
 
-    it('should successfully fetch the mod index', () => {
+    it('should successfully fetch the mod index', async () => {
       nock('https://dcs-mod-manager-registry.pages.dev')
         .get('/example-mod/index.json')
         .reply(200, modIndex)
 
-      expect(
+      await expect(
         moduleRef.get(RegistryService).getRegistryEntryIndex('example-mod')
       ).resolves.toMatchSnapshot()
     })

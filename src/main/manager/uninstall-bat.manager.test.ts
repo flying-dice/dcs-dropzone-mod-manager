@@ -10,11 +10,11 @@ import { ModEnabledEvent } from '../events/mod-enabled.event'
 import { ModDisabledEvent } from '../events/mod-disabled.event'
 import { SettingsManager } from './settings.manager'
 
-const WRITE_DIR = 'C:\\Users\\username\\AppData\\Local\\dcs-dropzone\\mods'
+const WRITE_DIR = 'C:/Users/username/AppData/Local/dcs-dropzone/mods'
 
 const UNINSTALL_BAT_PATH = join(WRITE_DIR, UninstallBatManager.FILENAME)
 
-const DCS_SAVED_GAMES = 'C:\\Users\\username\\Saved Games\\DCS'
+const DCS_SAVED_GAMES = 'C:/Users/username/Saved Games/DCS'
 
 function bootstrap() {
   return Test.createTestingModule({
@@ -31,8 +31,8 @@ function bootstrap() {
           findAssetsWithSymlinks: vi
             .fn()
             .mockResolvedValue([
-              { symlinkPath: `${DCS_SAVED_GAMES}\\Scripts\\Hooks\\hello-world.lua` },
-              { symlinkPath: `${DCS_SAVED_GAMES}\\Mods\\hello-world` }
+              { symlinkPath: `${DCS_SAVED_GAMES}/Scripts/Hooks/hello-world.lua` },
+              { symlinkPath: `${DCS_SAVED_GAMES}/Mods/hello-world` }
             ])
         }
       }

@@ -5,11 +5,11 @@ export class HashPath {
   constructor(private readonly path: string) {}
 
   static isHashPath(path: string) {
-    return path.includes('\\#\\')
+    return path.includes('/#/')
   }
 
   get basePath() {
-    return this.path.split('\\#\\')[0]
+    return this.path.split('/#/')[0]
   }
 
   get baseName() {
@@ -33,7 +33,7 @@ export class HashPath {
   }
 
   get hashPath() {
-    return this.path.split('\\#\\')[1]
+    return this.path.split('/#/')[1]
   }
 
   get isArchive() {

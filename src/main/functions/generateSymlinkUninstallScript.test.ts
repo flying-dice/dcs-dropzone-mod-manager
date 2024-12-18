@@ -5,9 +5,9 @@ import { generateSymlinkUninstallScript } from './generateSymlinkUninstallScript
 describe('generateSymlinkUninstallScript', () => {
   beforeEach(() => {
     mockFs({
-      'C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\aircraft\\example-ac': {},
-      'C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\aircraft\\example-ac2': {},
-      'C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\Scripts\\example.lua': '-- A Lua File'
+      'C:/Users/jonat/Saved Games/DCS.openbeta/Mods/aircraft/example-ac': {},
+      'C:/Users/jonat/Saved Games/DCS.openbeta/Mods/aircraft/example-ac2': {},
+      'C:/Users/jonat/Saved Games/DCS.openbeta/Mods/Scripts/example.lua': '-- A Lua File'
     })
   })
 
@@ -16,32 +16,32 @@ describe('generateSymlinkUninstallScript', () => {
   })
 
   it('should return the script for a single folder', async () => {
-    const items = ['C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\aircraft\\example-ac']
+    const items = ['C:/Users/jonat/Saved Games/DCS.openbeta/Mods/aircraft/example-ac']
     const result = await generateSymlinkUninstallScript(items)
     expect(result).toMatchInlineSnapshot(
-      `"rmdir /s /q "C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\aircraft\\example-ac""`
+      `"rmdir /s /q "C:/Users/jonat/Saved Games/DCS.openbeta/Mods/aircraft/example-ac""`
     )
   })
 
   it('should return the script for a single file', async () => {
-    const items = ['C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\Scripts\\example.lua']
+    const items = ['C:/Users/jonat/Saved Games/DCS.openbeta/Mods/Scripts/example.lua']
     const result = await generateSymlinkUninstallScript(items)
     expect(result).toMatchInlineSnapshot(
-      `"del /f /q "C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\Scripts\\example.lua""`
+      `"del /f /q "C:/Users/jonat/Saved Games/DCS.openbeta/Mods/Scripts/example.lua""`
     )
   })
 
   it('should return the script for multiple items', async () => {
     const items = [
-      'C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\aircraft\\example-ac',
-      'C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\aircraft\\example-ac2',
-      'C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\Scripts\\example.lua'
+      'C:/Users/jonat/Saved Games/DCS.openbeta/Mods/aircraft/example-ac',
+      'C:/Users/jonat/Saved Games/DCS.openbeta/Mods/aircraft/example-ac2',
+      'C:/Users/jonat/Saved Games/DCS.openbeta/Mods/Scripts/example.lua'
     ]
     const result = await generateSymlinkUninstallScript(items)
     expect(result).toMatchInlineSnapshot(`
-        "rmdir /s /q "C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\aircraft\\example-ac"
-        rmdir /s /q "C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\aircraft\\example-ac2"
-        del /f /q "C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\Scripts\\example.lua""
+        "rmdir /s /q "C:/Users/jonat/Saved Games/DCS.openbeta/Mods/aircraft/example-ac"
+        rmdir /s /q "C:/Users/jonat/Saved Games/DCS.openbeta/Mods/aircraft/example-ac2"
+        del /f /q "C:/Users/jonat/Saved Games/DCS.openbeta/Mods/Scripts/example.lua""
       `)
   })
 

@@ -54,7 +54,7 @@ function createReleaseWithAssetsAndTask(versionsItem: EntryIndexVersionsItem) {
   const assets: HydratedReleaseAsset[] = []
 
   for (const asset of versionsItem.assets) {
-    assets.push(getReleaseAsset(release, asset, 'C:\\some\\path'))
+    assets.push(getReleaseAsset(release, asset, 'C:/some/path'))
   }
 
   return { release, assets }
@@ -271,7 +271,7 @@ describe('ReleaseService', () => {
       ]
     })
 
-    enabledMod.assets[0].symlinkPath = 'C:\\some\\path\\file.lua'
+    enabledMod.assets[0].symlinkPath = 'C:/some/path/file.lua'
     enabledMod.release.enabled = true
 
     await releaseService.save(enabledMod.release)

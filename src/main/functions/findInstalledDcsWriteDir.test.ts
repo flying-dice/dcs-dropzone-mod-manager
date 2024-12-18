@@ -8,7 +8,7 @@ vi.mock('fs-extra', () => ({
 
 describe('getDefaultGameDir', () => {
   let __USERPROFILE: string | undefined
-  const testUserProfile = 'C:\\Users\\TestUser'
+  const testUserProfile = 'C:/Users/TestUser'
 
   beforeAll(() => {
     __USERPROFILE = process.env.USERPROFILE
@@ -20,15 +20,15 @@ describe('getDefaultGameDir', () => {
   })
 
   it('should return the path if DCS folder exists', () => {
-    const defaultPath = `${testUserProfile}\\Saved Games\\DCS`
+    const defaultPath = `${testUserProfile}/Saved Games/DCS`
     vi.mocked(pathExistsSync).mockImplementation((path) => path === defaultPath || false)
     const result = findInstalledDcsWriteDir()
     expect(result).toBe(defaultPath)
   })
 
   it('should return the path if DCS.openbeta folder exists and DCS does not exist', () => {
-    process.env.USERPROFILE = 'C:\\Users\\TestUser'
-    const defaultOBPath = `${testUserProfile}\\Saved Games\\DCS.openbeta`
+    process.env.USERPROFILE = 'C:/Users/TestUser'
+    const defaultOBPath = `${testUserProfile}/Saved Games/DCS.openbeta`
     vi.mocked(pathExistsSync).mockImplementation((path) => path === defaultOBPath || false)
     const result = findInstalledDcsWriteDir()
     expect(result).toBe(defaultOBPath)
