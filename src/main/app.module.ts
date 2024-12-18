@@ -5,7 +5,6 @@ import {
   OnApplicationBootstrap,
   OnApplicationShutdown
 } from '@nestjs/common'
-import { ScheduleModule } from '@nestjs/schedule'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { SettingsManager } from './manager/settings.manager'
 import { SubscriptionManager } from './manager/subscription.manager'
@@ -32,7 +31,6 @@ import Aigle from 'aigle'
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
     MongooseModule.forRootAsync({
       useFactory: MongooseFactory.factory
     }),
