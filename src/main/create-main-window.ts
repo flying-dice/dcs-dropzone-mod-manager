@@ -21,7 +21,7 @@ export async function createWindow(app: INestApplicationContext): Promise<Browse
     height,
     x,
     y,
-    show: false,
+    show: true,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {

@@ -83,16 +83,6 @@ app.on('open-url', (event, url) => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
-  app.on('will-quit', () => {
-    console.log('App is quitting')
-  })
-  app.on('before-quit', () => {
-    console.log('App is about to quit')
-  })
-  app.on('quit', () => {
-    console.log('App has quit')
-  })
-
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -127,19 +117,21 @@ app.whenReady().then(async () => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', async () => {
-  Logger.log('All windows closed, quitting App', 'main')
+  if (process.platform !== 'darwin') {
+    Logger.log('All windows closed, quitting App', 'main')
 
-  Logger.log('NApp: Closing Event Firing...', 'main')
-  await nestApp
-    .get(EventEmitter2)
-    .emitAsync(ApplicationClosingEvent.name, new ApplicationClosingEvent())
-  Logger.log('NApp: Closing Event Completed, closing app...', 'main')
-  await nestApp.close()
-  Logger.log("NApp: Closed', 'main")
+    Logger.log('NApp: Closing Event Firing...', 'main')
+    await nestApp
+      .get(EventEmitter2)
+      .emitAsync(ApplicationClosingEvent.name, new ApplicationClosingEvent())
+    Logger.log('NApp: Closing Event Completed, closing app...', 'main')
+    await nestApp.close()
+    Logger.log("NApp: Closed', 'main")
 
-  await trackEvent('app_quit')
-    .then(() => Logger.log('Aptabase event sent for app_quit', 'main'))
-    .catch((err) => Logger.error(`Aptabase event failed for app_quit ${err.toString()}`, 'main'))
+    await trackEvent('app_quit')
+      .then(() => Logger.log('Aptabase event sent for app_quit', 'main'))
+      .catch((err) => Logger.error(`Aptabase event failed for app_quit ${err.toString()}`, 'main'))
 
-  app.quit()
+    app.quit()
+  }
 })

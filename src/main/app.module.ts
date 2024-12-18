@@ -84,12 +84,16 @@ export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown 
   async onApplicationBootstrap() {
     this.logger.log('Application is starting...')
 
-    await Promise.all([this.init7zip(), this.initRclone(), this.initDatabase()])
+    await this.initDatabase()
 
-    this.logger.log('Application is ready, firing ApplicationReadyEvent...')
-    this.eventEmitter.emitAsync(ApplicationReadyEvent.name).then(() => {
-      this.logger.log('ApplicationReadyEvent Completed')
-    })
+    this.logger.log(
+      'Application is started, firing ApplicationReadyEvent once 7zip and rclone are ready...'
+    )
+    Promise.all([this.init7zip(), this.initRclone()]).then(() =>
+      this.eventEmitter.emitAsync(ApplicationReadyEvent.name).then(() => {
+        this.logger.log('ApplicationReadyEvent Completed')
+      })
+    )
   }
 
   private async init7zip() {
