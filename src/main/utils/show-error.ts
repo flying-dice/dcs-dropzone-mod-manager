@@ -1,6 +1,6 @@
 import { dialog, shell } from 'electron'
 import { Logger } from '@nestjs/common'
-import { config } from '../config'
+import { fileTransport } from '../logging'
 
 const issueBodyTemplate = (error: Error, recentLogs: string[]) => `\
 
@@ -17,7 +17,7 @@ ${error.stack}
 
 
 Please Upload the logs from the following location:
-${config.logfileDisplayName}
+${fileTransport.filename}
 
 ---
 ${recentLogs.join('\n')}

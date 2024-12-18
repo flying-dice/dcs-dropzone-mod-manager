@@ -3,13 +3,14 @@ import { join } from 'node:path'
 import { Logger } from '@nestjs/common'
 import { ensureDirSync, moveSync, rmdir } from 'fs-extra'
 import { RcloneClient } from '../../lib/rclone.client'
-import { config } from '../config'
 import { TaskProcessor } from './task.processor'
 import {
   AssetTask,
   AssetTaskStatus,
   DownloadTaskPayload
 } from '../schemas/release-asset-task.schema'
+import { ConfigService } from '@nestjs/config'
+import { MainConfig } from '../config'
 
 export class DownloadTaskProcessor implements TaskProcessor<DownloadTaskPayload> {
   protected readonly logger = new Logger(DownloadTaskProcessor.name)
@@ -18,7 +19,11 @@ export class DownloadTaskProcessor implements TaskProcessor<DownloadTaskPayload>
 
   private tempPath: string
 
-  private readonly rcloneClient = new RcloneClient(config.rcloneInstance)
+  private readonly rcloneClient: RcloneClient
+
+  constructor(private readonly configService: ConfigService<MainConfig>) {
+    this.rcloneClient = new RcloneClient(this.configService.getOrThrow('rcloneInstance'))
+  }
 
   async process(task: AssetTask<DownloadTaskPayload>): Promise<void> {
     this.logger.debug(`[${task.id}] - Processing download task`)
@@ -85,7 +90,7 @@ export class DownloadTaskProcessor implements TaskProcessor<DownloadTaskPayload>
   }
 
   private async createTempFolder(task: AssetTask<DownloadTaskPayload>): Promise<void> {
-    this.tempPath = join(config.tempDir, task.id.toString())
+    this.tempPath = join(this.configService.getOrThrow('tempDir'), task.id.toString())
 
     // Clean up the temp path if it exists from a previous run (i.e. if the task was restarted by the app restarting)
     await this.removeTempFolder()

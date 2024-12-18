@@ -18,31 +18,6 @@ export class ReleaseService {
   private readonly assetTasks: Model<AssetTask>
 
   @Log()
-  async findAll(): Promise<Release[]> {
-    return this.releases
-      .find()
-      .exec()
-      .then((it) => it.map((it) => it.toJSON()))
-  }
-
-  @Log()
-  async findByModId(modId: string): Promise<Release | undefined> {
-    return this.releases
-      .findOne({ modId })
-      .exec()
-      .then((it) => it?.toJSON() ?? undefined)
-  }
-
-  @Log()
-  async findByModIdOrThrow(modId: string): Promise<Release> {
-    return this.releases
-      .findOne({ modId })
-      .orFail()
-      .exec()
-      .then((it) => it.toJSON())
-  }
-
-  @Log()
   async findBySubscriptionIdOrThrow(subscriptionId: string): Promise<Release> {
     return this.releases
       .findOne({ subscriptionId })
@@ -116,14 +91,6 @@ export class ReleaseService {
   async findAssetTasksByRelease(releaseId: string): Promise<AssetTask[]> {
     return this.assetTasks
       .find({ releaseId })
-      .exec()
-      .then((it) => it.map((it) => it.toJSON()))
-  }
-
-  @Log()
-  async findAllAssetTasks(): Promise<AssetTask[]> {
-    return this.assetTasks
-      .find()
       .exec()
       .then((it) => it.map((it) => it.toJSON()))
   }

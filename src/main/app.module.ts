@@ -9,8 +9,7 @@ import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { SettingsManager } from './manager/settings.manager'
 import { SubscriptionManager } from './manager/subscription.manager'
 import { TaskManager } from './manager/task.manager'
-import { ConfigService } from './services/config.service'
-import { FsService } from './services/fs.service'
+import { SettingsService } from './services/settings.service'
 import { RegistryService } from './services/registry.service'
 import { WriteDirectoryService } from './services/write-directory.service'
 import { VariablesService } from './services/variables.service'
@@ -26,12 +25,24 @@ import { AssetTask, AssetTaskSchema } from './schemas/release-asset-task.schema'
 import { getrclone } from './tools/rclone'
 import { get7zip } from './tools/7zip'
 import { Connection } from 'mongoose'
+import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+import { configuration, MainConfig } from './config'
 import { Log } from './utils/log'
-import Aigle from 'aigle'
+import { FsService } from './services/fs.service'
+import { UninstallBatManager } from './manager/uninstall-bat.manager'
+import { ApplicationClosingEvent } from './events/application-closing.event'
+import { ApplicationReadyEvent } from './events/application-ready.event'
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration]
+    }),
+    EventEmitterModule.forRoot(),
     MongooseModule.forRootAsync({
+      inject: [ConfigService],
       useFactory: MongooseFactory.factory
     }),
     MongooseModule.forFeature([
@@ -45,7 +56,7 @@ import Aigle from 'aigle'
   providers: [
     SubscriptionService,
     ReleaseService,
-    ConfigService,
+    SettingsService,
     FsService,
     SettingsManager,
     RegistryService,
@@ -53,7 +64,8 @@ import Aigle from 'aigle'
     TaskManager,
     LifecycleManager,
     WriteDirectoryService,
-    VariablesService
+    VariablesService,
+    UninstallBatManager
   ]
 })
 export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -62,33 +74,56 @@ export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown 
   @InjectConnection()
   private readonly connection: Connection
 
-  @Inject(TaskManager)
-  private readonly taskManager: TaskManager
+  @Inject(EventEmitter2)
+  private readonly eventEmitter: EventEmitter2
+
+  @Inject(ConfigService)
+  private readonly configService: ConfigService<MainConfig>
 
   @Log()
   async onApplicationBootstrap() {
-    this.logger.log('Fetching 7zip')
-    await get7zip()
+    this.logger.log('Application is starting...')
 
-    this.logger.log('Fetching rclone')
-    const rclone = await getrclone()
-    await rclone.startDaemon()
+    await Promise.all([this.init7zip(), this.initRclone(), this.initDatabase()])
 
-    Aigle.delay(5000).then(async () => {
-      this.logger.debug('Starting Task Loop', 'main')
-      await this.taskManager.onApplicationReady()
+    this.logger.log('Application is ready, firing ApplicationReadyEvent...')
+    this.eventEmitter.emitAsync(ApplicationReadyEvent.name).then(() => {
+      this.logger.log('ApplicationReadyEvent Completed')
     })
+  }
+
+  private async init7zip() {
+    this.logger.debug('Waiting for 7zip')
+    await get7zip(this.configService.getOrThrow('toolsDir'))
+    this.logger.log('7zip is ready')
+  }
+
+  private async initRclone() {
+    this.logger.debug('Waiting for rclone daemon')
+    const rclone = await getrclone(this.configService.getOrThrow('toolsDir'))
+    await rclone.startDaemon()
+    this.logger.log('Rclone is ready')
+  }
+
+  private async initDatabase() {
+    this.logger.debug('Waiting for database connection...')
+    await this.connection.asPromise()
+    this.logger.log('Database is ready')
   }
 
   @Log()
   async onApplicationShutdown() {
-    this.logger.debug('Shutting down app', 'main')
+    this.logger.debug('Shutting down app')
 
-    this.logger.debug('Stopping rclone daemon', 'main')
-    const rclone = await getrclone()
+    Logger.log('NApp: Closing Event Firing...')
+    await this.eventEmitter.emitAsync(ApplicationClosingEvent.name, new ApplicationClosingEvent())
+    Logger.log('NApp: Closing Event Completed, closing app...')
+
+    this.logger.debug('Stopping rclone daemon')
+    const rclone = await getrclone(this.configService.getOrThrow('toolsDir'))
     await rclone.stopDaemon()
 
-    this.logger.debug('Closing Mongoose connection', 'main')
+    this.logger.debug('Closing Mongoose connection')
     await MongooseFactory.onApplicationShutdown(this.connection)
   }
 }

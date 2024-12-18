@@ -2,28 +2,33 @@ import { Logger } from '@nestjs/common'
 import type { MongooseModuleFactoryOptions } from '@nestjs/mongoose'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import type { Connection } from 'mongoose'
-import { config } from './config'
 import { ensureDirSync } from 'fs-extra'
 import { Log } from './utils/log'
+import { ConfigService } from '@nestjs/config'
+import { MainConfig } from './config'
 
 export class MongooseFactory {
   static server: MongoMemoryServer | undefined
 
-  static async factory(): Promise<MongooseModuleFactoryOptions> {
+  static async factory(
+    configService: ConfigService<MainConfig>
+  ): Promise<MongooseModuleFactoryOptions> {
+    const mongo: MainConfig['mongo'] = await configService.getOrThrow('mongo')
+    const dbName = 'dropzone'
+
     Logger.log('Using MongoMemoryServer', 'MongooseModuleFactory')
-    ensureDirSync(config.mongo.dbPath)
+    ensureDirSync(mongo.dbPath)
     MongooseFactory.server = await MongoMemoryServer.create({
       instance: {
-        dbName: 'dropzone',
-        dbPath: config.mongo.dbPath,
-        port: config.mongo.port,
-        ip: '127.0.0.1'
+        dbName,
+        ip: '127.0.0.1',
+        ...mongo
       }
     })
 
     const options: MongooseModuleFactoryOptions = {
       uri: MongooseFactory.server.getUri(),
-      dbName: 'dropzone'
+      dbName
     }
 
     Logger.log(`Dropzone db ${options.uri}`, 'MongooseModuleFactory')

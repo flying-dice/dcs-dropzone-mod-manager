@@ -1,18 +1,14 @@
 import { spawn } from 'child_process'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import { join } from 'node:path'
 import { Logger } from '@nestjs/common'
 import { ensureDir, readJsonSync, rmdir, writeJsonSync } from 'fs-extra'
 import { glob } from 'glob'
 import Downloader from 'nodejs-file-downloader'
-import { config } from '../config'
 import { get7zip } from './7zip'
+import { join } from 'node:path'
 
 const logger = new Logger('rclone')
-const rootDir = join(config.toolsDir, 'rclone')
-
-const manifestPath = join(rootDir, 'manifest.json')
 
 const RCLONE_DOWNLOAD = 'https://downloads.rclone.org/v1.66.0/rclone-v1.66.0-windows-amd64.zip'
 
@@ -83,7 +79,10 @@ export class Rclone {
   }
 }
 
-export async function getrclone(): Promise<Rclone> {
+export async function getrclone(installDir: string): Promise<Rclone> {
+  const rootDir = join(installDir, 'rclone')
+  const manifestPath = join(rootDir, 'manifest.json')
+
   if (_rcloneInstance) {
     logger.log('Using existing rclone instance')
     return _rcloneInstance
@@ -119,7 +118,7 @@ export async function getrclone(): Promise<Rclone> {
   }
 
   logger.log('Requesting rclone instance')
-  const _7zip = await get7zip()
+  const _7zip = await get7zip(installDir)
 
   logger.log(`Extracting rclone to ${rootDir}`)
   await _7zip.extract(downloaded.filePath, rootDir)

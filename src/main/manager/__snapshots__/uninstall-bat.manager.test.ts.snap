@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`UninstallBatManager > should build file on mod disabled event 1`] = `
+"del /f /q "C:\\Users\\username\\Saved Games\\DCS\\Scripts\\Hooks\\hello-world.lua"
+rmdir /s /q "C:\\Users\\username\\Saved Games\\DCS\\Mods\\hello-world""
+`;
+
+exports[`UninstallBatManager > should build file on mod enabled event 1`] = `
+"del /f /q "C:\\Users\\username\\Saved Games\\DCS\\Scripts\\Hooks\\hello-world.lua"
+rmdir /s /q "C:\\Users\\username\\Saved Games\\DCS\\Mods\\hello-world""
+`;

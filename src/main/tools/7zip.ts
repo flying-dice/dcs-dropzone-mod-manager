@@ -1,7 +1,6 @@
 import { spawn } from 'child_process'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import { join } from 'node:path'
 import { Logger } from '@nestjs/common'
 /**
  * This module provides a wrapper around the 7-zip executable it downloads and extracts the 7-zip extra archive from the 7-zip website
@@ -14,16 +13,12 @@ import { Logger } from '@nestjs/common'
 import { ensureDir, readJsonSync, rm, writeJsonSync } from 'fs-extra'
 import { glob } from 'glob'
 import Downloader from 'nodejs-file-downloader'
-import { config } from '../config'
+import { join } from 'node:path'
 
 const logger = new Logger('_7zip')
 
 const _7ZR_DOWNLOAD = 'https://www.7-zip.org/a/7zr.exe'
 const _7ZEXTRA_DOWNLOAD = 'https://www.7-zip.org/a/7z2407-extra.7z'
-
-const rootDir = join(config.toolsDir, '7zip')
-
-const manifestPath = join(rootDir, 'manifest.json')
 
 let _7zipInstance: _7zip | undefined = undefined
 let _7ziprInstance: _7zip | undefined = undefined
@@ -47,7 +42,7 @@ export class _7zip {
   constructor(private readonly exePath: string) {}
 
   async extract(archivePath: string, destDir: string): Promise<void> {
-    logger.log(`Extracting ${archivePath} to ${destDir}`)
+    logger.debug(`Extracting ${archivePath} to ${destDir}`)
     const child = this.spawnExtractor(archivePath, destDir)
     this.jobs.set(archivePath, child)
 
@@ -74,7 +69,7 @@ export class _7zip {
   }
 
   spawnExtractor(archivePath: string, destDir: string): ChildProcessWithoutNullStreams {
-    logger.log(`Spawning 7zr process with ${archivePath} and ${destDir}`)
+    logger.debug(`Spawning 7zr process with ${archivePath} and ${destDir}`)
     logger.debug(`- ${this.exePath} -bso0 -bsp1 -y x ${archivePath} -o${destDir}`)
     return spawn(this.exePath, ['-bso0', '-bsp1', '-y', 'x', archivePath, `-o${destDir}`], {
       stdio: 'pipe'
@@ -86,15 +81,17 @@ export class _7zip {
  * Downloads the 7zr executable and returns an instance of the 7zip class
  * that can be used to extract 7-zip archives
  */
-async function get7zipr(): Promise<_7zip> {
+async function get7zipr(installDir: string): Promise<_7zip> {
+  const rootDir = join(installDir, '7zip')
+
   if (_7ziprInstance) {
-    logger.log('Using existing 7zip instance')
+    logger.debug('Using existing 7zip instance')
     return _7ziprInstance
   }
 
-  logger.log('Creating new 7zip instance')
+  logger.debug('Creating new 7zip instance')
 
-  logger.log(`Downloading 7zr from ${_7ZR_DOWNLOAD}`)
+  logger.debug(`Downloading 7zr from ${_7ZR_DOWNLOAD}`)
   const downloaded = await new Downloader({
     url: _7ZR_DOWNLOAD,
     directory: rootDir
@@ -112,7 +109,7 @@ async function get7zipr(): Promise<_7zip> {
 
   _7ziprInstance = new _7zip(_7zrExe)
 
-  logger.log(`7zr instance created ${downloaded.filePath}`)
+  logger.debug(`7zr instance created ${downloaded.filePath}`)
   return _7ziprInstance
 }
 
@@ -121,32 +118,35 @@ async function get7zipr(): Promise<_7zip> {
  * and extracts the archive using the 7zr executable and returns an instance of the 7zip class
  * that can be used to extract additional archive types
  */
-export async function get7zip(): Promise<_7zip> {
+export async function get7zip(installDir: string): Promise<_7zip> {
+  const rootDir = join(installDir, '7zip')
+  const manifestPath = join(rootDir, 'manifest.json')
+
   if (_7zipInstance) {
-    logger.log('Using existing 7zip instance')
+    logger.debug('Using existing 7zip instance')
     return _7zipInstance
   }
 
-  logger.log('Creating new 7zip instance')
+  logger.debug('Creating new 7zip instance')
 
   try {
-    logger.log(`Checking for existing 7zip manifest at ${manifestPath}`)
+    logger.debug(`Checking for existing 7zip manifest at ${manifestPath}`)
     const { exePath, downloadUrl } = readJsonSync(manifestPath)
-    logger.log(`Found existing 7zip manifest, exePath: ${exePath}, downloadUrl: ${downloadUrl}`)
+    logger.debug(`Found existing 7zip manifest, exePath: ${exePath}, downloadUrl: ${downloadUrl}`)
     if (existsSync(exePath) && _7ZEXTRA_DOWNLOAD === downloadUrl) {
       _7zipInstance = new _7zip(exePath)
-      logger.log(`Using existing Installation, new 7zip instance created ${exePath}`)
+      logger.debug(`Using existing Installation, new 7zip instance created ${exePath}`)
       return _7zipInstance
     }
   } catch (err) {
     logger.error(`Failed to read manifest file: ${err}, re-installing`)
   }
 
-  logger.log(`Removing root directory: ${rootDir}`)
+  logger.debug(`Removing root directory: ${rootDir}`)
   await rm(rootDir, { recursive: true }).catch((err) => logger.error(err))
   await ensureDir(rootDir)
 
-  logger.log(`Downloading 7-zip Extra from ${_7ZEXTRA_DOWNLOAD}`)
+  logger.debug(`Downloading 7-zip Extra from ${_7ZEXTRA_DOWNLOAD}`)
   const downloaded = await new Downloader({
     url: _7ZEXTRA_DOWNLOAD,
     directory: rootDir
@@ -156,10 +156,10 @@ export async function get7zip(): Promise<_7zip> {
     throw new Error('Failed to download 7-zip Extra, file path not found')
   }
 
-  logger.log('Requesting 7zr instance')
-  const _7zr = await get7zipr()
+  logger.debug('Requesting 7zr instance')
+  const _7zr = await get7zipr(installDir)
 
-  logger.log(`Extracting 7-zip Extra to ${rootDir}`)
+  logger.debug(`Extracting 7-zip Extra to ${rootDir}`)
   await _7zr.extract(downloaded.filePath, rootDir)
 
   const [_7zaExe] = await glob('**/7za.exe', { cwd: rootDir, absolute: true })
@@ -170,7 +170,7 @@ export async function get7zip(): Promise<_7zip> {
 
   _7zipInstance = new _7zip(_7zaExe)
 
-  logger.log(`7zip instance created ${_7zaExe}`)
+  logger.debug(`7zip instance created ${_7zaExe}`)
 
   writeJsonSync(manifestPath, {
     exePath: _7zaExe,

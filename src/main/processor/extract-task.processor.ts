@@ -9,6 +9,8 @@ import {
   AssetTaskStatus,
   ExtractTaskPayload
 } from '../schemas/release-asset-task.schema'
+import { ConfigService } from '@nestjs/config'
+import { MainConfig } from '../config'
 
 export class ExtractTaskProcessor implements TaskProcessor<ExtractTaskPayload> {
   protected readonly logger = new Logger(ExtractTaskProcessor.name)
@@ -20,6 +22,8 @@ export class ExtractTaskProcessor implements TaskProcessor<ExtractTaskPayload> {
   private progress: number
 
   private lastStdout: string
+
+  constructor(private readonly configService: ConfigService<MainConfig>) {}
 
   async process(task: AssetTask<ExtractTaskPayload>): Promise<void> {
     this.logger.debug(`[${task.id}] - Processing extract task`, task.payload)
@@ -47,7 +51,7 @@ export class ExtractTaskProcessor implements TaskProcessor<ExtractTaskPayload> {
   }
 
   async start(task: AssetTask<ExtractTaskPayload>) {
-    const _7zip = await get7zip()
+    const _7zip = await get7zip(this.configService.getOrThrow('toolsDir'))
 
     this.extractProcess = _7zip.spawnExtractor(
       join(task.payload.folder, task.payload.file),

@@ -2,15 +2,21 @@ import 'reflect-metadata'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { INestApplicationContext, Logger } from '@nestjs/common'
 import { app, BrowserWindow, dialog } from 'electron'
-import { initialize, trackEvent } from '@aptabase/electron/main'
+import { trackEvent } from '@aptabase/electron/main'
 import { createIPCHandler } from 'electron-trpc/main'
 import { getAppWithRouter } from './router'
-import { config } from './config'
 import { createWindow } from './create-main-window'
-import { showError } from './utils/show-error'
 import { autoUpdater } from 'electron-updater'
-import fs from 'node:fs'
-import { deepLink$ } from './observables'
+import { initalizeAptabase } from './functions/initalizeAptabase'
+import { onUnhandledRejection } from './functions/onUnhandledRejection'
+import { onUncaughtException } from './functions/onUncaughtException'
+import { BehaviorSubject } from 'rxjs'
+import { ApplicationClosingEvent } from './events/application-closing.event'
+import { EventEmitter2 } from '@nestjs/event-emitter'
+
+export const deepLink$ = new BehaviorSubject<string | undefined>(
+  process.argv.find((arg) => arg.startsWith('dropzone://'))
+)
 
 // Prevent multiple instances of the app from running
 // When calling app.requestSingleInstanceLock() it will return false if another instance is already running and emit the 'second-instance' event
@@ -40,40 +46,9 @@ app.on('second-instance', (_event, argv) => {
   }
 })
 
-process.on('uncaughtException', (err) => {
-  Logger.flush()
-  const recentLogs = fs.readFileSync(config.logfile, 'utf-8').split('\n'.slice(-10))
-
-  trackEvent('uncaught_exception', {
-    name: err.name,
-    message: err.message
-  })
-
-  showError(err, recentLogs)
-})
-
-process.on('unhandledRejection', (err) => {
-  Logger.flush()
-
-  const error = new Error(err as string)
-
-  trackEvent('unhandled_rejection', {
-    name: error.name,
-    message: error.message
-  })
-
-  Logger.error(`Unhandled Rejection: ${error.message}`, 'main')
-})
-
-if (config.aptabaseAppKey) {
-  Logger.log('Initializing Aptabase', 'main')
-  initialize(config.aptabaseAppKey).then(() =>
-    Logger.log(`Aptabase initialized ${config.aptabaseAppKey?.replace(/\d/g, '*')}`, 'main')
-  )
-} else {
-  Logger.warn('No Aptabase app key provided, skipping initialization', 'main')
-}
-
+process.on('uncaughtException', onUncaughtException)
+process.on('unhandledRejection', onUnhandledRejection)
+initalizeAptabase()
 app.setAsDefaultProtocolClient('dropzone')
 
 let nestApp: INestApplicationContext
@@ -108,6 +83,16 @@ app.on('open-url', (event, url) => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
+  app.on('will-quit', () => {
+    console.log('App is quitting')
+  })
+  app.on('before-quit', () => {
+    console.log('App is about to quit')
+  })
+  app.on('quit', () => {
+    console.log('App has quit')
+  })
+
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -144,9 +129,13 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', async () => {
   Logger.log('All windows closed, quitting App', 'main')
 
-  Logger.log('Closing NApp', 'main')
+  Logger.log('NApp: Closing Event Firing...', 'main')
+  await nestApp
+    .get(EventEmitter2)
+    .emitAsync(ApplicationClosingEvent.name, new ApplicationClosingEvent())
+  Logger.log('NApp: Closing Event Completed, closing app...', 'main')
   await nestApp.close()
-  Logger.log("NApp Closed', 'main")
+  Logger.log("NApp: Closed', 'main")
 
   await trackEvent('app_quit')
     .then(() => Logger.log('Aptabase event sent for app_quit', 'main'))

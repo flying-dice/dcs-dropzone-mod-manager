@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Hello World Mod",
+    "description": "A simple mod that logs hello world to the console on DCS startup",
+    "authors": [
+      {
+        "name": "Flying Dice"
+      }
+    ],
+    "tags": ["hello"],
+    "category": "example",
+    "latest": "0.1.0",
+    "id": "example-mod",
+    "imageUrl": "example-mod/index.png"
+  }
+]

@@ -1,6 +1,6 @@
 import { INestApplicationContext, Logger } from '@nestjs/common'
 import { BrowserWindow, shell } from 'electron'
-import { ConfigService } from './services/config.service'
+import { SettingsService } from './services/settings.service'
 import { join } from 'node:path'
 import { is } from '@electron-toolkit/utils'
 import { trackEvent } from '@aptabase/electron/main'
@@ -12,7 +12,7 @@ export async function createWindow(app: INestApplicationContext): Promise<Browse
   Logger.log('Creating main window', 'main')
 
   const [width, height, x, y] = JSON.parse(
-    await app.get(ConfigService).getConfigValueOrDefault('mw_config', windowDefault)
+    await app.get(SettingsService).getSettingValueOrDefault('mw_config', windowDefault)
   )
 
   // Create the browser window.
@@ -34,14 +34,14 @@ export async function createWindow(app: INestApplicationContext): Promise<Browse
     const [width, height] = mainWindow.getSize()
     const [x, y] = mainWindow.getPosition()
 
-    app.get(ConfigService).setConfigValue('mw_config', JSON.stringify([width, height, x, y]))
+    app.get(SettingsService).setSettingValue('mw_config', JSON.stringify([width, height, x, y]))
   })
 
   mainWindow.on('moved', () => {
     const [width, height] = mainWindow.getSize()
     const [x, y] = mainWindow.getPosition()
 
-    app.get(ConfigService).setConfigValue('mw_config', JSON.stringify([width, height, x, y]))
+    app.get(SettingsService).setSettingValue('mw_config', JSON.stringify([width, height, x, y]))
   })
 
   mainWindow.on('ready-to-show', () => {

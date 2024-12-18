@@ -5,35 +5,35 @@ import { Model } from 'mongoose'
 import { Log } from '../utils/log'
 
 @Injectable()
-export class ConfigService {
-  private readonly logger = new Logger(ConfigService.name)
+export class SettingsService {
+  private readonly logger = new Logger(SettingsService.name)
 
   @InjectModel(Config.name)
   private configs: Model<Config>
 
   @Log()
-  async getConfigValue(name: string): Promise<{ value: string } | undefined> {
+  async getSettingValue(name: string): Promise<{ value: string } | undefined> {
     const config = await this.configs.findOne({ name }).exec()
     return config ? { value: config.value } : undefined
   }
 
   @Log()
-  async getConfigValueOrDefault(name: string, defaultValue: string): Promise<string> {
-    const config = await this.getConfigValue(name)
-    return config ? config.value : defaultValue
+  async getSettingValueOrDefault(name: string, defaultValue: string): Promise<string> {
+    const setting = await this.getSettingValue(name)
+    return setting ? setting.value : defaultValue
   }
 
   @Log()
-  async setConfigValue(name: string, value: string): Promise<void> {
-    this.logger.verbose(`Setting config ${name} to ${value}`)
+  async setSettingValue(name: string, value: string): Promise<void> {
+    this.logger.verbose(`Setting setting ${name} to ${value}`)
     await this.configs
       .updateOne({ name }, { value, lastModified: Date.now() }, { upsert: true })
       .exec()
   }
 
   @Log()
-  async clearConfigValue(name: string) {
-    this.logger.verbose(`Clearing config ${name}`)
+  async clearSettingValue(name: string) {
+    this.logger.verbose(`Clearing setting ${name}`)
     await this.configs.findOneAndDelete({ name }).exec()
   }
 }
