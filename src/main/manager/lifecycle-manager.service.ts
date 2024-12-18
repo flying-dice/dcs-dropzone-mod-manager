@@ -41,7 +41,9 @@ export class LifecycleManager {
   private readonly eventEmitter: EventEmitter2
 
   @Inject(VariablesService)
-  private variablesService: VariablesService /**
+  private variablesService: VariablesService
+
+  /**
    * Toggles the mod between enabled and disabled states
    * If the mod is enabled, it will be disabled
    * If the mod is disabled, it will be enabled
