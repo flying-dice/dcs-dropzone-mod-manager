@@ -23,8 +23,6 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
-      - name: Test
-        run: npm run test
       - name: 'Report Coverage'
         if: always()
         uses: davelosert/vitest-coverage-report-action@v2
