@@ -1,7 +1,3 @@
-import { spawn } from 'child_process'
-import { ChildProcessWithoutNullStreams } from 'node:child_process'
-import { existsSync } from 'node:fs'
-import { Logger } from '@nestjs/common'
 /**
  * This module provides a wrapper around the 7-zip executable it downloads and extracts the 7-zip extra archive from the 7-zip website
  * and provides a class that can be used to extract supported archive types.
@@ -14,6 +10,10 @@ import { ensureDir, readJsonSync, rm, writeJsonSync } from 'fs-extra'
 import { glob } from 'glob'
 import Downloader from 'nodejs-file-downloader'
 import { join } from 'node:path'
+import { spawn } from 'child_process'
+import { ChildProcessWithoutNullStreams } from 'node:child_process'
+import { existsSync } from 'node:fs'
+import { Logger } from '@nestjs/common'
 
 const logger = new Logger('_7zip')
 
