@@ -1,5 +1,7 @@
 import { join } from 'node:path'
 import { pathExistsSync } from 'fs-extra'
+import { upath } from './upath'
+import { getEnvironmentVariable } from './getEnvironmentVariable'
 
 /**
  * Get the default game directory for DCS by checking the user's saved games folder for DCS and DCS.openbeta
@@ -9,12 +11,13 @@ import { pathExistsSync } from 'fs-extra'
  * - %USERPROFILE%\Saved Games\DCS.openbeta
  */
 export function findInstalledDcsWriteDir(): string | undefined {
-  if (!process.env.USERPROFILE) {
+  const userProfile = getEnvironmentVariable('USERPROFILE')
+  if (!userProfile) {
     return undefined
   }
 
-  const defaultPath = join(process.env.USERPROFILE, 'Saved Games', 'DCS')
-  const defaultOBPath = join(process.env.USERPROFILE, 'Saved Games', 'DCS.openbeta')
+  const defaultPath = upath(join(userProfile, 'Saved Games', 'DCS'))
+  const defaultOBPath = upath(join(userProfile, 'Saved Games', 'DCS.openbeta'))
 
   const paths = [defaultPath, defaultOBPath]
 

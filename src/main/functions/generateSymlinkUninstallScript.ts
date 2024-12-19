@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { stat } from 'fs-extra'
+import { upath } from './upath'
 
 const logger = new Logger('generateSymlinkUninstallScript')
 
@@ -15,7 +16,8 @@ const logger = new Logger('generateSymlinkUninstallScript')
 export async function generateSymlinkUninstallScript(paths: string[]): Promise<string> {
   const content: string[] = []
 
-  for (const path of paths) {
+  for (let path of paths) {
+    path = upath(path)
     try {
       const stats = await stat(path)
       if (stats.isDirectory()) {

@@ -1,41 +1,35 @@
-import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
-import { pathExistsSync } from 'fs-extra'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import mockFs from 'mock-fs'
+import { when } from 'jest-when'
 import { findInstalledDcsWriteDir } from './findInstalledDcsWriteDir'
+import { getEnvironmentVariable } from './getEnvironmentVariable'
 
-vi.mock('fs-extra', () => ({
-  pathExistsSync: vi.fn()
+vi.mock('./getEnvironmentVariable', () => ({
+  getEnvironmentVariable: vi.fn()
 }))
 
 describe('getDefaultGameDir', () => {
-  let __USERPROFILE: string | undefined
-  const testUserProfile = 'C:/Users/TestUser'
-
   beforeAll(() => {
-    __USERPROFILE = process.env.USERPROFILE
-    process.env.USERPROFILE = testUserProfile
+    when(getEnvironmentVariable).calledWith('USERPROFILE').mockReturnValue('C:/Users/username')
   })
 
-  afterAll(() => {
-    process.env.USERPROFILE = __USERPROFILE
+  afterEach(() => {
+    mockFs.restore()
   })
 
   it('should return the path if DCS folder exists', () => {
-    const defaultPath = `${testUserProfile}/Saved Games/DCS`
-    vi.mocked(pathExistsSync).mockImplementation((path) => path === defaultPath || false)
+    mockFs({ 'C:/Users/username/Saved Games/DCS': {} })
     const result = findInstalledDcsWriteDir()
-    expect(result).toBe(defaultPath)
+    expect(result).toBe('C:/Users/username/Saved Games/DCS')
   })
 
   it('should return the path if DCS.openbeta folder exists and DCS does not exist', () => {
-    process.env.USERPROFILE = 'C:/Users/TestUser'
-    const defaultOBPath = `${testUserProfile}/Saved Games/DCS.openbeta`
-    vi.mocked(pathExistsSync).mockImplementation((path) => path === defaultOBPath || false)
+    mockFs({ 'C:/Users/username/Saved Games/DCS.openbeta': {} })
     const result = findInstalledDcsWriteDir()
-    expect(result).toBe(defaultOBPath)
+    expect(result).toBe('C:/Users/username/Saved Games/DCS.openbeta')
   })
 
   it('should return undefined if neither DCS nor DCS.openbeta folders exist', () => {
-    vi.mocked(pathExistsSync).mockImplementation(() => false)
     const result = findInstalledDcsWriteDir()
     expect(result).toBeUndefined()
   })

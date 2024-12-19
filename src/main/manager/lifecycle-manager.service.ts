@@ -15,6 +15,7 @@ import { Release } from '../schemas/release.schema'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { ModEnabledEvent } from '../events/mod-enabled.event'
 import { ModDisabledEvent } from '../events/mod-disabled.event'
+import { upath } from '../functions/upath'
 
 /**
  * Manages the toggling of a mod between enabled and disabled states
@@ -85,7 +86,7 @@ export class LifecycleManager {
         srcPath = join(hashPath.basePathWithoutExt, hashPath.hashPath)
       }
 
-      const targetPath = await this.variablesService.replaceVariables(releaseAsset.target)
+      const targetPath = upath(await this.variablesService.replaceVariables(releaseAsset.target))
       this.logger.debug(
         `Creating Symlink for release asset: ${releaseAsset.id} from ${srcPath} to ${targetPath}`
       )
@@ -140,7 +141,7 @@ export class LifecycleManager {
       throw new Error(`Mod is not enabled, please enable it first and try again`)
     }
 
-    const path = await this.variablesService.replaceVariables(exePath)
+    const path = upath(await this.variablesService.replaceVariables(exePath))
 
     execFile(path, [], { cwd: dirname(path) }, (error, stdout, stderr) => {
       if (error) {

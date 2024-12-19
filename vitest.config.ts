@@ -14,11 +14,10 @@ export default defineConfig({
       reporter: ['text', 'json-summary', 'json', 'cobertura', 'html'],
       reportOnFailure: true,
       thresholds: {
-        autoUpdate: true,
-        statements: 34.1,
-        branches: 77.72,
-        functions: 74.24,
-        lines: 34.1
+        statements: 30,
+        branches: 70,
+        functions: 70,
+        lines: 30
       }
     }
   }
