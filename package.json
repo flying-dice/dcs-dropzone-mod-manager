@@ -67,7 +67,6 @@
     "@nestjs/event-emitter": "^2.1.1",
     "@nestjs/mongoose": "^10.1.0",
     "@nestjs/testing": "^10.4.15",
-    "@nestjs/typeorm": "^10.0.2",
     "@trpc/client": "^10.45.2",
     "@trpc/server": "^10.45.2",
     "@types/bytes": "^3.1.4",
@@ -88,7 +87,6 @@
     "nest-winston": "^1.9.7",
     "nock": "^13.5.6",
     "nodejs-file-downloader": "^4.13.0",
-    "path-to-regexp": "^7.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-icons": "^5.2.1",
@@ -97,7 +95,6 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "swr": "^2.2.5",
-    "ts-pattern": "^5.2.0",
     "winston": "^3.17.0",
     "yaml": "^2.5.0",
     "zod": "^3.23.8"

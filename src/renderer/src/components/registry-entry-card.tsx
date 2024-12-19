@@ -3,7 +3,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { RegistryIndexItem } from '../../../lib/client'
 import { useAsync } from 'react-use'
-import { client } from '@renderer/client'
+import { client } from '../client'
 
 export type RegistryEntryCardProps = {
   item: RegistryIndexItem

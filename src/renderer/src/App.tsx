@@ -6,7 +6,7 @@ import { config } from './config'
 import { DcsFoldersModal } from './modal/dcs-folders.modal'
 import { useMount } from 'react-use'
 import { openConfirmModal } from '@mantine/modals'
-import { LegalDisclaimer } from '@renderer/components/legal-disclaimer'
+import { LegalDisclaimer } from './components/legal-disclaimer'
 import { trackEvent } from '@aptabase/electron/renderer'
 
 export function App() {
