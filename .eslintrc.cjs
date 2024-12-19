@@ -13,7 +13,6 @@ module.exports = {
     '@typescript-eslint/no-duplicate-enum-values': 'off',
     'no-empty-pattern': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
-    'linebreak-style': ['error', 'windows'],
     'prettier/prettier': [
       'error',
       {

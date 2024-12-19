@@ -3,7 +3,7 @@ import { client } from '../client'
 import { useFuse } from '../hooks/useFuse'
 import { useSubscriptions } from '../hooks/useSubscriptions'
 import { showErrorNotification, showSuccessNotification } from '../utils/notifications'
-import { SubscriptionRow } from '@renderer/components/subscription-row'
+import { SubscriptionRow } from '../components/subscription-row'
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 

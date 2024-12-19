@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common'
 import { dialog, type OpenDialogReturnValue, shell } from 'electron'
-import { expandPathWithEnvars } from '../functions/expandPathWithEnvars'
 
 /**
  * File system service for handling file system operations in the main process
@@ -17,7 +16,7 @@ export class FsService {
   async askFolder(defaultPath: string): Promise<OpenDialogReturnValue | undefined> {
     return dialog.showOpenDialog({
       message: 'Select a folder',
-      defaultPath: expandPathWithEnvars(defaultPath),
+      defaultPath,
       properties: ['openDirectory']
     })
   }

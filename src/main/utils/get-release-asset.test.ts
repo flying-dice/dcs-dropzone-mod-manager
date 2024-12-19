@@ -17,7 +17,7 @@ describe('getReleaseAsset', () => {
         'https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.lua',
       target: '{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua'
     }
-    const releaseWriteDir = 'C:\\Users\\JohnDoe\\AppData\\Local\\dcs-dropzone\\mods\\1\\1'
+    const releaseWriteDir = 'C:/Users/JohnDoe/AppData/Local/dcs-dropzone/mods/1/1'
 
     const result: HydratedReleaseAsset = getReleaseAsset(release, asset, releaseWriteDir)
     const expectedAsset: HydratedReleaseAsset = {
@@ -37,7 +37,7 @@ describe('getReleaseAsset', () => {
           label: 'Downloading hello-world.lua',
           payload: {
             file: 'hello-world.lua',
-            folder: 'C:\\Users\\JohnDoe\\AppData\\Local\\dcs-dropzone\\mods\\1\\1',
+            folder: 'C:/Users/JohnDoe/AppData/Local/dcs-dropzone/mods/1/1',
             baseUrl: 'https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/'
           },
           progress: 0,
@@ -63,7 +63,7 @@ describe('getReleaseAsset', () => {
       target: '{{DCS_USER_DIR}}/Mods/hello-world'
     }
 
-    const releaseWriteDir = 'C:\\Users\\JohnDoe\\AppData\\Local\\dcs-dropzone\\mods\\1\\1'
+    const releaseWriteDir = 'C:/Users/JohnDoe/AppData/Local/dcs-dropzone/mods/1/1'
 
     const result: HydratedReleaseAsset = getReleaseAsset(release, asset, releaseWriteDir)
 
@@ -84,7 +84,7 @@ describe('getReleaseAsset', () => {
           label: 'Downloading hello-world.zip',
           payload: {
             file: 'hello-world.zip',
-            folder: 'C:\\Users\\JohnDoe\\AppData\\Local\\dcs-dropzone\\mods\\1\\1',
+            folder: 'C:/Users/JohnDoe/AppData/Local/dcs-dropzone/mods/1/1',
             baseUrl: 'https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/'
           },
           progress: 0,
@@ -100,7 +100,7 @@ describe('getReleaseAsset', () => {
           label: 'Unpacking hello-world.zip',
           payload: {
             file: 'hello-world.zip',
-            folder: 'C:\\Users\\JohnDoe\\AppData\\Local\\dcs-dropzone\\mods\\1\\1'
+            folder: 'C:/Users/JohnDoe/AppData/Local/dcs-dropzone/mods/1/1'
           },
           progress: 0,
           releaseId: expect.any(String),
