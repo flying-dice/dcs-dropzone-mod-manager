@@ -9,6 +9,9 @@ import { RegistryService } from './services/registry.service'
 import { app as electronApp } from 'electron/main'
 import { WriteDirectoryService } from './services/write-directory.service'
 import { bootstrap } from './app'
+import { readFile } from 'fs-extra'
+import { filename, fileTransport } from './logging'
+import { Logger } from '@nestjs/common'
 
 export const trpc = initTRPC.create()
 
@@ -18,6 +21,26 @@ export async function getAppWithRouter() {
   return {
     app,
     router: trpc.router({
+      setLoggerLevel: trpc.procedure
+        .input(z.object({ level: z.string() }))
+        .mutation(({ input }) => {
+          fileTransport.level = input.level
+        }),
+      getLoggerLevel: trpc.procedure.query(() => {
+        return fileTransport.level
+      }),
+      getLogs: trpc.procedure
+        .input(z.object({ previousRows: z.number(), logLevel: z.array(z.string()) }))
+        .query(async ({ input }) => {
+          Logger.flush()
+          const content = await readFile(filename, 'utf-8')
+            .then((it) => it.split('\n'))
+            .then((it) =>
+              it.filter((it) => input.logLevel.some((level) => it.includes(`[${level}]`)))
+            )
+
+          return content.slice(-input.previousRows).join('\n')
+        }),
       getDeepLinkArg: trpc.procedure.query(() => {
         return process.argv
           .find((arg) => arg.startsWith('dropzone://'))

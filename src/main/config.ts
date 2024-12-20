@@ -37,12 +37,14 @@ export async function configuration(): Promise<MainConfig> {
   const tempDir = join(app.getPath('temp'), appDataName)
   const writeDir = join(process.env.LOCALAPPDATA || app.getPath('userData'), 'dcs-dropzone')
   const toolsDir = writeDir
+  const dbPath = join(app.getPath('userData'), '__data')
 
   Logger.log(tempDir, 'tempDir')
   Logger.log(writeDir, 'writeDir')
   Logger.log(toolsDir, 'toolsDir')
   Logger.log(appDataName, 'appDataName')
   Logger.log(logfile, 'logfile')
+  Logger.log(dbPath, 'dbPath')
 
   const defaultDcsWriteDir = findInstalledDcsWriteDir()
 
@@ -60,7 +62,7 @@ export async function configuration(): Promise<MainConfig> {
     },
     mongo: {
       port: 57449,
-      dbPath: join(app.getPath('userData'), '__data')
+      dbPath
     }
   }
 

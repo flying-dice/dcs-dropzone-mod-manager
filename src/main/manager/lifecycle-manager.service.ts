@@ -1,13 +1,12 @@
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import { ensureDirSync, rm, symlink } from 'fs-extra'
+import { ensureDirSync, pathExists, rm, symlink } from 'fs-extra'
 import { FsService } from '../services/fs.service'
 import { WriteDirectoryService } from '../services/write-directory.service'
 import { HashPath } from '../utils/hash-path'
 import { VariablesService } from '../services/variables.service'
 import { getUrlPartsForDownload } from '../functions/getUrlPartsForDownload'
-import { execFile } from 'node:child_process'
 import { SubscriptionService } from '../services/subscription.service'
 import { ReleaseService } from '../services/release.service'
 import { Subscription } from '../schemas/subscription.schema'
@@ -16,6 +15,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import { ModEnabledEvent } from '../events/mod-enabled.event'
 import { ModDisabledEvent } from '../events/mod-disabled.event'
 import { upath } from '../functions/upath'
+import { promisify } from 'node:util'
+import { execFile } from 'node:child_process'
 
 /**
  * Manages the toggling of a mod between enabled and disabled states
@@ -74,9 +75,11 @@ export class LifecycleManager {
 
       const { baseUrl } = getUrlPartsForDownload(releaseAsset.source)
 
-      let srcPath = join(
-        await this.writeDirectoryService.getWriteDirectoryForRelease(subscription, release),
-        releaseAsset.source.replace(baseUrl, '')
+      let srcPath = upath(
+        join(
+          await this.writeDirectoryService.getWriteDirectoryForRelease(subscription, release),
+          releaseAsset.source.replace(baseUrl, '')
+        )
       )
 
       // If the source is a hash path, we need to extract the base path and make sure the symlink is for the exploded folder including internal route
@@ -87,16 +90,29 @@ export class LifecycleManager {
       }
 
       const targetPath = upath(await this.variablesService.replaceVariables(releaseAsset.target))
-      this.logger.debug(
+      this.logger.log(
         `Creating Symlink for release asset: ${releaseAsset.id} from ${srcPath} to ${targetPath}`
       )
       ensureDirSync(dirname(targetPath))
-      await symlink(join(srcPath), targetPath)
+
+      if (await pathExists(targetPath)) {
+        this.logger.error(
+          `Target path already exists: ${targetPath}, please remove it and try again`
+        )
+        throw new Error(`Target path already exists: ${targetPath}, please remove it and try again`)
+      }
+
+      await symlink(srcPath, targetPath)
       if (existsSync(targetPath)) {
         releaseAsset.symlinkPath = targetPath
         await this.releaseService.saveAsset(releaseAsset)
       } else {
-        throw new Error(`Symlink not created: ${targetPath}`)
+        this.logger.error(
+          `Failed to create symlink at ${targetPath}. Please ensure the target path does not already exist and try again.`
+        )
+        throw new Error(
+          `Failed to create symlink at ${targetPath}. Please ensure the target path does not already exist and try again.`
+        )
       }
     }
 
@@ -142,18 +158,13 @@ export class LifecycleManager {
     }
 
     const path = upath(await this.variablesService.replaceVariables(exePath))
-
-    execFile(path, [], { cwd: dirname(path) }, (error, stdout, stderr) => {
-      if (error) {
-        this.logger.error(`Error running exe: ${error}`)
-      }
-      if (stdout) {
-        this.logger.debug(`stdout: ${stdout}`)
-      }
-      if (stderr) {
-        this.logger.error(`stderr: ${stderr}`)
-      }
-    })
+    try {
+      await promisify(execFile)(path, [], { cwd: dirname(path) })
+      this.logger.debug(`Exe ran successfully: ${modId}, ${exePath}`)
+    } catch (error) {
+      Logger.debug(`Error running exe: ${modId}, ${exePath}`, error)
+      throw new Error(`Failed to run the executable for mod: ${modId} at path: \n${path}`)
+    }
   }
 
   /**

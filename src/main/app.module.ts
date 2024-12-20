@@ -33,6 +33,7 @@ import { FsService } from './services/fs.service'
 import { UninstallBatManager } from './manager/uninstall-bat.manager'
 import { ApplicationClosingEvent } from './events/application-closing.event'
 import { ApplicationReadyEvent } from './events/application-ready.event'
+import { ScheduleModule } from '@nestjs/schedule'
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ApplicationReadyEvent } from './events/application-ready.event'
       isGlobal: true,
       load: [configuration]
     }),
+    ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     MongooseModule.forRootAsync({
       inject: [ConfigService],

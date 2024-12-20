@@ -2,8 +2,9 @@ import { LibraryPage } from './pages/library.page'
 import { MyContentPage } from './pages/my-content.page'
 import { RegistryEntryPage } from './pages/registry-entry.page'
 import { SettingsPage } from './pages/settings.page'
-import { FaDiscord, FaGear, FaGithub, FaPatreon } from 'react-icons/fa6'
+import { FaDiscord, FaFile, FaGear, FaGithub, FaPatreon } from 'react-icons/fa6'
 import { FaHome, FaList } from 'react-icons/fa'
+import { LogsPage } from './pages/logs.page'
 
 export const config = {
   rcloneBaseUrl: 'http://127.0.0.1:5572',
@@ -22,6 +23,11 @@ export const config = {
       path: '/settings',
       tooltip: 'Settings',
       icon: <FaGear />
+    },
+    {
+      path: '/logs',
+      tooltip: 'Logs',
+      icon: <FaFile />
     }
   ],
   navbarSecondary: [
@@ -60,6 +66,10 @@ export const config = {
     {
       routerPath: '/settings',
       element: () => <SettingsPage />
+    },
+    {
+      routerPath: '/logs',
+      element: () => <LogsPage />
     }
   ]
 }

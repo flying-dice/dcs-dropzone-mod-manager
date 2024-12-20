@@ -16,6 +16,9 @@ export class Release {
 
   @Prop({ type: String })
   exePath?: string
+
+  @Prop({ type: String })
+  writeDirectory?: string
 }
 
 export const ReleaseSchema = SchemaFactory.createForClass(Release)

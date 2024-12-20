@@ -1,26 +1,33 @@
-import { INestApplicationContext, Logger } from '@nestjs/common'
-import { BrowserWindow, shell } from 'electron'
-import { SettingsService } from './services/settings.service'
+import { Logger } from '@nestjs/common'
+import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'node:path'
 import { is } from '@electron-toolkit/utils'
 import { trackEvent } from '@aptabase/electron/main'
 import icon from '../../resources/icon.png?asset'
+import { Store } from './utils/store'
+import { ensureDir } from 'fs-extra'
+import { z } from 'zod'
+import { onBrowserWindowMovement } from './functions/onMainWindowMovement'
 
-const windowDefault = JSON.stringify([1280, 720, 0, 0])
+const mainWindowPositionsStorePath = join(app.getPath('userData'), 'Stores', 'MWP')
 
-export async function createWindow(app: INestApplicationContext): Promise<BrowserWindow> {
+export async function createWindow(): Promise<BrowserWindow> {
   Logger.log('Creating main window', 'main')
 
-  const [width, height, x, y] = JSON.parse(
-    await app.get(SettingsService).getSettingValueOrDefault('mw_config', windowDefault)
+  await ensureDir(join(app.getPath('userData'), 'Stores'))
+  const mainWindowPositions = await Store.load(mainWindowPositionsStorePath, z.number()).catch(
+    (err) => {
+      Logger.error(`Failed to load main window positions ${err.toString()}`, 'main')
+      return Store.new(mainWindowPositionsStorePath, z.number())
+    }
   )
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width,
-    height,
-    x,
-    y,
+    width: mainWindowPositions.get('width') ?? 1280,
+    height: mainWindowPositions.get('height') ?? 800,
+    x: mainWindowPositions.get('x') ?? 0,
+    y: mainWindowPositions.get('y') ?? 0,
     show: true,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -30,22 +37,16 @@ export async function createWindow(app: INestApplicationContext): Promise<Browse
     }
   })
 
-  mainWindow.on('resized', () => {
-    const [width, height] = mainWindow.getSize()
-    const [x, y] = mainWindow.getPosition()
-
-    app.get(SettingsService).setSettingValue('mw_config', JSON.stringify([width, height, x, y]))
-  })
-
-  mainWindow.on('moved', () => {
-    const [width, height] = mainWindow.getSize()
-    const [x, y] = mainWindow.getPosition()
-
-    app.get(SettingsService).setSettingValue('mw_config', JSON.stringify([width, height, x, y]))
-  })
-
+  mainWindow.on('resized', onBrowserWindowMovement(mainWindow, mainWindowPositions))
+  mainWindow.on('maximize', onBrowserWindowMovement(mainWindow, mainWindowPositions))
+  mainWindow.on('unmaximize', onBrowserWindowMovement(mainWindow, mainWindowPositions))
+  mainWindow.on('moved', onBrowserWindowMovement(mainWindow, mainWindowPositions))
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+    mainWindow.focus()
+    if (mainWindowPositions.get('maximized')) {
+      mainWindow.maximize()
+    }
   })
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {

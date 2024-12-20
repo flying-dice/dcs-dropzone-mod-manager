@@ -3,7 +3,7 @@ import { Logger } from '@nestjs/common'
 import { trackEvent } from '@aptabase/electron/main'
 import { onUncaughtException } from './onUncaughtException'
 import { showError } from '../utils/show-error'
-import { fileTransport } from '../logging'
+import { filename } from '../logging'
 import { readFile } from 'fs-extra'
 
 vi.mock('@aptabase/electron/main', () => ({
@@ -11,6 +11,7 @@ vi.mock('@aptabase/electron/main', () => ({
 }))
 
 vi.mock('../logging', () => ({
+  filename: 'test.log',
   fileTransport: {
     filename: 'test.log'
   }
@@ -41,7 +42,7 @@ describe('onUncaughtException', () => {
     await onUncaughtException(error)
 
     expect(Logger.flush).toHaveBeenCalled()
-    expect(readFile).toHaveBeenCalledWith(fileTransport.filename)
+    expect(readFile).toHaveBeenCalledWith(filename)
     expect(trackEvent).toHaveBeenCalledWith('uncaught_exception', {
       name: error.name,
       message: error.message
@@ -69,7 +70,7 @@ describe('onUncaughtException', () => {
     await onUncaughtException(nonError)
 
     expect(Logger.flush).toHaveBeenCalled()
-    expect(readFile).toHaveBeenCalledWith(fileTransport.filename)
+    expect(readFile).toHaveBeenCalledWith(filename)
     expect(trackEvent).toHaveBeenCalledWith('uncaught_exception', {
       name: undefined,
       message: undefined

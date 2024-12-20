@@ -1,5 +1,4 @@
 import { Inject, Injectable, Logger } from '@nestjs/common'
-import Aigle from 'aigle'
 import { DownloadTaskProcessor } from '../processor/download-task.processor'
 import { ExtractTaskProcessor } from '../processor/extract-task.processor'
 import { TaskProcessor } from '../processor/task.processor'
@@ -8,14 +7,14 @@ import { formatError } from '../functions/formatError'
 import { AssetTask, AssetTaskStatus, AssetTaskType } from '../schemas/release-asset-task.schema'
 import { ReleaseService } from '../services/release.service'
 import { SubscriptionService } from '../services/subscription.service'
-import { InjectConnection } from '@nestjs/mongoose'
-import { Connection, ConnectionStates } from 'mongoose'
 import { findFirstPendingTask } from '../utils/find-first-pending-task'
 import { ConfigService } from '@nestjs/config'
 import { MainConfig } from '../config'
 import { OnEvent } from '@nestjs/event-emitter'
 import { ApplicationReadyEvent } from '../events/application-ready.event'
 import { ApplicationClosingEvent } from '../events/application-closing.event'
+import { delay } from '../functions/delay'
+import { Cron } from '@nestjs/schedule'
 
 @Injectable()
 export class TaskManager {
@@ -27,9 +26,6 @@ export class TaskManager {
   @Inject(ReleaseService)
   private readonly releaseService: ReleaseService
 
-  @InjectConnection()
-  private readonly connection: Connection
-
   @Inject(ConfigService)
   private readonly configService: ConfigService<MainConfig>
 
@@ -38,6 +34,8 @@ export class TaskManager {
   private readonly processors: Record<AssetTaskType, (task: AssetTask) => TaskProcessor>
 
   private active = true
+
+  private busy = false
 
   constructor() {
     this.processors = {
@@ -49,18 +47,16 @@ export class TaskManager {
   @OnEvent(ApplicationReadyEvent.name)
   async onApplicationReady() {
     this.logger.log('========== Starting task manager ==========')
-    Aigle.whilst(
-      () => this.active,
-      async () => {
-        if (this.connection.readyState !== ConnectionStates.connected) {
-          this.logger.warn('Database connection not ready, waiting...')
-          await Aigle.delay(500)
-          return
-        }
-        await this.checkForPendingTasks()
-        await Aigle.delay(500)
-      }
-    )
+    this.active = true
+  }
+
+  @Cron('* * * * * *')
+  async onTaskLoop() {
+    if (!this.active) return
+    if (this.busy) return
+    this.busy = true
+    await this.checkForPendingTasks()
+    this.busy = false
   }
 
   @OnEvent(ApplicationClosingEvent.name)
@@ -68,7 +64,7 @@ export class TaskManager {
     this.logger.log('========== Shutting down task manager ==========')
     this.active = false
 
-    await Aigle.delay(1_000)
+    await delay(1_000)
     this.logger.log('Task manager shut down')
   }
 

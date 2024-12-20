@@ -59,6 +59,11 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
+      {subscriptions.data?.some((it) => it.state.isReady && it.state.errors.length > 0) && (
+        <Alert color={'red'}>
+          Some mods have failed integrity checks. Unsubscribe and re-subscribe to fix the issue.
+        </Alert>
+      )}
       {subscriptions.data?.length === 0 ? (
         <Alert>
           {/* eslint-disable-next-line react/no-unescaped-entities */}
@@ -111,6 +116,8 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
                     : undefined
                 }
                 isFailed={state.isFailed}
+                errors={state.errors}
+                latestVersion={state.latest}
               />
             ))}
           </Table.Tbody>

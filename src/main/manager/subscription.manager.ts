@@ -13,10 +13,12 @@ import { Log } from '../utils/log'
 import { getReleaseAsset } from '../utils/get-release-asset'
 import { randomUUID } from 'node:crypto'
 import { join } from 'node:path'
-import { pathExists, readdirSync, ensureDirSync, rmdir } from 'fs-extra'
+import { ensureDirSync, pathExists, readdirSync, rmdir } from 'fs-extra'
 import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
 import { OnEvent } from '@nestjs/event-emitter'
 import { ApplicationReadyEvent } from '../events/application-ready.event'
+import { getUrlPartsForDownload } from '../functions/getUrlPartsForDownload'
+import { upath } from '../functions/upath'
 
 export type SubscriptionReleaseState = {
   enabled: boolean
@@ -29,6 +31,7 @@ export type SubscriptionReleaseState = {
   latest?: string
   isReady: boolean
   isFailed: boolean
+  errors: string[]
 }
 
 export type SubscriptionWithState = {
@@ -90,6 +93,7 @@ export class SubscriptionManager {
     const latest = await this.registryService.getLatestVersion(subscription.modId)
 
     const assetTasks = await this.releaseService.findAssetTasksByRelease(installed.id)
+    const assets = await this.releaseService.findAssetsByRelease(installed.id)
 
     const taskStatuses = assetTasks.map((it) => it.status)
     const taskProgress = assetTasks.map((it) => it.progress)
@@ -110,6 +114,14 @@ export class SubscriptionManager {
 
     const progress = taskProgress.reduce((acc, cur) => acc + cur, 0) / taskProgress.length
 
+    const errors: string[] = []
+
+    for (const asset of assets) {
+      if (asset.writeDirectoryPath && !(await pathExists(asset.writeDirectoryPath))) {
+        errors.push(`Asset ${asset.source} is missing`)
+      }
+    }
+
     return {
       enabled: installed.enabled,
       version: installed.version,
@@ -120,7 +132,8 @@ export class SubscriptionManager {
       exePath: installed.exePath,
       isLatest: latest?.version ? installed.version === latest?.version : true,
       latest: latest?.version,
-      isFailed: taskStatuses.some((it) => it === AssetTaskStatus.FAILED)
+      isFailed: taskStatuses.some((it) => it === AssetTaskStatus.FAILED),
+      errors
     }
   }
 
@@ -168,14 +181,27 @@ export class SubscriptionManager {
     ensureDirSync(releaseWriteDir)
 
     this.logger.debug(`Saving subscription for mod ${modId}`)
-    await this.subscriptionService.save(subscription)
+    await this.subscriptionService.save({
+      ...subscription,
+      writeDirectory:
+        await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription)
+    })
 
     this.logger.debug(`Saving release ${latestRelease.version} for mod ${modId}`)
-    await this.releaseService.save(release)
+    await this.releaseService.save({
+      ...release,
+      writeDirectory: releaseWriteDir
+    })
 
     this.logger.debug(`Saving release assets for mod ${modId}`)
     for (const asset of assets) {
-      await this.releaseService.saveAsset(asset)
+      const urlParts = getUrlPartsForDownload(asset.source)
+      await this.releaseService.saveAsset({
+        ...asset,
+        writeDirectoryPath: upath(
+          join(releaseWriteDir, urlParts.hashRoute ? urlParts.hashRoute : urlParts.file)
+        )
+      })
       for (const task of asset.tasks) {
         await this.releaseService.saveAssetTask(task)
       }

@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common'
 import { readFile } from 'fs-extra'
 import { trackEvent } from '@aptabase/electron/main'
 import { showError } from '../utils/show-error'
-import { fileTransport } from '../logging'
+import { filename } from '../logging'
 
 /**
  * Handles uncaught exceptions by logging the error, tracking the event, and displaying the error.
@@ -18,9 +18,7 @@ import { fileTransport } from '../logging'
  */
 export async function onUncaughtException(err: Error | any): Promise<void> {
   Logger.flush()
-  const fileContent = await readFile(fileTransport.filename).then((buffer) =>
-    buffer.toString('utf-8')
-  )
+  const fileContent = await readFile(filename).then((buffer) => buffer.toString('utf-8'))
   const recentLogs = fileContent.split('\n'.slice(-10))
 
   await trackEvent('uncaught_exception', {
