@@ -18,8 +18,6 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
     'subscription.modName'
   ])
 
-  console.log(results)
-
   useEffect(() => {
     if (subscriptions.data?.some(({ state }) => state.progress !== 100 && !state.isFailed)) {
       setTimeout(() => subscriptions.mutate(), 500)
