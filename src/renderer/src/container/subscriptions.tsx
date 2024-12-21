@@ -13,7 +13,12 @@ export type SubscriptionsProps = {
 export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
   const navigate = useNavigate()
   const subscriptions = useSubscriptions()
-  const { results, search, setSearch } = useFuse(subscriptions.data || [], '', ['modId', 'modName'])
+  const { results, search, setSearch } = useFuse(subscriptions.data || [], '', [
+    'subscription.modId',
+    'subscription.modName'
+  ])
+
+  console.log(results)
 
   useEffect(() => {
     if (subscriptions.data?.some(({ state }) => state.progress !== 100 && !state.isFailed)) {
