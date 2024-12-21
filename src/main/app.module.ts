@@ -3,7 +3,8 @@ import {
   Logger,
   Module,
   OnApplicationBootstrap,
-  OnApplicationShutdown
+  OnApplicationShutdown,
+  OnModuleInit
 } from '@nestjs/common'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { SettingsManager } from './manager/settings.manager'
@@ -14,7 +15,7 @@ import { RegistryService } from './services/registry.service'
 import { WriteDirectoryService } from './services/write-directory.service'
 import { VariablesService } from './services/variables.service'
 import { InjectConnection, MongooseModule } from '@nestjs/mongoose'
-import { MongooseFactory } from './mongoose.factory'
+import { MongooseFactory } from './utils/mongoose.factory'
 import { Config, ConfigSchema } from './schemas/config.schema'
 import { Subscription, SubscriptionSchema } from './schemas/subscription.schema'
 import { Release, ReleaseSchema } from './schemas/release.schema'
@@ -34,6 +35,8 @@ import { UninstallBatManager } from './manager/uninstall-bat.manager'
 import { ApplicationClosingEvent } from './events/application-closing.event'
 import { ApplicationReadyEvent } from './events/application-ready.event'
 import { ScheduleModule } from '@nestjs/schedule'
+import { MainWindow } from './windows/main.window'
+import { WindowSetting, WindowSettingSchema } from './schemas/window-setting'
 
 @Module({
   imports: [
@@ -52,25 +55,28 @@ import { ScheduleModule } from '@nestjs/schedule'
       { name: Subscription.name, schema: SubscriptionSchema },
       { name: Release.name, schema: ReleaseSchema },
       { name: ReleaseAsset.name, schema: ReleaseAssetSchema },
-      { name: AssetTask.name, schema: AssetTaskSchema }
-    ])
+      { name: AssetTask.name, schema: AssetTaskSchema },
+      { name: WindowSetting.name, schema: WindowSettingSchema }
+    ]),
+    MongooseModule
   ],
   providers: [
-    SubscriptionService,
-    ReleaseService,
-    SettingsService,
     FsService,
-    SettingsManager,
-    RegistryService,
-    SubscriptionManager,
-    TaskManager,
     LifecycleManager,
-    WriteDirectoryService,
+    MainWindow,
+    RegistryService,
+    ReleaseService,
+    SettingsManager,
+    SettingsService,
+    SubscriptionManager,
+    SubscriptionService,
+    TaskManager,
+    UninstallBatManager,
     VariablesService,
-    UninstallBatManager
+    WriteDirectoryService
   ]
 })
-export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown {
+export class AppModule implements OnModuleInit, OnApplicationBootstrap, OnApplicationShutdown {
   private readonly logger = new Logger(AppModule.name)
 
   @InjectConnection()
@@ -83,10 +89,13 @@ export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown 
   private readonly configService: ConfigService<MainConfig>
 
   @Log()
+  async onModuleInit() {
+    this.logger.log('Module is being initialized')
+  }
+
+  @Log()
   async onApplicationBootstrap() {
     this.logger.log('Application is starting...')
-
-    await this.initDatabase()
 
     this.logger.log(
       'Application is started, firing ApplicationReadyEvent once 7zip and rclone are ready...'
@@ -109,12 +118,6 @@ export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown 
     const rclone = await getrclone(this.configService.getOrThrow('toolsDir'))
     await rclone.startDaemon()
     this.logger.log('Rclone is ready')
-  }
-
-  private async initDatabase() {
-    this.logger.debug('Waiting for database connection...')
-    await this.connection.asPromise()
-    this.logger.log('Database is ready')
   }
 
   @Log()

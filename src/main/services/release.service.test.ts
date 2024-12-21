@@ -14,7 +14,7 @@ import { ReleaseService } from './release.service'
 import { cloneDeep, omit } from 'lodash'
 import { randomUUID } from 'node:crypto'
 import { EntryIndexVersionsItem } from '../../lib/client'
-import { getReleaseAsset, HydratedReleaseAsset } from '../utils/get-release-asset'
+import { getReleaseAsset, HydratedReleaseAsset } from '../functions/get-release-asset'
 
 vi.mock('@aptabase/electron/main')
 vi.mock('electron')

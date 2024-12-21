@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common'
 import { readFile } from 'fs-extra'
 import { trackEvent } from '@aptabase/electron/main'
-import { showError } from '../utils/show-error'
+import { showError } from './show-error'
 import { filename } from '../logging'
 
 /**

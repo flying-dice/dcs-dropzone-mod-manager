@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { Logger } from '@nestjs/common'
 import { trackEvent } from '@aptabase/electron/main'
 import { onUncaughtException } from './onUncaughtException'
-import { showError } from '../utils/show-error'
+import { showError } from './show-error'
 import { filename } from '../logging'
 import { readFile } from 'fs-extra'
 
@@ -28,7 +28,7 @@ vi.mock('fs-extra', () => ({
   readFile: vi.fn()
 }))
 
-vi.mock('../utils/show-error', () => ({
+vi.mock('./show-error', () => ({
   showError: vi.fn()
 }))
 

@@ -22,7 +22,7 @@ export class Rclone {
     '--rc-no-auth',
 
     '--rc-allow-origin',
-    '*',
+    'http://localhost:5173',
 
     '--rc-addr',
     'localhost:5572'

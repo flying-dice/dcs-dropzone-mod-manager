@@ -1,4 +1,4 @@
-import { getUrlPartsForDownload } from '../functions/getUrlPartsForDownload'
+import { getUrlPartsForDownload } from './getUrlPartsForDownload'
 import { _7zip } from '../tools/7zip'
 import { extname } from 'node:path'
 import { EntryIndexVersionsItemAssetsItem } from '../../lib/client'

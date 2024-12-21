@@ -3,21 +3,16 @@ import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { INestApplicationContext, Logger } from '@nestjs/common'
 import { app, BrowserWindow, dialog } from 'electron'
 import { trackEvent } from '@aptabase/electron/main'
-import { createIPCHandler } from 'electron-trpc/main'
-import { getAppWithRouter } from './router'
-import { createWindow } from './create-main-window'
 import { autoUpdater } from 'electron-updater'
 import { initalizeAptabase } from './functions/initalizeAptabase'
 import { onUnhandledRejection } from './functions/onUnhandledRejection'
 import { onUncaughtException } from './functions/onUncaughtException'
-import { BehaviorSubject } from 'rxjs'
 import { ApplicationClosingEvent } from './events/application-closing.event'
 import { EventEmitter2 } from '@nestjs/event-emitter'
-import { join } from 'node:path'
+import { bootstrapNestApplication } from './functions/bootstrap-nest-application'
+import { MainWindow } from './windows/main.window'
 
-export const deepLink$ = new BehaviorSubject<string | undefined>(
-  process.argv.find((arg) => arg.startsWith('dropzone://'))
-)
+let nestApp: INestApplicationContext
 
 // Prevent multiple instances of the app from running
 // When calling app.requestSingleInstanceLock() it will return false if another instance is already running and emit the 'second-instance' event
@@ -32,18 +27,11 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 app.on('second-instance', (_event, argv) => {
-  const mainWindow = BrowserWindow.getAllWindows()[0]
-  if (mainWindow) {
-    if (mainWindow.isMinimized()) mainWindow.restore()
-    mainWindow.focus()
-  }
-
   Logger.log('Second instance detected', 'main')
-
   const url = argv.find((arg) => arg.startsWith('dropzone://'))
   if (url) {
     Logger.log(`Second instance with URL: ${url}`, 'main')
-    deepLink$.next(url)
+    nestApp.get(MainWindow).loadDeepLink(url)
   }
 })
 
@@ -51,8 +39,6 @@ process.on('uncaughtException', onUncaughtException)
 process.on('unhandledRejection', onUnhandledRejection)
 initalizeAptabase()
 app.setAsDefaultProtocolClient('dropzone')
-
-let nestApp: INestApplicationContext
 
 autoUpdater.checkForUpdatesAndNotify()
 
@@ -77,7 +63,7 @@ autoUpdater.on('update-downloaded', (info) => {
 
 app.on('open-url', (event, url) => {
   event.preventDefault()
-  deepLink$.next(url)
+  nestApp.get(MainWindow).loadDeepLink(url)
 })
 
 // This method will be called when Electron has finished
@@ -87,7 +73,7 @@ app
   .whenReady()
   .then(async () => {
     // Set app user model id for windows
-    electronApp.setAppUserModelId('com.electron')
+    electronApp.setAppUserModelId('com.flyingdice.dcsdropzonemodmanager')
 
     // Default open or close DevTools by F12 in development
     // and ignore CommandOrControl + R in production.
@@ -96,37 +82,12 @@ app
       optimizer.watchWindowShortcuts(window)
     })
 
-    const splashScreen = new BrowserWindow({
-      width: 1050,
-      height: 600,
-      show: true,
-      frame: false,
-      alwaysOnTop: false
-    })
-    splashScreen.loadFile(join(__dirname, '../../resources/splash.png'))
-
-    const awr = await getAppWithRouter()
-    nestApp = awr.app
-
-    const mainWindow = await createWindow()
-
-    mainWindow.on('show', () => {
-      splashScreen.close()
-    })
-
-    createIPCHandler({ router: awr.router, windows: [mainWindow] })
-
-    deepLink$.subscribe((url) => {
-      Logger.log(`Deep link received: ${url}`, 'main')
-      if (url) {
-        mainWindow.webContents.send('deep-link', `${url.replace('dropzone://', '/')}#${Date.now()}`)
-      }
-    })
+    nestApp = await bootstrapNestApplication()
 
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
-      if (BrowserWindow.getAllWindows().length === 0) createWindow()
+      if (BrowserWindow.getAllWindows().length === 0) nestApp.get(MainWindow).createMainWindow()
     })
   })
   .catch(onUncaughtException)

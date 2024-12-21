@@ -3,9 +3,9 @@ import type { MongooseModuleFactoryOptions } from '@nestjs/mongoose'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import type { Connection } from 'mongoose'
 import { ensureDirSync } from 'fs-extra'
-import { Log } from './utils/log'
+import { Log } from './log'
 import { ConfigService } from '@nestjs/config'
-import { MainConfig } from './config'
+import { MainConfig } from '../config'
 
 export class MongooseFactory {
   static server: MongoMemoryServer | undefined
@@ -28,7 +28,14 @@ export class MongooseFactory {
 
     const options: MongooseModuleFactoryOptions = {
       uri: MongooseFactory.server.getUri(),
-      dbName
+      dbName,
+      serverSelectionTimeoutMS: 1000,
+      retryDelay: 1000,
+      retryAttempts: 5,
+      onConnectionCreate: (connection: Connection) => {
+        Logger.log('Creating Database Connection', 'MongooseModuleFactory')
+        return connection
+      }
     }
 
     Logger.log(`Dropzone db ${options.uri}`, 'MongooseModuleFactory')

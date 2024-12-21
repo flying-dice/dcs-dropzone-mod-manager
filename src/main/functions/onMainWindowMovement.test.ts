@@ -1,63 +1,60 @@
 import { describe, it, expect, vi } from 'vitest'
 import { BrowserWindow } from 'electron'
 import { onBrowserWindowMovement } from './onMainWindowMovement'
-import { Store } from '../utils/store'
 
 describe('onBrowserWindowMovement', () => {
-  it('stores window size and position when window is moved', async () => {
+  it('saves window position and size correctly', async () => {
     const mockWindow = {
-      getSize: vi.fn().mockReturnValue([800, 600]),
-      getPosition: vi.fn().mockReturnValue([100, 100]),
+      getSize: vi.fn().mockReturnValue([1024, 768]),
+      getPosition: vi.fn().mockReturnValue([200, 150]),
       isMaximized: vi.fn().mockReturnValue(false)
     } as unknown as BrowserWindow
 
-    const mockStore = {
-      set: vi.fn(),
-      write: vi.fn().mockResolvedValue(undefined)
-    } as unknown as Store<number>
+    const saveWindowPosition = vi.fn().mockResolvedValue(undefined)
 
-    const handler = onBrowserWindowMovement(mockWindow, mockStore)
+    const handler = onBrowserWindowMovement(mockWindow, saveWindowPosition)
     await handler()
 
-    expect(mockStore.set).toHaveBeenCalledWith('width', 800)
-    expect(mockStore.set).toHaveBeenCalledWith('height', 600)
-    expect(mockStore.set).toHaveBeenCalledWith('x', 100)
-    expect(mockStore.set).toHaveBeenCalledWith('y', 100)
-    expect(mockStore.set).toHaveBeenCalledWith('maximized', 0)
-    expect(mockStore.write).toHaveBeenCalled()
+    expect(saveWindowPosition).toHaveBeenCalledWith({
+      width: 1024,
+      height: 768,
+      x: 200,
+      y: 150,
+      maximized: false
+    })
   })
 
-  it('stores maximized state when window is maximized', async () => {
+  it('saves maximized state correctly', async () => {
     const mockWindow = {
-      getSize: vi.fn().mockReturnValue([800, 600]),
-      getPosition: vi.fn().mockReturnValue([100, 100]),
+      getSize: vi.fn().mockReturnValue([1024, 768]),
+      getPosition: vi.fn().mockReturnValue([200, 150]),
       isMaximized: vi.fn().mockReturnValue(true)
     } as unknown as BrowserWindow
 
-    const mockStore = {
-      set: vi.fn(),
-      write: vi.fn().mockResolvedValue(undefined)
-    } as unknown as Store<number>
+    const saveWindowPosition = vi.fn().mockResolvedValue(undefined)
 
-    const handler = onBrowserWindowMovement(mockWindow, mockStore)
+    const handler = onBrowserWindowMovement(mockWindow, saveWindowPosition)
     await handler()
 
-    expect(mockStore.set).toHaveBeenCalledWith('maximized', 1)
+    expect(saveWindowPosition).toHaveBeenCalledWith({
+      width: 1024,
+      height: 768,
+      x: 200,
+      y: 150,
+      maximized: true
+    })
   })
 
-  it('handles errors during store write', async () => {
+  it('handles errors during saveWindowPosition call', async () => {
     const mockWindow = {
-      getSize: vi.fn().mockReturnValue([800, 600]),
-      getPosition: vi.fn().mockReturnValue([100, 100]),
+      getSize: vi.fn().mockReturnValue([1024, 768]),
+      getPosition: vi.fn().mockReturnValue([200, 150]),
       isMaximized: vi.fn().mockReturnValue(false)
     } as unknown as BrowserWindow
 
-    const mockStore = {
-      set: vi.fn(),
-      write: vi.fn().mockRejectedValue(new Error('Write failed'))
-    } as unknown as Store<number>
+    const saveWindowPosition = vi.fn().mockRejectedValue(new Error('Save failed'))
 
-    const handler = onBrowserWindowMovement(mockWindow, mockStore)
-    await expect(handler()).rejects.toThrow('Write failed')
+    const handler = onBrowserWindowMovement(mockWindow, saveWindowPosition)
+    await expect(handler()).rejects.toThrow('Save failed')
   })
 })
