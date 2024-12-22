@@ -1,4 +1,4 @@
-appId: com.flyingdice.dcsdropzonemodmanager
+appId: dcs-dropzone
 productName: DCS DROPZONE - Community Mod Manager
 directories:
   buildResources: build
