@@ -6,6 +6,7 @@ import { showErrorNotification, showSuccessNotification } from '../utils/notific
 import { SubscriptionRow } from '../components/subscription-row'
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
+import { showNotification } from '@mantine/notifications'
 
 export type SubscriptionsProps = {
   onOpenSymlinksModal: (modId: string) => void
@@ -23,6 +24,29 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
       setTimeout(() => subscriptions.mutate(), 500)
     }
   }, [subscriptions.data])
+
+  useEffect(() => {
+    handleDisableInvalidMods()
+  }, [subscriptions.data])
+
+  async function handleDisableInvalidMods() {
+    let actioned = false
+    for (const { subscription, state } of subscriptions.data || []) {
+      if (state.isReady && state.errors.length > 0 && state.enabled) {
+        await client.toggleMod.mutate({ modId: subscription.modId })
+        showNotification({
+          color: 'orange',
+          title: 'Mod disabled',
+          message: `Disabled ${subscription.modName} due to integrity check failure`
+        })
+        actioned = true
+      }
+    }
+
+    if (actioned) {
+      await subscriptions.mutate()
+    }
+  }
 
   async function handleUnsubscribe(modId: string) {
     try {
@@ -53,6 +77,7 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
 
   async function handleUpdate(modId: string) {
     await client.update.mutate({ modId })
+    await subscriptions.mutate()
   }
 
   return (

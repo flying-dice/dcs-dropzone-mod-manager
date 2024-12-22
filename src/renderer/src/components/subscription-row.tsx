@@ -140,6 +140,9 @@ export function SubscriptionRow(props: SubscriptionRowProps) {
           </Menu.Target>
           <Menu.Dropdown>
             {!props.isLatest && <Menu.Item onClick={props.onUpdate}>Update</Menu.Item>}
+            {props.isReady && props.errors && (
+              <Menu.Item onClick={props.onUpdate}>Resubscribe</Menu.Item>
+            )}
             <Menu.Item
               onClick={() => props.onToggleMod()}
               disabled={!props.isReady || props.errors.length > 0}
