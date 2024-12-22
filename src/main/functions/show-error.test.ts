@@ -18,6 +18,8 @@ vi.mock('../logging', () => ({
 
 describe('showError', () => {
   const error = new Error('Test error')
+  error.stack = 'Error: Test error\n    at testFunction (test.js:1:1)'
+
   const recentLogs = ['log1', 'log2']
 
   afterEach(() => {
