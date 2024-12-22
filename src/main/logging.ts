@@ -3,7 +3,7 @@ import bytes from 'bytes'
 import { dirname, join } from 'node:path'
 import { app } from 'electron'
 import { ensureDirSync } from 'fs-extra'
-import { upath } from './functions/upath'
+import { posixpath } from './functions/posixpath'
 
 const { combine, timestamp, printf, colorize } = winston.format
 
@@ -11,7 +11,7 @@ const myFormat = printf(({ level, message, context, timestamp }) => {
   return `${timestamp} [${context}] [${level}] ${message}`
 })
 
-export const filename = upath(join(app.getPath('logs'), 'main.log'))
+export const filename = posixpath(join(app.getPath('logs'), 'main.log'))
 
 ensureDirSync(dirname(filename))
 

@@ -19,7 +19,7 @@ describe('generateSymlinkUninstallScript', () => {
     const items = ['C:/Users/jonat/Saved Games/DCS.openbeta/Mods/aircraft/example-ac']
     const result = await generateSymlinkUninstallScript(items)
     expect(result).toMatchInlineSnapshot(
-      `"rmdir /s /q "C:/Users/jonat/Saved Games/DCS.openbeta/Mods/aircraft/example-ac""`
+      `"rmdir /s /q "C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\aircraft\\example-ac""`
     )
   })
 
@@ -27,7 +27,7 @@ describe('generateSymlinkUninstallScript', () => {
     const items = ['C:/Users/jonat/Saved Games/DCS.openbeta/Mods/Scripts/example.lua']
     const result = await generateSymlinkUninstallScript(items)
     expect(result).toMatchInlineSnapshot(
-      `"del /f /q "C:/Users/jonat/Saved Games/DCS.openbeta/Mods/Scripts/example.lua""`
+      `"del /f /q "C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\Scripts\\example.lua""`
     )
   })
 
@@ -39,9 +39,9 @@ describe('generateSymlinkUninstallScript', () => {
     ]
     const result = await generateSymlinkUninstallScript(items)
     expect(result).toMatchInlineSnapshot(`
-        "rmdir /s /q "C:/Users/jonat/Saved Games/DCS.openbeta/Mods/aircraft/example-ac"
-        rmdir /s /q "C:/Users/jonat/Saved Games/DCS.openbeta/Mods/aircraft/example-ac2"
-        del /f /q "C:/Users/jonat/Saved Games/DCS.openbeta/Mods/Scripts/example.lua""
+        "rmdir /s /q "C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\aircraft\\example-ac"
+        rmdir /s /q "C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\aircraft\\example-ac2"
+        del /f /q "C:\\Users\\jonat\\Saved Games\\DCS.openbeta\\Mods\\Scripts\\example.lua""
       `)
   })
 

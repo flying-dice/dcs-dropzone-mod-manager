@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { stat } from 'fs-extra'
-import { upath } from './upath'
+import { winpath } from './winpath'
 
 const logger = new Logger('generateSymlinkUninstallScript')
 
@@ -17,7 +17,7 @@ export async function generateSymlinkUninstallScript(paths: string[]): Promise<s
   const content: string[] = []
 
   for (let path of paths) {
-    path = upath(path)
+    path = winpath(path) // Must convert to Windows path for batch script as it does not support POSIX paths due to the use of forward slashes as command line switches
     try {
       const stats = await stat(path)
       if (stats.isDirectory()) {

@@ -1,13 +1,13 @@
 import { wget } from './wget'
 import { tmpdir } from 'node:os'
 import { mkdir } from 'node:fs/promises'
-import { upath } from './upath'
+import { posixpath } from './posixpath'
 import { stat } from 'fs-extra'
 import { vi } from 'vitest'
 import { join } from 'node:path'
 
 describe('wget', () => {
-  const dest = upath(join(tmpdir(), 'dcs-dropzone', 'wget.test'))
+  const dest = posixpath(join(tmpdir(), 'dcs-dropzone', 'wget.test'))
   const baseUrl = `https://eternallybored.org/misc/wget/1.21.4/64`
   const file = 'wget.exe'
 

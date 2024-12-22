@@ -5,9 +5,9 @@ import { ModDisabledEvent } from '../events/mod-disabled.event'
 import { ReleaseService } from '../services/release.service'
 import { generateSymlinkUninstallScript } from '../functions/generateSymlinkUninstallScript'
 import { outputFile } from 'fs-extra'
-import { join } from 'node:path'
 import { compact } from 'lodash'
 import { SettingsManager } from './settings.manager'
+import path from 'node:path'
 
 @Injectable()
 export class UninstallBatManager {
@@ -39,7 +39,7 @@ export class UninstallBatManager {
       compact(releaseAssets.map((it) => it.symlinkPath))
     )
     await outputFile(
-      join(await this.settingsManager.getWriteDir(), UninstallBatManager.FILENAME),
+      path.join(await this.settingsManager.getWriteDir(), UninstallBatManager.FILENAME),
       content
     )
   }

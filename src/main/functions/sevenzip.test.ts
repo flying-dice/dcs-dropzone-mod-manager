@@ -1,13 +1,13 @@
 import { tmpdir } from 'node:os'
 import { mkdir } from 'node:fs/promises'
-import { upath } from './upath'
+import { posixpath } from './posixpath'
 import { stat } from 'fs-extra'
 import { vi } from 'vitest'
 import { join } from 'node:path'
 import { sevenzip } from './sevenzip'
 
 describe('sevenzip', () => {
-  const dest = upath(join(tmpdir(), 'dcs-dropzone', 'sevenzip.test'))
+  const dest = posixpath(join(tmpdir(), 'dcs-dropzone', 'sevenzip.test'))
   const archivePath = join(__dirname, '__tests__', './hello-world.zip')
 
   let result: string

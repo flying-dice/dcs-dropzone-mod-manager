@@ -14,7 +14,7 @@ import { Release } from '../schemas/release.schema'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { ModEnabledEvent } from '../events/mod-enabled.event'
 import { ModDisabledEvent } from '../events/mod-disabled.event'
-import { upath } from '../functions/upath'
+import { posixpath } from '../functions/posixpath'
 import { promisify } from 'node:util'
 import { execFile } from 'node:child_process'
 
@@ -75,7 +75,7 @@ export class LifecycleManager {
 
       const { baseUrl } = getUrlPartsForDownload(releaseAsset.source)
 
-      let srcPath = upath(
+      let srcPath = posixpath(
         join(
           await this.writeDirectoryService.getWriteDirectoryForRelease(subscription, release),
           releaseAsset.source.replace(baseUrl, '')
@@ -89,7 +89,9 @@ export class LifecycleManager {
         srcPath = join(hashPath.basePathWithoutExt, hashPath.hashPath)
       }
 
-      const targetPath = upath(await this.variablesService.replaceVariables(releaseAsset.target))
+      const targetPath = posixpath(
+        await this.variablesService.replaceVariables(releaseAsset.target)
+      )
       this.logger.log(
         `Creating Symlink for release asset: ${releaseAsset.id} from ${srcPath} to ${targetPath}`
       )
@@ -157,7 +159,7 @@ export class LifecycleManager {
       throw new Error(`Mod is not enabled, please enable it first and try again`)
     }
 
-    const path = upath(await this.variablesService.replaceVariables(exePath))
+    const path = posixpath(await this.variablesService.replaceVariables(exePath))
     try {
       await promisify(execFile)(path, [], { cwd: dirname(path) })
       this.logger.debug(`Exe ran successfully: ${modId}, ${exePath}`)

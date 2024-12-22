@@ -1,4 +1,4 @@
-import { upath } from './upath'
+import { posixpath } from './posixpath'
 import { join } from 'path'
 import { spawn } from 'child_process'
 import { tmpdir } from 'node:os'
@@ -18,12 +18,12 @@ export type WgetProps = {
 export async function wget({ exePath, baseUrl, file, targetDir, onProgress }: WgetProps) {
   await stat(exePath)
 
-  const tempdir = upath(join(tmpdir(), 'dcs-dropzone', randomUUID()))
+  const tempdir = posixpath(join(tmpdir(), 'dcs-dropzone', randomUUID()))
 
   try {
     await mkdir(tempdir, { recursive: true })
 
-    const target = upath(join(targetDir, file))
+    const target = posixpath(join(targetDir, file))
     const source = `${baseUrl}/${file}`
     const args = ['--progress=bar:force:giga', '--show-progress', source]
 

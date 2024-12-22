@@ -16,7 +16,7 @@ import { extname, join } from 'node:path'
 import { ensureDirSync, pathExists, readdirSync, rmdir } from 'fs-extra'
 import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
 import { getUrlPartsForDownload } from '../functions/getUrlPartsForDownload'
-import { upath } from '../functions/upath'
+import { posixpath } from '../functions/posixpath'
 
 export type SubscriptionReleaseState = {
   enabled: boolean
@@ -117,6 +117,9 @@ export class SubscriptionManager implements OnApplicationBootstrap {
       if (asset.writeDirectoryPath && !(await pathExists(asset.writeDirectoryPath))) {
         errors.push(`Asset ${asset.source} is missing`)
       }
+      if (asset.symlinkPath && !(await pathExists(asset.symlinkPath))) {
+        errors.push(`Symlink ${asset.symlinkPath} is missing`)
+      }
     }
 
     return {
@@ -195,7 +198,7 @@ export class SubscriptionManager implements OnApplicationBootstrap {
       const urlParts = getUrlPartsForDownload(asset.source)
       await this.releaseService.saveAsset({
         ...asset,
-        writeDirectoryPath: upath(
+        writeDirectoryPath: posixpath(
           join(
             releaseWriteDir,
             urlParts.hashRoute

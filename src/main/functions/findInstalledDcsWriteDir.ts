@@ -1,6 +1,6 @@
 import { join } from 'node:path'
 import { pathExistsSync } from 'fs-extra'
-import { upath } from './upath'
+import { posixpath } from './posixpath'
 import { getEnvironmentVariable } from './getEnvironmentVariable'
 
 /**
@@ -16,8 +16,8 @@ export function findInstalledDcsWriteDir(): string | undefined {
     return undefined
   }
 
-  const defaultPath = upath(join(userProfile, 'Saved Games', 'DCS'))
-  const defaultOBPath = upath(join(userProfile, 'Saved Games', 'DCS.openbeta'))
+  const defaultPath = posixpath(join(userProfile, 'Saved Games', 'DCS'))
+  const defaultOBPath = posixpath(join(userProfile, 'Saved Games', 'DCS.openbeta'))
 
   const paths = [defaultPath, defaultOBPath]
 

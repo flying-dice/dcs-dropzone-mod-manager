@@ -4,7 +4,7 @@ import { Logger } from '@nestjs/common'
 import { DEFAULT_REGISTRY_URL } from './constants'
 import { findInstalledDcsWriteDir } from './functions/findInstalledDcsWriteDir'
 import { z } from 'zod'
-import { upath } from './functions/upath'
+import { posixpath } from './functions/posixpath'
 
 const mainConfigSchema = z.object({
   tempDir: z.string(),
@@ -37,7 +37,7 @@ export async function configuration(): Promise<MainConfig> {
   const writeDir = join(process.env.LOCALAPPDATA || app.getPath('userData'), 'dcs-dropzone')
   const toolsDir = writeDir
   const dbPath = join(app.getPath('userData'), '__data')
-  const resourcesDir = upath(join(__dirname, '../../resources')).replace(
+  const resourcesDir = posixpath(join(__dirname, '../../resources')).replace(
     '/app.asar/',
     '/app.asar.unpacked/'
   )
