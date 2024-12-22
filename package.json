@@ -1,6 +1,6 @@
 {
   "name": "dcs-dropzone",
-  "version": "1.17.1",
+  "version": "1.18.0",
   "description": "A community Mod Manager for DCS World",
   "main": "./out/main/index.js",
   "author": "Flying Dice",
@@ -47,7 +47,7 @@
     "prebuild": "npm run typecheck",
     "build": "rimraf dist && electron-vite build && electron-builder --win --config",
     "generate-client": "orval --config ./orval.config.js",
-    "test": "vitest --no-watch",
+    "test": "vitest --no-watch --coverage",
     "dev:dist": "http-server ./dist"
   },
   "dependencies": {

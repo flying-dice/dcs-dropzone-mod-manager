@@ -3,8 +3,7 @@ import {
   Logger,
   Module,
   OnApplicationBootstrap,
-  OnApplicationShutdown,
-  OnModuleInit
+  OnApplicationShutdown
 } from '@nestjs/common'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { SettingsManager } from './manager/settings.manager'
@@ -23,12 +22,10 @@ import { SubscriptionService } from './services/subscription.service'
 import { ReleaseService } from './services/release.service'
 import { ReleaseAsset, ReleaseAssetSchema } from './schemas/release-asset.schema'
 import { AssetTask, AssetTaskSchema } from './schemas/release-asset-task.schema'
-import { getrclone } from './tools/rclone'
-import { get7zip } from './tools/7zip'
 import { Connection } from 'mongoose'
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter'
 import { ConfigModule, ConfigService } from '@nestjs/config'
-import { configuration, MainConfig } from './config'
+import { configuration } from './config'
 import { Log } from './utils/log'
 import { FsService } from './services/fs.service'
 import { UninstallBatManager } from './manager/uninstall-bat.manager'
@@ -57,8 +54,7 @@ import { WindowSetting, WindowSettingSchema } from './schemas/window-setting'
       { name: ReleaseAsset.name, schema: ReleaseAssetSchema },
       { name: AssetTask.name, schema: AssetTaskSchema },
       { name: WindowSetting.name, schema: WindowSettingSchema }
-    ]),
-    MongooseModule
+    ])
   ],
   providers: [
     FsService,
@@ -76,7 +72,7 @@ import { WindowSetting, WindowSettingSchema } from './schemas/window-setting'
     WriteDirectoryService
   ]
 })
-export class AppModule implements OnModuleInit, OnApplicationBootstrap, OnApplicationShutdown {
+export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown {
   private readonly logger = new Logger(AppModule.name)
 
   @InjectConnection()
@@ -85,39 +81,13 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap, OnApplic
   @Inject(EventEmitter2)
   private readonly eventEmitter: EventEmitter2
 
-  @Inject(ConfigService)
-  private readonly configService: ConfigService<MainConfig>
-
-  @Log()
-  async onModuleInit() {
-    this.logger.log('Module is being initialized')
-  }
-
   @Log()
   async onApplicationBootstrap() {
     this.logger.log('Application is starting...')
 
-    this.logger.log(
-      'Application is started, firing ApplicationReadyEvent once 7zip and rclone are ready...'
-    )
-    Promise.all([this.init7zip(), this.initRclone()]).then(() =>
-      this.eventEmitter.emitAsync(ApplicationReadyEvent.name).then(() => {
-        this.logger.log('ApplicationReadyEvent Completed')
-      })
-    )
-  }
-
-  private async init7zip() {
-    this.logger.debug('Waiting for 7zip')
-    await get7zip(this.configService.getOrThrow('toolsDir'))
-    this.logger.log('7zip is ready')
-  }
-
-  private async initRclone() {
-    this.logger.debug('Waiting for rclone daemon')
-    const rclone = await getrclone(this.configService.getOrThrow('toolsDir'))
-    await rclone.startDaemon()
-    this.logger.log('Rclone is ready')
+    this.eventEmitter.emitAsync(ApplicationReadyEvent.name).then(() => {
+      this.logger.log('ApplicationReadyEvent Completed')
+    })
   }
 
   @Log()
@@ -127,10 +97,6 @@ export class AppModule implements OnModuleInit, OnApplicationBootstrap, OnApplic
     Logger.log('NApp: Closing Event Firing...')
     await this.eventEmitter.emitAsync(ApplicationClosingEvent.name, new ApplicationClosingEvent())
     Logger.log('NApp: Closing Event Completed, closing app...')
-
-    this.logger.debug('Stopping rclone daemon')
-    const rclone = await getrclone(this.configService.getOrThrow('toolsDir'))
-    await rclone.stopDaemon()
 
     this.logger.debug('Closing Mongoose connection')
     await MongooseFactory.onApplicationShutdown(this.connection)

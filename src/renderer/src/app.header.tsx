@@ -1,12 +1,9 @@
-import { AppShell, Divider, Group, Stack, Text, Title, useMantineTheme } from '@mantine/core'
-import bytes from 'bytes'
+import { AppShell, Divider, Group, Stack, Text, useMantineTheme } from '@mantine/core'
 import React from 'react'
-import { useRclone } from './hooks/useRclone'
 
 export type AppHeaderProps = {}
 export const AppHeader: React.FC<AppHeaderProps> = ({}) => {
   const theme = useMantineTheme()
-  const { stats } = useRclone()
 
   return (
     <AppShell.Header style={{ background: theme.colors.dark[8] }}>
@@ -32,17 +29,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({}) => {
               Community Mod Manager for DCS World
             </Text>
           </Group>
-          <Stack gap={2} pr={'md'}>
-            <Group gap={4}>
-              <Title order={6}>Bytes Transferred:</Title>
-              <Text size={'sm'}>{bytes(stats.data?.bytes || 0)}</Text>
-            </Group>
-
-            <Group gap={4}>
-              <Title order={6}>Average Speed:</Title>
-              <Text size={'sm'}>{bytes(stats.data?.speed || 0)}/s</Text>
-            </Group>
-          </Stack>
         </Group>
       </Stack>
     </AppShell.Header>

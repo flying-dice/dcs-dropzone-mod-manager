@@ -1,5 +1,5 @@
 import { basename, dirname, extname } from 'node:path'
-import { _7zip } from '../tools/7zip'
+import { SUPPORTED_ARCHIVE_EXTENSIONS } from '../functions/sevenzip'
 
 export class HashPath {
   constructor(private readonly path: string) {}
@@ -38,6 +38,6 @@ export class HashPath {
 
   get isArchive() {
     console.log(this.baseExtname)
-    return _7zip.SUPPORTED_ARCHIVE_EXTENSIONS.includes(this.baseExtname.replace('.', ''))
+    return SUPPORTED_ARCHIVE_EXTENSIONS.includes(this.baseExtname.replace('.', ''))
   }
 }

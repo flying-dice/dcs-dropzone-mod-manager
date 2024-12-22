@@ -7,7 +7,6 @@ import { FaHome, FaList } from 'react-icons/fa'
 import { LogsPage } from './pages/logs.page'
 
 export const config = {
-  rcloneBaseUrl: 'http://127.0.0.1:5572',
   navbar: [
     {
       path: '/',

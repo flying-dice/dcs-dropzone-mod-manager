@@ -8,7 +8,6 @@ export default defineConfig({
     globals: true,
     include: ['src/main/**/*.test.ts'],
     coverage: {
-      enabled: true,
       provider: 'v8',
       include: ['src/main/**/*.ts'],
       reporter: ['text', 'json-summary', 'json', 'cobertura', 'html'],

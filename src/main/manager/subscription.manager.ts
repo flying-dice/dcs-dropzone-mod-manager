@@ -12,7 +12,7 @@ import { ReleaseService } from '../services/release.service'
 import { Log } from '../utils/log'
 import { getReleaseAsset } from '../functions/get-release-asset'
 import { randomUUID } from 'node:crypto'
-import { join } from 'node:path'
+import { extname, join } from 'node:path'
 import { ensureDirSync, pathExists, readdirSync, rmdir } from 'fs-extra'
 import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
 import { OnEvent } from '@nestjs/event-emitter'
@@ -199,7 +199,12 @@ export class SubscriptionManager {
       await this.releaseService.saveAsset({
         ...asset,
         writeDirectoryPath: upath(
-          join(releaseWriteDir, urlParts.hashRoute ? urlParts.hashRoute : urlParts.file)
+          join(
+            releaseWriteDir,
+            urlParts.hashRoute
+              ? join(urlParts.file.replace(extname(urlParts.file), ''), urlParts.hashRoute)
+              : urlParts.file
+          )
         )
       })
       for (const task of asset.tasks) {

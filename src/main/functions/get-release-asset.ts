@@ -1,5 +1,4 @@
 import { getUrlPartsForDownload } from './getUrlPartsForDownload'
-import { _7zip } from '../tools/7zip'
 import { extname } from 'node:path'
 import { EntryIndexVersionsItemAssetsItem } from '../../lib/client'
 import {
@@ -12,6 +11,7 @@ import {
 import { ReleaseAsset } from '../schemas/release-asset.schema'
 import { Release } from '../schemas/release.schema'
 import { randomUUID } from 'node:crypto'
+import { SUPPORTED_ARCHIVE_EXTENSIONS } from './sevenzip'
 
 export type HydratedReleaseAsset = ReleaseAsset & { tasks: AssetTask[] }
 
@@ -57,7 +57,7 @@ export function getReleaseAsset(
     releaseAssetId: releaseAsset.id
   })
 
-  if (_7zip.SUPPORTED_ARCHIVE_EXTENSIONS.map((ext) => `.${ext}`).includes(extname(file))) {
+  if (SUPPORTED_ARCHIVE_EXTENSIONS.map((ext) => `.${ext}`).includes(extname(file))) {
     const extractTaskPayload: ExtractTaskPayload = {
       file,
       folder: releaseWriteDir

@@ -1,132 +1,69 @@
-import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { Logger } from '@nestjs/common'
-import { ensureDirSync, moveSync, rmdir } from 'fs-extra'
-import { RcloneClient } from '../../lib/rclone.client'
 import { TaskProcessor } from './task.processor'
 import {
   AssetTask,
   AssetTaskStatus,
-  DownloadTaskPayload
+  DownloadTaskPayload,
+  ExtractTaskPayload
 } from '../schemas/release-asset-task.schema'
 import { ConfigService } from '@nestjs/config'
 import { MainConfig } from '../config'
+import { wget } from '../functions/wget'
 
 export class DownloadTaskProcessor implements TaskProcessor<DownloadTaskPayload> {
   protected readonly logger = new Logger(DownloadTaskProcessor.name)
 
-  private rcloneJobId: number | undefined
+  private terminalStatus: AssetTaskStatus
 
-  private tempPath: string
+  private progress: number
 
-  private readonly rcloneClient: RcloneClient
+  private result?: Promise<void>
 
-  constructor(private readonly configService: ConfigService<MainConfig>) {
-    this.rcloneClient = new RcloneClient(this.configService.getOrThrow('rcloneInstance'))
-  }
+  constructor(private readonly configService: ConfigService<MainConfig>) {}
 
   async process(task: AssetTask<DownloadTaskPayload>): Promise<void> {
-    this.logger.debug(`[${task.id}] - Processing download task`)
-    this.logger.verbose(task.payload)
+    this.logger.debug(`[${task.id}] - Processing download task`, task.payload)
 
-    if (!this.tempPath) {
-      await this.createTempFolder(task)
+    if (this.result && !this.terminalStatus) {
+      task.status = AssetTaskStatus.IN_PROGRESS
+      task.progress = this.progress
+      return
     }
 
-    if (!this.rcloneJobId) {
-      await this.create(task)
-    } else {
-      await this.update(task)
-    }
-  }
-
-  async postProcess(task: AssetTask<DownloadTaskPayload>): Promise<void> {
-    this.logger.debug(`[${task.id}] - Post processing download task`)
-    await this.removeTempFolder()
-
-    await this.rcloneClient.configDelete(task.id)
-  }
-
-  private async create(task: AssetTask<DownloadTaskPayload>) {
-    this.logger.debug(`[${task.id}] - Creating rclone job`)
-    this.rcloneJobId = await this.createRcloneJob(task, this.tempPath)
-    this.logger.debug(`[${task.id}] - Rclone job created with ID ${this.rcloneJobId}`)
-    task.status = AssetTaskStatus.IN_PROGRESS
-  }
-
-  private async update(task: AssetTask<DownloadTaskPayload>) {
-    if (!this.rcloneJobId) return
-
-    const status = await this.rcloneClient.jobStatus(this.rcloneJobId)
-    this.logger.verbose(`[${task.id}] - Download status: %O`, status)
-
-    const stats = await this.rcloneClient.coreStats()
-    this.logger.verbose(`[${task.id}] - Download stats: %O`, stats)
-
-    const transfer = stats.transferring?.find((transfer) => transfer.group === status.group)
-
-    if (transfer?.percentage) {
-      task.progress = transfer.percentage
-    }
-
-    if (status.finished && status.success) {
-      this.logger.debug(`[${task.id}] - Download complete`)
-      moveSync(
-        join(this.tempPath, task.payload.file),
-        join(task.payload.folder, task.payload.file),
-        { overwrite: true }
-      )
-
+    if (this.terminalStatus === AssetTaskStatus.COMPLETED) {
       task.status = AssetTaskStatus.COMPLETED
       task.progress = 100
       return
     }
 
-    if (status.finished && !status.success) {
-      this.logger.error(`[${task.id}] - Download failed: ${status.error} ${status.error}`)
+    if (this.terminalStatus === AssetTaskStatus.FAILED) {
       task.status = AssetTaskStatus.FAILED
       return
     }
-  }
 
-  private async createTempFolder(task: AssetTask<DownloadTaskPayload>): Promise<void> {
-    this.tempPath = join(this.configService.getOrThrow('tempDir'), task.id.toString())
-
-    // Clean up the temp path if it exists from a previous run (i.e. if the task was restarted by the app restarting)
-    await this.removeTempFolder()
-
-    // Ensure the temp path exists
-    ensureDirSync(this.tempPath)
-
-    this.logger.debug(`[${task.id}] - Downloading file to ${this.tempPath}`)
-  }
-
-  private async removeTempFolder() {
-    if (this.tempPath && existsSync(this.tempPath)) {
-      await rmdir(this.tempPath, { recursive: true })
-    }
-  }
-
-  private async createRcloneJob(
-    task: AssetTask<DownloadTaskPayload>,
-    target: string
-  ): Promise<number> {
-    this.logger.verbose(`[${task.id}] - Creating rclone config for local and http`)
-    await this.rcloneClient.configCreate('local', 'local', {})
-
-    this.logger.verbose(`[${task.id}] - Creating rclone config for remote`)
-    await this.rcloneClient.configCreate(task.id, 'http', {
-      url: task.payload.baseUrl
+    this.result = wget({
+      exePath: join(this.configService.getOrThrow('resourcesDir'), 'wget.exe'),
+      baseUrl: task.payload.baseUrl,
+      file: task.payload.file,
+      targetDir: task.payload.folder,
+      onProgress: (progress) => {
+        this.logger.verbose(`[${task.id}] -  ${progress.summary}`)
+        this.progress = progress.progress
+      }
     })
+      .then(() => {
+        this.logger.debug(`[${task.id}] - Download process completed`)
+        this.terminalStatus = AssetTaskStatus.COMPLETED
+        this.progress = 100
+      })
+      .catch((error) => {
+        this.logger.error(`[${task.id}] - Download process failed`, error)
+        this.terminalStatus = AssetTaskStatus.FAILED
+      })
+  }
 
-    this.logger.verbose(`[${task.id}] - Copying file from remote to local`)
-    const { jobid } = await this.rcloneClient.operationsCopyfile(
-      `${task.id}:`,
-      task.payload.file,
-      `local:${target}`,
-      task.payload.file
-    )
-
-    return jobid
+  async postProcess(task: AssetTask<ExtractTaskPayload>) {
+    this.logger.debug(`[${task.id}] - Post processing download task`)
   }
 }

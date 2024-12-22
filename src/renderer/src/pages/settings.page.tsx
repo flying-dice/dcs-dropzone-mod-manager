@@ -1,4 +1,4 @@
-import { ActionIcon, Alert, Stack, Text, TextInput } from '@mantine/core'
+import { ActionIcon, Alert, Stack, TextInput } from '@mantine/core'
 import { closeAllModals, openModal } from '@mantine/modals'
 import { isEmpty } from 'lodash'
 import React from 'react'
@@ -119,37 +119,6 @@ export const SettingsPage: React.FC = () => {
       </Stack>
 
       <Configurables />
-
-      <Stack>
-        <TextInput
-          label={'RCLONE'}
-          value={'http://localhost:5572/#/dashboard'}
-          description={
-            <Alert variant={'transparent'} p={2}>
-              <Stack gap={0}>
-                <Text size={'xs'} c={'dimmed'}>
-                  RCLONE is a command line utility that we use to interact with cloud storage. It is
-                  downloaded automatically to ensure API version compatability.
-                </Text>
-                <Text size={'xs'} c={'dimmed'}>
-                  Its run in daemon mode and can be managed via the RCLONE Admin interface (there
-                  are no credentials just click login). dcs-dropzone interacts with it using API
-                  calls.
-                </Text>
-              </Stack>
-            </Alert>
-          }
-          readOnly
-          rightSection={
-            <ActionIcon
-              variant={'subtle'}
-              onClick={() => window.open('http://localhost:5572/#/dashboard', '_blank')}
-            >
-              <CgExternal />
-            </ActionIcon>
-          }
-        />
-      </Stack>
     </Stack>
   )
 }
