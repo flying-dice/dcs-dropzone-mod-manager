@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
 import { ProgressLabel } from '../../lib/types'
 import { FsService } from '../services/fs.service'
 import { RegistryService } from '../services/registry.service'
@@ -15,8 +15,6 @@ import { randomUUID } from 'node:crypto'
 import { extname, join } from 'node:path'
 import { ensureDirSync, pathExists, readdirSync, rmdir } from 'fs-extra'
 import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
-import { OnEvent } from '@nestjs/event-emitter'
-import { ApplicationReadyEvent } from '../events/application-ready.event'
 import { getUrlPartsForDownload } from '../functions/getUrlPartsForDownload'
 import { upath } from '../functions/upath'
 
@@ -40,7 +38,7 @@ export type SubscriptionWithState = {
 }
 
 @Injectable()
-export class SubscriptionManager {
+export class SubscriptionManager implements OnApplicationBootstrap {
   private readonly logger = new Logger(SubscriptionManager.name)
 
   @Inject(SubscriptionService)
@@ -61,8 +59,7 @@ export class SubscriptionManager {
   @Inject()
   private readonly toggleManager: LifecycleManager
 
-  @OnEvent(ApplicationReadyEvent.name)
-  async onApplicationReady(): Promise<any> {
+  async onApplicationBootstrap(): Promise<any> {
     this.logger.log('Checking for orphaned subscriptions and releases')
     await this.removeOrphanedSubscriptionsAndReleases()
   }

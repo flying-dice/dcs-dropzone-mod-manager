@@ -30,7 +30,6 @@ import { Log } from './utils/log'
 import { FsService } from './services/fs.service'
 import { UninstallBatManager } from './manager/uninstall-bat.manager'
 import { ApplicationClosingEvent } from './events/application-closing.event'
-import { ApplicationReadyEvent } from './events/application-ready.event'
 import { ScheduleModule } from '@nestjs/schedule'
 import { MainWindow } from './windows/main.window'
 import { WindowSetting, WindowSettingSchema } from './schemas/window-setting'
@@ -84,10 +83,6 @@ export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown 
   @Log()
   async onApplicationBootstrap() {
     this.logger.log('Application is starting...')
-
-    this.eventEmitter.emitAsync(ApplicationReadyEvent.name).then(() => {
-      this.logger.log('ApplicationReadyEvent Completed')
-    })
   }
 
   @Log()

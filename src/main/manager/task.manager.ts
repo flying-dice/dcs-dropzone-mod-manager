@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
 import { DownloadTaskProcessor } from '../processor/download-task.processor'
 import { ExtractTaskProcessor } from '../processor/extract-task.processor'
 import { TaskProcessor } from '../processor/task.processor'
@@ -11,13 +11,12 @@ import { findFirstPendingTask } from '../functions/find-first-pending-task'
 import { ConfigService } from '@nestjs/config'
 import { MainConfig } from '../config'
 import { OnEvent } from '@nestjs/event-emitter'
-import { ApplicationReadyEvent } from '../events/application-ready.event'
 import { ApplicationClosingEvent } from '../events/application-closing.event'
 import { delay } from '../functions/delay'
 import { Cron } from '@nestjs/schedule'
 
 @Injectable()
-export class TaskManager {
+export class TaskManager implements OnApplicationBootstrap {
   private readonly logger = new Logger(TaskManager.name)
 
   @Inject(SubscriptionService)
@@ -44,8 +43,7 @@ export class TaskManager {
     }
   }
 
-  @OnEvent(ApplicationReadyEvent.name)
-  async onApplicationReady() {
+  async onApplicationBootstrap() {
     this.logger.log('========== Starting task manager ==========')
     this.active = true
   }
