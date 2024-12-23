@@ -1,4 +1,4 @@
-import { ActionIcon, Alert, Stack, TextInput } from '@mantine/core'
+import { ActionIcon, Alert, Anchor, Stack, Text, TextInput } from '@mantine/core'
 import { closeAllModals, openModal } from '@mantine/modals'
 import { isEmpty } from 'lodash'
 import React from 'react'
@@ -8,6 +8,59 @@ import { SettingEntry } from '../container/setting-entry'
 import { RegistryForm } from '../forms/registry.form'
 import { useConfig } from '../hooks/useConfig'
 import { CgExternal } from 'react-icons/cg'
+import { useAsyncFn } from 'react-use'
+import { showErrorNotification } from '../utils/notifications'
+import { useNavigate } from 'react-router-dom'
+import { useMissionScriptingFile } from '@renderer/hooks/useMissionScriptingFile'
+import { MissionScriptingStatusCode } from '../../../lib/mission-scripting'
+
+export function MissionScriptingConfig() {
+  const navigate = useNavigate()
+  const dcsInstallationDir = useSWR('dcsInstallationDir', () =>
+    client.getDcsInstallationDirectory.query()
+  )
+  const missionScripting = useMissionScriptingFile()
+
+  const [, setDcsInstallationDir] = useAsyncFn(async (path: string) => {
+    try {
+      await client.setDcsInstallationDirectory.mutate({ path })
+      await dcsInstallationDir.mutate()
+      await missionScripting.refresh()
+    } catch (e) {
+      showErrorNotification(e)
+    }
+  })
+
+  return (
+    <Stack gap={'xs'}>
+      <TextInput
+        pointer
+        label="DCS Installation Directory"
+        description="Where the DCS World Installation resides, normally this is 'C:\Program Files\Eagle Dynamics\DCS World'"
+        value={dcsInstallationDir.data || ''}
+        onClick={() =>
+          client.askFolder.query({ default: '' }).then((folder) => {
+            if (!folder) return
+            const [f] = folder.filePaths
+            if (!f) return
+            setDcsInstallationDir(f)
+          })
+        }
+      />
+      {missionScripting.error && <Alert color="red">{missionScripting.error.message}</Alert>}
+      {!missionScripting.error &&
+        missionScripting.current?.status !== MissionScriptingStatusCode.VALID && (
+          <Alert color={'red'}>
+            <Text size={'sm'}>
+              The MissionScripting.lua file is not configured correctly, please see the{' '}
+              <Anchor onClick={() => navigate('/mission-scripting')}>Mission Scripting</Anchor> page
+              for more information.
+            </Text>
+          </Alert>
+        )}
+    </Stack>
+  )
+}
 
 const Configurables: React.FC = () => {
   const defaultRegistryUrl = useSWR('defaultRegistryUrl', () =>
@@ -100,6 +153,8 @@ export const SettingsPage: React.FC = () => {
             </ActionIcon>
           }
         />
+
+        <MissionScriptingConfig />
 
         {!defaultWriteDir.data && (
           <Alert color={'red'}>Failed to get default write directory</Alert>

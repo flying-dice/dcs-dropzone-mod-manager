@@ -39,6 +39,10 @@ export function getReleaseAsset(
     symlinkPath: null
   }
 
+  if (asset.runonstart) {
+    releaseAsset.runOnStart = asset.runonstart
+  }
+
   const source = releaseAsset.source
 
   const { baseUrl, file } = getUrlPartsForDownload(source)

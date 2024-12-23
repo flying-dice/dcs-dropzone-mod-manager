@@ -140,7 +140,7 @@ export function SubscriptionRow(props: SubscriptionRowProps) {
           </Menu.Target>
           <Menu.Dropdown>
             {!props.isLatest && <Menu.Item onClick={props.onUpdate}>Update</Menu.Item>}
-            {props.isReady && props.errors && (
+            {props.isReady && props.errors && props.isLatest && (
               <Menu.Item onClick={props.onUpdate}>Resubscribe</Menu.Item>
             )}
             <Menu.Item

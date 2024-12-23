@@ -1,7 +1,7 @@
 import { basename, join } from 'node:path'
 import { app } from 'electron'
 import { Logger } from '@nestjs/common'
-import { DEFAULT_REGISTRY_URL } from './constants'
+import { DEFAULT_REGISTRY_URL } from '../lib/registry'
 import { findInstalledDcsWriteDir } from './functions/findInstalledDcsWriteDir'
 import { z } from 'zod'
 import { posixpath } from './functions/posixpath'

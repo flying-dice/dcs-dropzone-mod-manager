@@ -1,4 +1,10 @@
-import { Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
+import {
+  BeforeApplicationShutdown,
+  Inject,
+  Injectable,
+  Logger,
+  OnApplicationBootstrap
+} from '@nestjs/common'
 import { DownloadTaskProcessor } from '../processor/download-task.processor'
 import { ExtractTaskProcessor } from '../processor/extract-task.processor'
 import { TaskProcessor } from '../processor/task.processor'
@@ -10,13 +16,12 @@ import { SubscriptionService } from '../services/subscription.service'
 import { findFirstPendingTask } from '../functions/find-first-pending-task'
 import { ConfigService } from '@nestjs/config'
 import { MainConfig } from '../config'
-import { OnEvent } from '@nestjs/event-emitter'
-import { ApplicationClosingEvent } from '../events/application-closing.event'
 import { delay } from '../functions/delay'
-import { Cron } from '@nestjs/schedule'
+import { Scheduler } from '../utils/scheduler'
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter'
 
 @Injectable()
-export class TaskManager implements OnApplicationBootstrap {
+export class TaskManager implements OnApplicationBootstrap, BeforeApplicationShutdown {
   private readonly logger = new Logger(TaskManager.name)
 
   @Inject(SubscriptionService)
@@ -32,35 +37,38 @@ export class TaskManager implements OnApplicationBootstrap {
 
   private readonly processors: Record<AssetTaskType, (task: AssetTask) => TaskProcessor>
 
-  private active = true
-
   private busy = false
 
-  constructor() {
+  private scheduler: Scheduler
+
+  constructor(
+    @Inject(EventEmitter2)
+    private readonly eventEmitter: EventEmitter2
+  ) {
     this.processors = {
       [AssetTaskType.DOWNLOAD]: () => new DownloadTaskProcessor(this.configService),
       [AssetTaskType.EXTRACT]: () => new ExtractTaskProcessor(this.configService)
     }
+    if (!this.eventEmitter) throw new Error('EventEmitter2 not injected')
+    this.scheduler = new Scheduler(this.eventEmitter, 'task:loop', 1_000)
   }
 
   async onApplicationBootstrap() {
     this.logger.log('========== Starting task manager ==========')
-    this.active = true
+    this.scheduler.start()
   }
 
-  @Cron('* * * * * *')
+  @OnEvent('task:loop')
   async onTaskLoop() {
-    if (!this.active) return
     if (this.busy) return
     this.busy = true
     await this.checkForPendingTasks()
     this.busy = false
   }
 
-  @OnEvent(ApplicationClosingEvent.name)
-  async onApplicationClosing() {
+  async beforeApplicationShutdown() {
     this.logger.log('========== Shutting down task manager ==========')
-    this.active = false
+    this.scheduler.stop()
 
     await delay(1_000)
     this.logger.log('Task manager shut down')

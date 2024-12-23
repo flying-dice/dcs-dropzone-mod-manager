@@ -5,6 +5,25 @@ import { SettingsPage } from './pages/settings.page'
 import { FaDiscord, FaFile, FaGear, FaGithub, FaPatreon } from 'react-icons/fa6'
 import { FaHome, FaList } from 'react-icons/fa'
 import { LogsPage } from './pages/logs.page'
+import { SiLua } from 'react-icons/si'
+import { MissionScriptingPage } from './pages/mission-scripting.page'
+import { useMissionScriptingFile } from './hooks/useMissionScriptingFile'
+import { Indicator } from '@mantine/core'
+import { MissionScriptingStatusCode } from '../../lib/mission-scripting'
+
+function MissionScriptingLink() {
+  const missionScripting = useMissionScriptingFile()
+
+  return (
+    <Indicator
+      disabled={missionScripting.current?.status === MissionScriptingStatusCode.VALID}
+      color={'red'}
+      processing
+    >
+      <SiLua size={20} />
+    </Indicator>
+  )
+}
 
 export const config = {
   navbar: [
@@ -17,6 +36,11 @@ export const config = {
       path: '/library',
       tooltip: 'Library',
       icon: <FaList />
+    },
+    {
+      path: '/mission-scripting',
+      tooltip: 'Mission Scripting',
+      icon: <MissionScriptingLink />
     },
     {
       path: '/settings',
@@ -36,6 +60,7 @@ export const config = {
       icon: <FaDiscord />,
       isExternal: true
     },
+
     {
       path: 'https://github.com/flying-dice/dcs-dropzone-mod-manager',
       tooltip: 'Github',
@@ -69,6 +94,10 @@ export const config = {
     {
       routerPath: '/logs',
       element: () => <LogsPage />
+    },
+    {
+      routerPath: '/mission-scripting',
+      element: () => <MissionScriptingPage />
     }
   ]
 }

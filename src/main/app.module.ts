@@ -1,10 +1,4 @@
-import {
-  Inject,
-  Logger,
-  Module,
-  OnApplicationBootstrap,
-  OnApplicationShutdown
-} from '@nestjs/common'
+import { Logger, Module, OnApplicationShutdown } from '@nestjs/common'
 import { LifecycleManager } from './manager/lifecycle-manager.service'
 import { SettingsManager } from './manager/settings.manager'
 import { SubscriptionManager } from './manager/subscription.manager'
@@ -23,16 +17,16 @@ import { ReleaseService } from './services/release.service'
 import { ReleaseAsset, ReleaseAssetSchema } from './schemas/release-asset.schema'
 import { AssetTask, AssetTaskSchema } from './schemas/release-asset-task.schema'
 import { Connection } from 'mongoose'
-import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter'
+import { EventEmitterModule } from '@nestjs/event-emitter'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { configuration } from './config'
 import { Log } from './utils/log'
 import { FsService } from './services/fs.service'
 import { UninstallBatManager } from './manager/uninstall-bat.manager'
-import { ApplicationClosingEvent } from './events/application-closing.event'
-import { ScheduleModule } from '@nestjs/schedule'
 import { MainWindow } from './windows/main.window'
 import { WindowSetting, WindowSettingSchema } from './schemas/window-setting'
+import { MissionScriptingManager } from './manager/mission-scripting.manager'
+import { DcsMissionScriptingService } from './services/dcs-mission-scripting.service'
 
 @Module({
   imports: [
@@ -40,7 +34,6 @@ import { WindowSetting, WindowSettingSchema } from './schemas/window-setting'
       isGlobal: true,
       load: [configuration]
     }),
-    ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
@@ -59,6 +52,7 @@ import { WindowSetting, WindowSettingSchema } from './schemas/window-setting'
     FsService,
     LifecycleManager,
     MainWindow,
+    MissionScriptingManager,
     RegistryService,
     ReleaseService,
     SettingsManager,
@@ -68,32 +62,22 @@ import { WindowSetting, WindowSettingSchema } from './schemas/window-setting'
     TaskManager,
     UninstallBatManager,
     VariablesService,
-    WriteDirectoryService
+    WriteDirectoryService,
+    DcsMissionScriptingService
   ]
 })
-export class AppModule implements OnApplicationBootstrap, OnApplicationShutdown {
+export class AppModule implements OnApplicationShutdown {
   private readonly logger = new Logger(AppModule.name)
 
   @InjectConnection()
   private readonly connection: Connection
 
-  @Inject(EventEmitter2)
-  private readonly eventEmitter: EventEmitter2
-
-  @Log()
-  async onApplicationBootstrap() {
-    this.logger.log('Application is starting...')
-  }
-
   @Log()
   async onApplicationShutdown() {
-    this.logger.debug('Shutting down app')
+    this.logger.log('========== Closing Database connection ==========')
+    await this.connection.close(false)
 
-    Logger.log('NApp: Closing Event Firing...')
-    await this.eventEmitter.emitAsync(ApplicationClosingEvent.name, new ApplicationClosingEvent())
-    Logger.log('NApp: Closing Event Completed, closing app...')
-
-    this.logger.debug('Closing Mongoose connection')
-    await MongooseFactory.onApplicationShutdown(this.connection)
+    this.logger.log('========== Shutting down Database ==========')
+    await MongooseFactory.onApplicationShutdown()
   }
 }

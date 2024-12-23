@@ -12,6 +12,8 @@ import { filename, fileTransport } from './logging'
 import { Logger } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { app } from 'electron'
+import { MissionScriptingStatusCode } from '../lib/mission-scripting'
+import { DcsMissionScriptingService } from './services/dcs-mission-scripting.service'
 
 export const trpc = initTRPC.create()
 
@@ -132,6 +134,27 @@ export function getAppRouter(moduleRef: ModuleRef) {
     getDefaultRegistryUrl: trpc.procedure.query(
       async (): Promise<string> => moduleRef.get(SettingsManager).getDefaultRegistryUrl()
     ),
+    getDcsInstallationDirectory: trpc.procedure.query(
+      async (): Promise<string | undefined> =>
+        moduleRef.get(SettingsManager).getDcsInstallationDirectory()
+    ),
+    setDcsInstallationDirectory: trpc.procedure
+      .input(z.object({ path: z.string() }))
+      .mutation(
+        async ({ input }): Promise<void> =>
+          moduleRef.get(SettingsManager).setDcsInstallationDirectory(input.path)
+      ),
+    validateMissionScripting: trpc.procedure.query(
+      async (): Promise<{ content: string; status: MissionScriptingStatusCode }> => {
+        return moduleRef.get(DcsMissionScriptingService).validate()
+      }
+    ),
+    getNewMissionScriptingFile: trpc.procedure.query(async () => {
+      return moduleRef.get(DcsMissionScriptingService).getUpdated()
+    }),
+    applyNewMissionScriptingFile: trpc.procedure.mutation(async () => {
+      return moduleRef.get(DcsMissionScriptingService).applyUpdated()
+    }),
 
     getRegistryUrl: trpc.procedure.query(
       async (): Promise<string> => moduleRef.get(SettingsManager).getRegistryUrl()

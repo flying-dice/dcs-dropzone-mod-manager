@@ -44,15 +44,15 @@ export class MongooseFactory {
       'MongooseModuleFactory'
     )
 
+    MongooseFactory.server.on('stateChange' as any, (state) => {
+      Logger.debug(`New MongoMemoryServer state: ${state}`, 'MongooseModuleFactory')
+    })
+
     return options
   }
 
   @Log(new Logger(MongooseFactory.name))
-  static async onApplicationShutdown(connection: Connection): Promise<void> {
-    Logger.log('Application Shutting Down!', 'MongooseFactory')
-    await connection.close(false)
-
-    Logger.log('Shutting down Dropzone', 'MongooseFactory')
+  static async onApplicationShutdown(): Promise<void> {
     if (MongooseFactory.server) {
       Logger.log('Shutting down MongoMemoryServer', 'MongooseFactory')
       await MongooseFactory.server.stop()

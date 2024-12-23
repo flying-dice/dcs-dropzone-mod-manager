@@ -15,7 +15,8 @@ describe('getReleaseAsset', () => {
     const asset: EntryIndexVersionsItemAssetsItem = {
       source:
         'https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.lua',
-      target: '{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua'
+      target: '{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua',
+      runonstart: true
     }
     const releaseWriteDir = 'C:/Users/JohnDoe/AppData/Local/dcs-dropzone/mods/1/1'
 
@@ -28,6 +29,7 @@ describe('getReleaseAsset', () => {
         'https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.lua',
       target: '{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua',
       symlinkPath: null,
+      runOnStart: true,
       tasks: [
         {
           id: expect.any(String),

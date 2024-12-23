@@ -7,8 +7,6 @@ import { autoUpdater } from 'electron-updater'
 import { initalizeAptabase } from './functions/initalizeAptabase'
 import { onUnhandledRejection } from './functions/onUnhandledRejection'
 import { onUncaughtException } from './functions/onUncaughtException'
-import { ApplicationClosingEvent } from './events/application-closing.event'
-import { EventEmitter2 } from '@nestjs/event-emitter'
 import { bootstrapNestApplication } from './functions/bootstrap-nest-application'
 import { MainWindow } from './windows/main.window'
 
@@ -99,10 +97,6 @@ app.on('window-all-closed', async () => {
   if (process.platform !== 'darwin') {
     Logger.log('All windows closed, quitting App', 'main')
 
-    Logger.log('NApp: Closing Event Firing...', 'main')
-    await nestApp
-      .get(EventEmitter2)
-      .emitAsync(ApplicationClosingEvent.name, new ApplicationClosingEvent())
     Logger.log('NApp: Closing Event Completed, closing app...', 'main')
     await nestApp.close()
     Logger.log("NApp: Closed', 'main")

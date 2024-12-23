@@ -1,9 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { SettingsService } from '../services/settings.service'
-import { DEFAULT_REGISTRY_URL } from '../constants'
+import { DEFAULT_REGISTRY_URL } from '../../lib/registry'
 import { ConfigService } from '@nestjs/config'
 import { join } from 'node:path'
 import { MainConfig } from '../config'
+import { stat } from 'node:fs/promises'
 
 /**
  * Settings manager for handling settings related to the application at the implementation level
@@ -67,5 +68,14 @@ export class SettingsManager {
 
   async getDefaultGameDir(): Promise<string | undefined> {
     return this.configService.get('defaultDcsWriteDir')
+  }
+
+  async getDcsInstallationDirectory(): Promise<string | undefined> {
+    return this.settingsService.getSettingValue('dcsInstallDir').then((it) => it?.value)
+  }
+
+  async setDcsInstallationDirectory(value: string): Promise<void> {
+    await stat(join(value, 'bin', 'DCS.exe'))
+    return this.settingsService.setSettingValue('dcsInstallDir', value)
   }
 }

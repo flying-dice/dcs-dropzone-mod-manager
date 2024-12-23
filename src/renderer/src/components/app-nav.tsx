@@ -1,6 +1,27 @@
-import { ActionIcon, Stack, Tooltip } from '@mantine/core'
+import { ActionIcon, ActionIconVariant, Stack, Tooltip } from '@mantine/core'
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+
+function AppNavItemComponent({ icon, tooltip, isExternal, path }: AppNavItem) {
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const variant: ActionIconVariant = location.pathname === path ? 'light' : 'subtle'
+
+  return (
+    <Tooltip key={path} label={tooltip} openDelay={500}>
+      {isExternal ? (
+        <ActionIcon radius={0} component="a" href={path} size={'xl'} variant={variant}>
+          {icon}
+        </ActionIcon>
+      ) : (
+        <ActionIcon radius={0} size={'xl'} variant={variant} onClick={() => navigate(path)}>
+          {icon}
+        </ActionIcon>
+      )}
+    </Tooltip>
+  )
+}
 
 export type AppNavItem = {
   path: string
@@ -12,21 +33,16 @@ export type AppNavProps = {
   items: AppNavItem[]
 }
 export const AppNav: React.FC<AppNavProps> = ({ items }) => {
-  const navigate = useNavigate()
   return (
     <Stack gap={0}>
       {items.map(({ path, icon, tooltip, isExternal }) => (
-        <Tooltip key={path} label={tooltip} openDelay={500}>
-          {isExternal ? (
-            <ActionIcon component="a" href={path} radius={0} size={'xl'} variant={'subtle'}>
-              {icon}
-            </ActionIcon>
-          ) : (
-            <ActionIcon radius={0} size={'xl'} variant={'subtle'} onClick={() => navigate(path)}>
-              {icon}
-            </ActionIcon>
-          )}
-        </Tooltip>
+        <AppNavItemComponent
+          key={path}
+          path={path}
+          icon={icon}
+          tooltip={tooltip}
+          isExternal={isExternal}
+        />
       ))}
     </Stack>
   )
