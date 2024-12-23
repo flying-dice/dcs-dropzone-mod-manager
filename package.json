@@ -25,7 +25,7 @@
       ],
       [
         "@semantic-release/github",
-        {
+         {
           "assets": [
             "dist/*.exe",
             "dist/*.yml",
