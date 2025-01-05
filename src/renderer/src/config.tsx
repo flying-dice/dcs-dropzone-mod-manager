@@ -2,11 +2,30 @@ import { LibraryPage } from './pages/library.page'
 import { MyContentPage } from './pages/my-content.page'
 import { RegistryEntryPage } from './pages/registry-entry.page'
 import { SettingsPage } from './pages/settings.page'
-import { FaDiscord, FaGear, FaGithub, FaPatreon } from 'react-icons/fa6'
+import { FaDiscord, FaFile, FaGear, FaGithub, FaPatreon } from 'react-icons/fa6'
 import { FaHome, FaList } from 'react-icons/fa'
+import { LogsPage } from './pages/logs.page'
+import { SiLua } from 'react-icons/si'
+import { MissionScriptingPage } from './pages/mission-scripting.page'
+import { useMissionScriptingFile } from './hooks/useMissionScriptingFile'
+import { Indicator } from '@mantine/core'
+import { MissionScriptingStatusCode } from '../../lib/mission-scripting'
+
+function MissionScriptingLink() {
+  const missionScripting = useMissionScriptingFile()
+
+  return (
+    <Indicator
+      disabled={missionScripting.current?.status === MissionScriptingStatusCode.VALID}
+      color={'red'}
+      processing
+    >
+      <SiLua size={20} />
+    </Indicator>
+  )
+}
 
 export const config = {
-  rcloneBaseUrl: 'http://127.0.0.1:5572',
   navbar: [
     {
       path: '/',
@@ -19,9 +38,19 @@ export const config = {
       icon: <FaList />
     },
     {
+      path: '/mission-scripting',
+      tooltip: 'Mission Scripting',
+      icon: <MissionScriptingLink />
+    },
+    {
       path: '/settings',
       tooltip: 'Settings',
       icon: <FaGear />
+    },
+    {
+      path: '/logs',
+      tooltip: 'Logs',
+      icon: <FaFile />
     }
   ],
   navbarSecondary: [
@@ -31,6 +60,7 @@ export const config = {
       icon: <FaDiscord />,
       isExternal: true
     },
+
     {
       path: 'https://github.com/flying-dice/dcs-dropzone-mod-manager',
       tooltip: 'Github',
@@ -60,6 +90,14 @@ export const config = {
     {
       routerPath: '/settings',
       element: () => <SettingsPage />
+    },
+    {
+      routerPath: '/logs',
+      element: () => <LogsPage />
+    },
+    {
+      routerPath: '/mission-scripting',
+      element: () => <MissionScriptingPage />
     }
   ]
 }

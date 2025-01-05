@@ -10,11 +10,13 @@ import { Release } from '../schemas/release.schema'
 import { SubscriptionService } from '../services/subscription.service'
 import { ReleaseService } from '../services/release.service'
 import { Log } from '../utils/log'
-import { getReleaseAsset } from '../utils/get-release-asset'
+import { getReleaseAsset } from '../functions/get-release-asset'
 import { randomUUID } from 'node:crypto'
-import { join } from 'node:path'
-import { pathExists, readdirSync, ensureDirSync, rmdir } from 'fs-extra'
+import { extname, join } from 'node:path'
+import { ensureDirSync, pathExists, readdirSync, rmdir } from 'fs-extra'
 import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
+import { getUrlPartsForDownload } from '../functions/getUrlPartsForDownload'
+import { posixpath } from '../functions/posixpath'
 
 export type SubscriptionReleaseState = {
   enabled: boolean
@@ -27,6 +29,7 @@ export type SubscriptionReleaseState = {
   latest?: string
   isReady: boolean
   isFailed: boolean
+  errors: string[]
 }
 
 export type SubscriptionWithState = {
@@ -87,6 +90,7 @@ export class SubscriptionManager implements OnApplicationBootstrap {
     const latest = await this.registryService.getLatestVersion(subscription.modId)
 
     const assetTasks = await this.releaseService.findAssetTasksByRelease(installed.id)
+    const assets = await this.releaseService.findAssetsByRelease(installed.id)
 
     const taskStatuses = assetTasks.map((it) => it.status)
     const taskProgress = assetTasks.map((it) => it.progress)
@@ -107,6 +111,17 @@ export class SubscriptionManager implements OnApplicationBootstrap {
 
     const progress = taskProgress.reduce((acc, cur) => acc + cur, 0) / taskProgress.length
 
+    const errors: string[] = []
+
+    for (const asset of assets) {
+      if (asset.writeDirectoryPath && !(await pathExists(asset.writeDirectoryPath))) {
+        errors.push(`Asset ${asset.source} is missing`)
+      }
+      if (asset.symlinkPath && !(await pathExists(asset.symlinkPath))) {
+        errors.push(`Symlink ${asset.symlinkPath} is missing`)
+      }
+    }
+
     return {
       enabled: installed.enabled,
       version: installed.version,
@@ -117,7 +132,8 @@ export class SubscriptionManager implements OnApplicationBootstrap {
       exePath: installed.exePath,
       isLatest: latest?.version ? installed.version === latest?.version : true,
       latest: latest?.version,
-      isFailed: taskStatuses.some((it) => it === AssetTaskStatus.FAILED)
+      isFailed: taskStatuses.some((it) => it === AssetTaskStatus.FAILED),
+      errors
     }
   }
 
@@ -165,14 +181,32 @@ export class SubscriptionManager implements OnApplicationBootstrap {
     ensureDirSync(releaseWriteDir)
 
     this.logger.debug(`Saving subscription for mod ${modId}`)
-    await this.subscriptionService.save(subscription)
+    await this.subscriptionService.save({
+      ...subscription,
+      writeDirectory:
+        await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription)
+    })
 
     this.logger.debug(`Saving release ${latestRelease.version} for mod ${modId}`)
-    await this.releaseService.save(release)
+    await this.releaseService.save({
+      ...release,
+      writeDirectory: releaseWriteDir
+    })
 
     this.logger.debug(`Saving release assets for mod ${modId}`)
     for (const asset of assets) {
-      await this.releaseService.saveAsset(asset)
+      const urlParts = getUrlPartsForDownload(asset.source)
+      await this.releaseService.saveAsset({
+        ...asset,
+        writeDirectoryPath: posixpath(
+          join(
+            releaseWriteDir,
+            urlParts.hashRoute
+              ? join(urlParts.file.replace(extname(urlParts.file), ''), urlParts.hashRoute)
+              : urlParts.file
+          )
+        )
+      })
       for (const task of asset.tasks) {
         await this.releaseService.saveAssetTask(task)
       }

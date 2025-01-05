@@ -19,6 +19,12 @@ export class ReleaseAsset {
 
   @Prop({ type: String, required: true, default: null })
   symlinkPath: string | null
+
+  @Prop({ type: Boolean, required: false })
+  runOnStart?: boolean
+
+  @Prop({ type: String })
+  writeDirectoryPath?: string
 }
 
 export const ReleaseAssetSchema = SchemaFactory.createForClass(ReleaseAsset)

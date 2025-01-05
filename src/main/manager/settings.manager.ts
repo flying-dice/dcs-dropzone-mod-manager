@@ -1,8 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { config } from '../config'
-import { getDefaultGameDir } from '../functions/getDefaultGameDir'
-import { getDefaultWriteDir } from '../functions/getDefaultWriteDir'
-import { ConfigService } from '../services/config.service'
+import { SettingsService } from '../services/settings.service'
+import { DEFAULT_REGISTRY_URL } from '../../lib/registry'
+import { ConfigService } from '@nestjs/config'
+import { join } from 'node:path'
+import { MainConfig } from '../config'
+import { stat } from 'node:fs/promises'
 
 /**
  * Settings manager for handling settings related to the application at the implementation level
@@ -13,15 +15,22 @@ import { ConfigService } from '../services/config.service'
  */
 @Injectable()
 export class SettingsManager {
+  @Inject(SettingsService)
+  private settingsService: SettingsService
+
   @Inject(ConfigService)
-  private configGateway: ConfigService
+  private configService: ConfigService<MainConfig>
 
   /**
    * Get the registry URL from the settings repository, or the default value if not set
    */
   async getRegistryUrl(): Promise<string> {
-    const url = (await this.configGateway.getConfigValue('registryUrl'))?.value
-    return url || config.defaultRegistryUrl
+    const url = (await this.settingsService.getSettingValue('registryUrl'))?.value
+    return url || this.getDefaultRegistryUrl()
+  }
+
+  async getDefaultRegistryUrl(): Promise<string> {
+    return DEFAULT_REGISTRY_URL
   }
 
   /**
@@ -30,7 +39,12 @@ export class SettingsManager {
    * Defaults to the dcs-dropzone directory in the user's documents folder @see FsService.getDefaultWriteDir
    */
   async getWriteDir(): Promise<string> {
-    return (await this.configGateway.getConfigValue('writeDir'))?.value || getDefaultWriteDir()
+    const configuredDir = (await this.settingsService.getSettingValue('writeDir'))?.value
+    return configuredDir || this.getDefaultWriteDir()
+  }
+
+  async getDefaultWriteDir(): Promise<string> {
+    return join(this.configService.getOrThrow('writeDir'), 'mods')
   }
 
   /**
@@ -40,7 +54,8 @@ export class SettingsManager {
    * @throws Error if no game directory is set and the default is not found
    */
   async getGameDir(): Promise<string> {
-    const value = (await this.configGateway.getConfigValue('gameDir'))?.value || getDefaultGameDir()
+    const configuredDir = (await this.settingsService.getSettingValue('gameDir'))?.value
+    const value = configuredDir || (await this.getDefaultGameDir())
 
     if (!value) {
       throw new Error(
@@ -49,5 +64,18 @@ export class SettingsManager {
     }
 
     return value
+  }
+
+  async getDefaultGameDir(): Promise<string | undefined> {
+    return this.configService.get('defaultDcsWriteDir')
+  }
+
+  async getDcsInstallationDirectory(): Promise<string | undefined> {
+    return this.settingsService.getSettingValue('dcsInstallDir').then((it) => it?.value)
+  }
+
+  async setDcsInstallationDirectory(value: string): Promise<void> {
+    await stat(join(value, 'bin', 'DCS.exe'))
+    return this.settingsService.setSettingValue('dcsInstallDir', value)
   }
 }

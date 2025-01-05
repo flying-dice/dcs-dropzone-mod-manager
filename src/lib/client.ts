@@ -10,6 +10,8 @@ import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import useSwr from 'swr'
 import type { Key, SWRConfiguration } from 'swr'
 export type EntryIndexVersionsItemAssetsItem = {
+  /** Run on simulation (mission) start, note that this will execute the script before the mission environment is sanitized */
+  runonstart?: boolean
   /** The name of the file # separates download path and internal zip path */
   source?: string
   /** The name of the installation location relative to install path */

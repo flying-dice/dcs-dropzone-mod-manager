@@ -1,6 +1,6 @@
 import { inferAsyncReturnType } from '@trpc/server'
-import { getAppWithRouter } from './router'
+import { getAppRouter } from './router'
 
 declare global {
-  type AppRouter = inferAsyncReturnType<typeof getAppWithRouter>['router']
+  type AppRouter = inferAsyncReturnType<typeof getAppRouter>
 }

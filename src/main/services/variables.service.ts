@@ -15,7 +15,7 @@ export class VariablesService {
    */
   async getVariables(): Promise<Record<string, string>> {
     return {
-      DCS_USER_DIR: await this.settingsManager.getGameDir().then((dir) => dir.replace(/\\/g, '/'))
+      DCS_USER_DIR: await this.settingsManager.getGameDir()
     }
   }
 

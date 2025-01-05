@@ -23,7 +23,7 @@ The following is a brief overview of the project structure:
 - `src/main` - Contains the main process code.
   - `src/main/index.ts` - Contains the main entry point for the application.
   - `src/main/router.ts` - Contains the trpc-router for the main process. This calls the bootstrap function to create the NestJS App and then exposes trpc procedures to the renderer.
-  - `src/main/app.ts` - Contains the entrypoint for the NestJS application.
+  - `src/main/bootstrap.ts` - Contains the entrypoint for the NestJS application.
 - `src/renderer` - Contains the renderer process code.
   - `src/renderer/index.html` - Contains the main HTML file for the renderer process.
   - `src/renderer/main.tsx` - Contains the main entry point for the renderer process. This creates the React application and mounts it to the DOM.

@@ -3,9 +3,10 @@ import { client } from '../client'
 import { useFuse } from '../hooks/useFuse'
 import { useSubscriptions } from '../hooks/useSubscriptions'
 import { showErrorNotification, showSuccessNotification } from '../utils/notifications'
-import { SubscriptionRow } from '@renderer/components/subscription-row'
+import { SubscriptionRow } from '../components/subscription-row'
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
+import { showNotification } from '@mantine/notifications'
 
 export type SubscriptionsProps = {
   onOpenSymlinksModal: (modId: string) => void
@@ -13,13 +14,39 @@ export type SubscriptionsProps = {
 export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
   const navigate = useNavigate()
   const subscriptions = useSubscriptions()
-  const { results, search, setSearch } = useFuse(subscriptions.data || [], '', ['modId', 'modName'])
+  const { results, search, setSearch } = useFuse(subscriptions.data || [], '', [
+    'subscription.modId',
+    'subscription.modName'
+  ])
 
   useEffect(() => {
     if (subscriptions.data?.some(({ state }) => state.progress !== 100 && !state.isFailed)) {
       setTimeout(() => subscriptions.mutate(), 500)
     }
   }, [subscriptions.data])
+
+  useEffect(() => {
+    handleDisableInvalidMods()
+  }, [subscriptions.data])
+
+  async function handleDisableInvalidMods() {
+    let actioned = false
+    for (const { subscription, state } of subscriptions.data || []) {
+      if (state.isReady && state.errors.length > 0 && state.enabled) {
+        await client.toggleMod.mutate({ modId: subscription.modId })
+        showNotification({
+          color: 'orange',
+          title: 'Mod disabled',
+          message: `Disabled ${subscription.modName} due to integrity check failure`
+        })
+        actioned = true
+      }
+    }
+
+    if (actioned) {
+      await subscriptions.mutate()
+    }
+  }
 
   async function handleUnsubscribe(modId: string) {
     try {
@@ -50,6 +77,7 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
 
   async function handleUpdate(modId: string) {
     await client.update.mutate({ modId })
+    await subscriptions.mutate()
   }
 
   return (
@@ -59,6 +87,11 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
+      {subscriptions.data?.some((it) => it.state.isReady && it.state.errors.length > 0) && (
+        <Alert color={'red'}>
+          Some mods have failed integrity checks. Unsubscribe and re-subscribe to fix the issue.
+        </Alert>
+      )}
       {subscriptions.data?.length === 0 ? (
         <Alert>
           {/* eslint-disable-next-line react/no-unescaped-entities */}
@@ -111,6 +144,8 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
                     : undefined
                 }
                 isFailed={state.isFailed}
+                errors={state.errors}
+                latestVersion={state.latest}
               />
             ))}
           </Table.Tbody>

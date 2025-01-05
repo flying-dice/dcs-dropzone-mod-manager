@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@nestjs/common'
 import { SettingsManager } from '../manager/settings.manager'
 import { Subscription } from '../schemas/subscription.schema'
 import { Release } from '../schemas/release.schema'
+import { posixpath } from '../functions/posixpath'
 
 @Injectable()
 export class WriteDirectoryService {
@@ -14,10 +15,10 @@ export class WriteDirectoryService {
   }
 
   async getWriteDirectoryForSubscription(subscription: Subscription): Promise<string> {
-    return join(await this.getWriteDirectory(), subscription.id)
+    return posixpath(join(await this.getWriteDirectory(), subscription.id))
   }
 
   async getWriteDirectoryForRelease(subscription: Subscription, release: Release): Promise<string> {
-    return join(await this.getWriteDirectoryForSubscription(subscription), release.id)
+    return posixpath(join(await this.getWriteDirectoryForSubscription(subscription), release.id))
   }
 }

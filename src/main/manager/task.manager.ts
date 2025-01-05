@@ -1,5 +1,10 @@
-import { Inject, Injectable, Logger, type OnApplicationShutdown } from '@nestjs/common'
-import Aigle from 'aigle'
+import {
+  BeforeApplicationShutdown,
+  Inject,
+  Injectable,
+  Logger,
+  OnApplicationBootstrap
+} from '@nestjs/common'
 import { DownloadTaskProcessor } from '../processor/download-task.processor'
 import { ExtractTaskProcessor } from '../processor/extract-task.processor'
 import { TaskProcessor } from '../processor/task.processor'
@@ -8,13 +13,15 @@ import { formatError } from '../functions/formatError'
 import { AssetTask, AssetTaskStatus, AssetTaskType } from '../schemas/release-asset-task.schema'
 import { ReleaseService } from '../services/release.service'
 import { SubscriptionService } from '../services/subscription.service'
-import { InjectConnection } from '@nestjs/mongoose'
-import { Connection, ConnectionStates } from 'mongoose'
-import { findFirstPendingTask } from '../utils/find-first-pending-task'
-import { Log } from '../utils/log'
+import { findFirstPendingTask } from '../functions/find-first-pending-task'
+import { ConfigService } from '@nestjs/config'
+import { MainConfig } from '../config'
+import { delay } from '../functions/delay'
+import { Scheduler } from '../utils/scheduler'
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter'
 
 @Injectable()
-export class TaskManager implements OnApplicationShutdown {
+export class TaskManager implements OnApplicationBootstrap, BeforeApplicationShutdown {
   private readonly logger = new Logger(TaskManager.name)
 
   @Inject(SubscriptionService)
@@ -23,41 +30,48 @@ export class TaskManager implements OnApplicationShutdown {
   @Inject(ReleaseService)
   private readonly releaseService: ReleaseService
 
-  @InjectConnection()
-  private readonly connection: Connection
+  @Inject(ConfigService)
+  private readonly configService: ConfigService<MainConfig>
 
   private readonly taskProcessors: Map<string, TaskProcessor> = new Map<string, TaskProcessor>()
 
-  private static readonly PROCESSORS: Record<AssetTaskType, (task: AssetTask) => TaskProcessor> = {
-    [AssetTaskType.DOWNLOAD]: () => new DownloadTaskProcessor(),
-    [AssetTaskType.EXTRACT]: () => new ExtractTaskProcessor()
+  private readonly processors: Record<AssetTaskType, (task: AssetTask) => TaskProcessor>
+
+  private busy = false
+
+  private scheduler: Scheduler
+
+  constructor(
+    @Inject(EventEmitter2)
+    private readonly eventEmitter: EventEmitter2
+  ) {
+    this.processors = {
+      [AssetTaskType.DOWNLOAD]: () => new DownloadTaskProcessor(this.configService),
+      [AssetTaskType.EXTRACT]: () => new ExtractTaskProcessor(this.configService)
+    }
+    if (!this.eventEmitter) throw new Error('EventEmitter2 not injected')
+    this.scheduler = new Scheduler(this.eventEmitter, 'task:loop', 1_000)
   }
 
-  private active = true
-
-  @Log()
-  async onApplicationReady() {
-    this.logger.debug('Starting task manager')
-    Aigle.whilst(
-      () => this.active,
-      async () => {
-        if (this.connection.readyState !== ConnectionStates.connected) {
-          this.logger.warn('Database connection not ready, waiting...')
-          await Aigle.delay(500)
-          return
-        }
-        await this.checkForPendingTasks()
-        await Aigle.delay(500)
-      }
-    )
+  async onApplicationBootstrap() {
+    this.logger.log('========== Starting task manager ==========')
+    this.scheduler.start()
   }
 
-  @Log()
-  async onApplicationShutdown() {
-    this.logger.debug('Shutting down task manager')
-    this.active = false
+  @OnEvent('task:loop')
+  async onTaskLoop() {
+    if (this.busy) return
+    this.busy = true
+    await this.checkForPendingTasks()
+    this.busy = false
+  }
 
-    await Aigle.delay(1000)
+  async beforeApplicationShutdown() {
+    this.logger.log('========== Shutting down task manager ==========')
+    this.scheduler.stop()
+
+    await delay(1_000)
+    this.logger.log('Task manager shut down')
   }
 
   async checkForPendingTasks() {
@@ -95,7 +109,7 @@ export class TaskManager implements OnApplicationShutdown {
     // Use cache to avoid creating a new processor for the same task multiple times and allow internal state to be maintained
     const processor =
       this.taskProcessors.get(task.id) ||
-      this.taskProcessors.set(task.id, TaskManager.PROCESSORS[task.type](task)).get(task.id)
+      this.taskProcessors.set(task.id, this.processors[task.type](task)).get(task.id)
 
     // If there is no processor for the task, log an error message and return
     if (!processor) {

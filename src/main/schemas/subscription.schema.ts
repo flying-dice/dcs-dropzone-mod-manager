@@ -13,6 +13,9 @@ export class Subscription {
 
   @Prop({ required: true })
   created: number
+
+  @Prop({ type: String })
+  writeDirectory?: string
 }
 
 export const SubscriptionSchema = SchemaFactory.createForClass(Subscription)
