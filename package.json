@@ -1,6 +1,6 @@
 {
   "name": "dcs-dropzone",
-  "version": "1.17.2",
+  "version": "1.18.0",
   "description": "A community Mod Manager for DCS World",
   "main": "./out/main/index.js",
   "author": "Flying Dice",
@@ -25,7 +25,7 @@
       ],
       [
         "@semantic-release/github",
-         {
+        {
           "assets": [
             "dist/*.exe",
             "dist/*.yml",
