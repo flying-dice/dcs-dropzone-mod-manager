@@ -134,8 +134,7 @@ export class TaskManager implements OnApplicationBootstrap, BeforeApplicationShu
         task_type: task.type,
         mod_id: subscription.id,
         mod_version: release.version,
-        asset_source: asset.source,
-        asset_target: asset.target,
+        asset_links: JSON.stringify(asset.links),
         ...formatError(error as Error)
       })
       task.status = AssetTaskStatus.FAILED
@@ -158,8 +157,7 @@ export class TaskManager implements OnApplicationBootstrap, BeforeApplicationShu
           task_type: task.type,
           mod_id: subscription.id,
           mod_version: release.version,
-          asset_source: asset.source,
-          asset_target: asset.target,
+          asset_links: JSON.stringify(asset.links),
           ...formatError(error as Error)
         })
       }

@@ -14,14 +14,21 @@ export class ReleaseAsset {
   @Prop({ type: String, required: true })
   subscriptionId: string
 
-  @Prop({ type: String, required: true })
-  source: string
-
-  @Prop({ type: String, required: true })
-  target: string
-
-  @Prop({ type: String, required: true, default: null })
-  symlinkPath: string | null
+  @Prop({
+    type: [
+      {
+        source: { type: String, required: true },
+        target: { type: String, required: true },
+        symlinkPath: { type: String, required: true, default: null }
+      }
+    ],
+    required: true
+  })
+  links: {
+    source: string
+    target: string
+    symlinkPath: string | null
+  }[]
 
   @Prop({ type: Boolean, required: false })
   runOnStart?: boolean

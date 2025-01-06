@@ -1,4 +1,4 @@
-import { extname, join } from 'node:path'
+import { join } from 'node:path'
 import { Logger } from '@nestjs/common'
 import { rm } from 'fs-extra'
 import { TaskProcessor } from './task.processor'
@@ -45,10 +45,7 @@ export class ExtractTaskProcessor implements TaskProcessor<ExtractTaskPayload> {
     this.result = sevenzip({
       exePath: join(this.configService.getOrThrow('resourcesDir'), '7za.exe'),
       archivePath: join(task.payload.folder, task.payload.file),
-      targetDir: join(
-        task.payload.folder,
-        task.payload.file.replace(extname(task.payload.file), '')
-      ),
+      targetDir: task.payload.folder,
       onProgress: (progress) => {
         this.logger.verbose(`[${task.id}] -  ${progress.summary}`)
         this.progress = progress.progress

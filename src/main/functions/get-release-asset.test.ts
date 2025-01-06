@@ -32,9 +32,13 @@ describe('getReleaseAsset', () => {
       subscriptionId: expect.any(String),
       remoteSource:
         'https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.lua',
-      source: 'hello-world.lua',
-      target: '{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua',
-      symlinkPath: null,
+      links: [
+        {
+          source: 'hello-world.lua',
+          target: '{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua',
+          symlinkPath: null
+        }
+      ],
       runOnStart: true,
       tasks: [
         {
@@ -86,9 +90,13 @@ describe('getReleaseAsset', () => {
       subscriptionId: expect.any(String),
       remoteSource:
         'https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.zip',
-      source: 'hello-world',
-      target: '{{DCS_USER_DIR}}/Mods/hello-world',
-      symlinkPath: null,
+      links: [
+        {
+          source: 'hello-world',
+          target: '{{DCS_USER_DIR}}/Mods/hello-world',
+          symlinkPath: null
+        }
+      ],
       tasks: [
         {
           id: expect.any(String),

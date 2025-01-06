@@ -15,7 +15,6 @@ import { randomUUID } from 'node:crypto'
 import { join } from 'node:path'
 import { ensureDirSync, pathExists, readdirSync, rmdir } from 'fs-extra'
 import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
-
 import { posixpath } from '../functions/posixpath'
 
 export type SubscriptionReleaseState = {
@@ -117,8 +116,17 @@ export class SubscriptionManager implements OnApplicationBootstrap {
       if (asset.writeDirectoryPath && !(await pathExists(asset.writeDirectoryPath))) {
         errors.push(`Asset ${asset.writeDirectoryPath} is missing`)
       }
-      if (asset.symlinkPath && !(await pathExists(asset.symlinkPath))) {
-        errors.push(`Symlink ${asset.symlinkPath} is missing`)
+      for (const link of asset.links) {
+        if (
+          asset.writeDirectoryPath &&
+          link.source &&
+          !(await pathExists(join(asset.writeDirectoryPath, link.source)))
+        ) {
+          errors.push(`Symlink Source ${join(asset.writeDirectoryPath, link.source)} is missing`)
+        }
+        if (link.symlinkPath && !(await pathExists(link.symlinkPath))) {
+          errors.push(`Symlink ${link.symlinkPath} is missing`)
+        }
       }
     }
 
@@ -197,7 +205,7 @@ export class SubscriptionManager implements OnApplicationBootstrap {
     for (const asset of assets) {
       await this.releaseService.saveAsset({
         ...asset,
-        writeDirectoryPath: posixpath(join(releaseWriteDir, asset.source))
+        writeDirectoryPath: posixpath(releaseWriteDir)
       })
       for (const task of asset.tasks) {
         await this.releaseService.saveAssetTask(task)

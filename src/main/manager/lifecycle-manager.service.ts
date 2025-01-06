@@ -16,6 +16,7 @@ import { ModDisabledEvent } from '../events/mod-disabled.event'
 import { posixpath } from '../functions/posixpath'
 import { promisify } from 'node:util'
 import { execFile } from 'node:child_process'
+import { ReleaseAsset } from '../schemas/release-asset.schema'
 
 /**
  * Manages the toggling of a mod between enabled and disabled states
@@ -71,48 +72,49 @@ export class LifecycleManager {
     this.logger.debug(`Enabling mod: ${modId} with ${releaseAssets.length} release assets`)
     for (const releaseAsset of releaseAssets) {
       this.logger.debug(`Enabling release asset: ${releaseAsset.id}`)
-
-      let srcPath = posixpath(
-        join(
-          await this.writeDirectoryService.getWriteDirectoryForRelease(subscription, release),
-          releaseAsset.source
+      for (const link of releaseAsset.links) {
+        let srcPath = posixpath(
+          join(
+            await this.writeDirectoryService.getWriteDirectoryForRelease(subscription, release),
+            link.source
+          )
         )
-      )
 
-      // If the source is a hash path, we need to extract the base path and make sure the symlink is for the exploded folder including internal route
-      if (HashPath.isHashPath(srcPath)) {
-        this.logger.debug(`Source is a hash path: ${srcPath}`)
-        const hashPath = new HashPath(srcPath)
-        srcPath = join(hashPath.basePathWithoutExt, hashPath.hashPath)
+        // If the source is a hash path, we need to extract the base path and make sure the symlink is for the exploded folder including internal route
+        if (HashPath.isHashPath(srcPath)) {
+          this.logger.debug(`Source is a hash path: ${srcPath}`)
+          const hashPath = new HashPath(srcPath)
+          srcPath = join(hashPath.basePathWithoutExt, hashPath.hashPath)
+        }
+
+        const targetPath = posixpath(await this.variablesService.replaceVariables(link.target))
+        this.logger.log(
+          `Creating Symlink for release asset: ${releaseAsset.id} from ${srcPath} to ${targetPath}`
+        )
+        ensureDirSync(dirname(targetPath))
+
+        if (await pathExists(targetPath)) {
+          this.logger.error(
+            `Target path already exists: ${targetPath}, please remove it and try again`
+          )
+          throw new Error(
+            `Target path already exists: ${targetPath}, please remove it and try again`
+          )
+        }
+
+        await symlink(srcPath, targetPath)
+        if (existsSync(targetPath)) {
+          link.symlinkPath = targetPath
+        } else {
+          this.logger.error(
+            `Failed to create symlink at ${targetPath}. Please ensure the target path does not already exist and try again.`
+          )
+          throw new Error(
+            `Failed to create symlink at ${targetPath}. Please ensure the target path does not already exist and try again.`
+          )
+        }
       }
-
-      const targetPath = posixpath(
-        await this.variablesService.replaceVariables(releaseAsset.target)
-      )
-      this.logger.log(
-        `Creating Symlink for release asset: ${releaseAsset.id} from ${srcPath} to ${targetPath}`
-      )
-      ensureDirSync(dirname(targetPath))
-
-      if (await pathExists(targetPath)) {
-        this.logger.error(
-          `Target path already exists: ${targetPath}, please remove it and try again`
-        )
-        throw new Error(`Target path already exists: ${targetPath}, please remove it and try again`)
-      }
-
-      await symlink(srcPath, targetPath)
-      if (existsSync(targetPath)) {
-        releaseAsset.symlinkPath = targetPath
-        await this.releaseService.saveAsset(releaseAsset)
-      } else {
-        this.logger.error(
-          `Failed to create symlink at ${targetPath}. Please ensure the target path does not already exist and try again.`
-        )
-        throw new Error(
-          `Failed to create symlink at ${targetPath}. Please ensure the target path does not already exist and try again.`
-        )
-      }
+      await this.releaseService.saveAsset(releaseAsset)
     }
 
     release.enabled = true
@@ -133,10 +135,12 @@ export class LifecycleManager {
 
     this.logger.debug(`Disabling mod: ${modId} with ${releaseAssets.length} release assets`)
     for (const releaseAsset of releaseAssets) {
-      if (releaseAsset.symlinkPath) {
-        this.logger.debug(`Deleting Symlink for release asset: ${releaseAsset.id}`)
-        await rm(releaseAsset.symlinkPath, { force: true, recursive: true })
-        releaseAsset.symlinkPath = null
+      for (const link of releaseAsset.links) {
+        if (link.symlinkPath) {
+          this.logger.debug(`Deleting Symlink for release asset: ${releaseAsset.id}`)
+          await rm(link.symlinkPath, { force: true, recursive: true })
+          link.symlinkPath = null
+        }
         await this.releaseService.saveAsset(releaseAsset)
       }
     }
@@ -181,21 +185,21 @@ export class LifecycleManager {
     return { subscription, release }
   }
 
-  async getModAssets(modId: string) {
+  async getModAssets(modId: string): Promise<{ id: string; links: ReleaseAsset['links'] }[]> {
     const { release } = await this.getSubscriptionWithReleaseOrThrow(modId)
     const releaseAssets = await this.releaseService.findAssetsByRelease(release.id)
     return releaseAssets.map((it) => ({
       id: it.id,
-      source: it.source,
-      symlinkPath: it.symlinkPath
+      links: it.links
     }))
   }
 
-  async openAssetInExplorer(assetId: string) {
+  async openAssetInExplorer(assetId: string, linkIndex: number) {
     const asset = await this.releaseService.findAssetByIdOrThrow(assetId)
-    if (!asset.symlinkPath) throw new Error(`Symlink path not present, is the mod enabled?`)
+    if (!asset.links[linkIndex].symlinkPath)
+      throw new Error(`Symlink path not present, is the mod enabled?`)
     this.logger.debug(`Opening asset in explorer: ${asset.id}`)
 
-    return this.fsService.openFolder(dirname(asset.symlinkPath))
+    return this.fsService.openFolder(dirname(asset.links[linkIndex].symlinkPath))
   }
 }

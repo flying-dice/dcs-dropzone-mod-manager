@@ -14,6 +14,7 @@ import { ModuleRef } from '@nestjs/core'
 import { app } from 'electron'
 import { MissionScriptingStatusCode } from '../lib/mission-scripting'
 import { DcsMissionScriptingService } from './services/dcs-mission-scripting.service'
+import { ReleaseAsset } from './schemas/release-asset.schema'
 
 export const trpc = initTRPC.create()
 
@@ -49,14 +50,14 @@ export function getAppRouter(moduleRef: ModuleRef) {
     getModAssets: trpc.procedure
       .input(z.object({ modId: z.string() }))
       .query(
-        async ({ input }): Promise<{ id: string; source: string; symlinkPath: string | null }[]> =>
+        async ({ input }): Promise<{ id: string; links: ReleaseAsset['links'] }[]> =>
           moduleRef.get(LifecycleManager).getModAssets(input.modId)
       ),
     openAssetInExplorer: trpc.procedure
-      .input(z.object({ assetId: z.string() }))
+      .input(z.object({ assetId: z.string(), linkIndex: z.number() }))
       .mutation(
         ({ input }): Promise<void> =>
-          moduleRef.get(LifecycleManager).openAssetInExplorer(input.assetId)
+          moduleRef.get(LifecycleManager).openAssetInExplorer(input.assetId, input.linkIndex)
       ),
 
     // Subscriptions

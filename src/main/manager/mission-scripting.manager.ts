@@ -38,11 +38,14 @@ export class MissionScriptingManager {
     const scripts: { id: string; path: string }[] = []
 
     for (const asset of releaseAssets) {
-      if (asset.symlinkPath && asset.runOnStart) {
-        scripts.push({
-          id: asset.id,
-          path: asset.symlinkPath
-        })
+      for (const link of asset.links) {
+        // Ah should be runOnStart be a link property?
+        if (link.symlinkPath && asset.runOnStart) {
+          scripts.push({
+            id: asset.id,
+            path: link.symlinkPath
+          })
+        }
       }
     }
 

@@ -21,24 +21,30 @@ const _SymlinksReportDrawer: React.FC<{ modId: string }> = ({ modId }) => {
         </Table.Thead>
         <Table.Tbody>
           {assets.data?.map((asset) => (
-            <Table.Tr key={asset.id}>
-              <Table.Td>
-                <CodeHighlight code={asset.source} language={'text'} />
-              </Table.Td>
-              <Table.Td>
-                <CodeHighlight code={asset.symlinkPath || 'Unlinked'} language={'text'} />
-              </Table.Td>
-              <Table.Td align={'center'}>
-                <ActionIcon
-                  onClick={() => client.openAssetInExplorer.mutate({ assetId: asset.id })}
-                  variant={'transparent'}
-                  size={'sm'}
-                  disabled={!asset.symlinkPath}
-                >
-                  <VscLinkExternal />
-                </ActionIcon>
-              </Table.Td>
-            </Table.Tr>
+            <>
+              {asset.links?.map((link, idx) => (
+                <Table.Tr key={asset.id + idx}>
+                  <Table.Td>
+                    <CodeHighlight code={link.source} language={'text'} />
+                  </Table.Td>
+                  <Table.Td>
+                    <CodeHighlight code={link.symlinkPath || 'Unlinked'} language={'text'} />
+                  </Table.Td>
+                  <Table.Td align={'center'}>
+                    <ActionIcon
+                      onClick={() =>
+                        client.openAssetInExplorer.mutate({ assetId: asset.id, linkIndex: idx })
+                      }
+                      variant={'transparent'}
+                      size={'sm'}
+                      disabled={!link.symlinkPath}
+                    >
+                      <VscLinkExternal />
+                    </ActionIcon>
+                  </Table.Td>
+                </Table.Tr>
+              ))}{' '}
+            </>
           ))}
         </Table.Tbody>
       </Table>
