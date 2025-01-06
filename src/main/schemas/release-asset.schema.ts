@@ -9,6 +9,9 @@ export class ReleaseAsset {
   releaseId: string
 
   @Prop({ type: String, required: true })
+  remoteSource: string
+
+  @Prop({ type: String, required: true })
   subscriptionId: string
 
   @Prop({ type: String, required: true })

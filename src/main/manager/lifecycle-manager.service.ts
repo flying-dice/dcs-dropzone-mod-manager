@@ -6,7 +6,6 @@ import { FsService } from '../services/fs.service'
 import { WriteDirectoryService } from '../services/write-directory.service'
 import { HashPath } from '../utils/hash-path'
 import { VariablesService } from '../services/variables.service'
-import { getUrlPartsForDownload } from '../functions/getUrlPartsForDownload'
 import { SubscriptionService } from '../services/subscription.service'
 import { ReleaseService } from '../services/release.service'
 import { Subscription } from '../schemas/subscription.schema'
@@ -73,12 +72,10 @@ export class LifecycleManager {
     for (const releaseAsset of releaseAssets) {
       this.logger.debug(`Enabling release asset: ${releaseAsset.id}`)
 
-      const { baseUrl } = getUrlPartsForDownload(releaseAsset.source)
-
       let srcPath = posixpath(
         join(
           await this.writeDirectoryService.getWriteDirectoryForRelease(subscription, release),
-          releaseAsset.source.replace(baseUrl, '')
+          releaseAsset.source
         )
       )
 

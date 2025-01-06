@@ -12,10 +12,10 @@ import { ReleaseService } from '../services/release.service'
 import { Log } from '../utils/log'
 import { getReleaseAsset } from '../functions/get-release-asset'
 import { randomUUID } from 'node:crypto'
-import { extname, join } from 'node:path'
+import { join } from 'node:path'
 import { ensureDirSync, pathExists, readdirSync, rmdir } from 'fs-extra'
 import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
-import { getUrlPartsForDownload } from '../functions/getUrlPartsForDownload'
+
 import { posixpath } from '../functions/posixpath'
 
 export type SubscriptionReleaseState = {
@@ -115,7 +115,7 @@ export class SubscriptionManager implements OnApplicationBootstrap {
 
     for (const asset of assets) {
       if (asset.writeDirectoryPath && !(await pathExists(asset.writeDirectoryPath))) {
-        errors.push(`Asset ${asset.source} is missing`)
+        errors.push(`Asset ${asset.writeDirectoryPath} is missing`)
       }
       if (asset.symlinkPath && !(await pathExists(asset.symlinkPath))) {
         errors.push(`Symlink ${asset.symlinkPath} is missing`)
@@ -195,17 +195,9 @@ export class SubscriptionManager implements OnApplicationBootstrap {
 
     this.logger.debug(`Saving release assets for mod ${modId}`)
     for (const asset of assets) {
-      const urlParts = getUrlPartsForDownload(asset.source)
       await this.releaseService.saveAsset({
         ...asset,
-        writeDirectoryPath: posixpath(
-          join(
-            releaseWriteDir,
-            urlParts.hashRoute
-              ? join(urlParts.file.replace(extname(urlParts.file), ''), urlParts.hashRoute)
-              : urlParts.file
-          )
-        )
+        writeDirectoryPath: posixpath(join(releaseWriteDir, asset.source))
       })
       for (const task of asset.tasks) {
         await this.releaseService.saveAssetTask(task)

@@ -31,8 +31,10 @@ export function getReleaseAsset(
 ): HydratedReleaseAsset {
   const releaseAsset: HydratedReleaseAsset = {
     id: randomUUID(),
-    source: asset.source!,
-    target: asset.target!,
+    remoteSource: asset.remoteSource,
+    // THIS IS A TEMP HACK TO GET IT WORKING WITH ONE LINK
+    source: asset.links[0].source!,
+    target: asset.links[0].target!,
     releaseId: release.id,
     subscriptionId: release.subscriptionId,
     tasks: [],
@@ -43,9 +45,7 @@ export function getReleaseAsset(
     releaseAsset.runOnStart = asset.runonstart
   }
 
-  const source = releaseAsset.source
-
-  const { baseUrl, file } = getUrlPartsForDownload(source)
+  const { baseUrl, file } = getUrlPartsForDownload(releaseAsset.remoteSource)
   const downloadTaskPayload: DownloadTaskPayload = { baseUrl, file, folder: releaseWriteDir }
 
   releaseAsset.tasks.push({

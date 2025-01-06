@@ -12,10 +12,15 @@ import type { Key, SWRConfiguration } from 'swr'
 export type EntryIndexVersionsItemAssetsItem = {
   /** Run on simulation (mission) start, note that this will execute the script before the mission environment is sanitized */
   runonstart?: boolean
-  /** The name of the file # separates download path and internal zip path */
-  source?: string
-  /** The name of the installation location relative to install path */
-  target?: string
+  /** download path */
+  remoteSource: string
+  /** list of symlinks to be created when enabled */
+  links: {
+    /** Source path for symlink */
+    source?: string
+    /** Target path for symlink */
+    target?: string
+  }[]
 }
 
 export type EntryIndexVersionsItem = {
