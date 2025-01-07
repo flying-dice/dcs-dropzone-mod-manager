@@ -32,7 +32,6 @@ export function getReleaseAsset(
   const releaseAsset: HydratedReleaseAsset = {
     id: randomUUID(),
     remoteSource: asset.remoteSource,
-    //TODO: THIS IS A TEMP HACK TO GET IT WORKING WITH ONE LINK
     links: asset.links.map((link) => ({
       source: link.source!,
       target: link.target!,

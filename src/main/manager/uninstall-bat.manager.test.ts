@@ -28,12 +28,12 @@ function bootstrap() {
       {
         provide: ReleaseService,
         useValue: {
-          findAssetsWithSymlinks: vi
-            .fn()
-            .mockResolvedValue([
-              { symlinkPath: `${DCS_SAVED_GAMES}/Scripts/Hooks/hello-world.lua` },
-              { symlinkPath: `${DCS_SAVED_GAMES}/Mods/hello-world` }
-            ])
+          findAssetsWithSymlinks: vi.fn().mockResolvedValue([
+            { links: [{ symlinkPath: `${DCS_SAVED_GAMES}/Scripts/Hooks/hello-world.lua` }] },
+            {
+              links: [{ symlinkPath: `${DCS_SAVED_GAMES}/Mods/hello-world` }]
+            }
+          ])
         }
       }
     ]
