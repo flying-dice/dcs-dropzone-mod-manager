@@ -4,7 +4,6 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { ensureDirSync, pathExists, rm, symlink } from 'fs-extra'
 import { FsService } from '../services/fs.service'
 import { WriteDirectoryService } from '../services/write-directory.service'
-import { HashPath } from '../utils/hash-path'
 import { VariablesService } from '../services/variables.service'
 import { SubscriptionService } from '../services/subscription.service'
 import { ReleaseService } from '../services/release.service'
@@ -73,19 +72,12 @@ export class LifecycleManager {
     for (const releaseAsset of releaseAssets) {
       this.logger.debug(`Enabling release asset: ${releaseAsset.id}`)
       for (const link of releaseAsset.links) {
-        let srcPath = posixpath(
+        const srcPath = posixpath(
           join(
             await this.writeDirectoryService.getWriteDirectoryForRelease(subscription, release),
             link.source
           )
         )
-
-        // If the source is a hash path, we need to extract the base path and make sure the symlink is for the exploded folder including internal route
-        if (HashPath.isHashPath(srcPath)) {
-          this.logger.debug(`Source is a hash path: ${srcPath}`)
-          const hashPath = new HashPath(srcPath)
-          srcPath = join(hashPath.basePathWithoutExt, hashPath.hashPath)
-        }
 
         const targetPath = posixpath(await this.variablesService.replaceVariables(link.target))
         this.logger.log(
