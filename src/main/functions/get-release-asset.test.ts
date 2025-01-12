@@ -92,6 +92,7 @@ describe('getReleaseAsset', () => {
         'https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.zip',
       links: [
         {
+          runOnStart: false,
           source: 'hello-world',
           target: '{{DCS_USER_DIR}}/Mods/hello-world',
           symlinkPath: null
