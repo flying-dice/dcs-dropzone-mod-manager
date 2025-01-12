@@ -35,6 +35,7 @@ export function getReleaseAsset(
     links: asset.links.map((link) => ({
       source: link.source!,
       target: link.target!,
+      runOnStart: link.runonstart || false,
       symlinkPath: null
     })),
     releaseId: release.id,
@@ -42,9 +43,6 @@ export function getReleaseAsset(
     tasks: []
   }
 
-  if (asset.runonstart) {
-    releaseAsset.runOnStart = asset.runonstart
-  }
 
   const { baseUrl, file } = getUrlPartsForDownload(releaseAsset.remoteSource)
   const downloadTaskPayload: DownloadTaskPayload = { baseUrl, file, folder: releaseWriteDir }

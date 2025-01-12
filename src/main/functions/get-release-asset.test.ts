@@ -18,10 +18,10 @@ describe('getReleaseAsset', () => {
       links: [
         {
           source: 'hello-world.lua',
-          target: '{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua'
+          target: '{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua',
+          runonstart: true
         }
       ],
-      runonstart: true
     }
     const releaseWriteDir = 'C:/Users/JohnDoe/AppData/Local/dcs-dropzone/mods/1/1'
 
@@ -36,10 +36,10 @@ describe('getReleaseAsset', () => {
         {
           source: 'hello-world.lua',
           target: '{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua',
-          symlinkPath: null
+          symlinkPath: null,
+          runOnStart: true
         }
       ],
-      runOnStart: true,
       tasks: [
         {
           id: expect.any(String),

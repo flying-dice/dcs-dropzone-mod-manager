@@ -19,7 +19,8 @@ export class ReleaseAsset {
       {
         source: { type: String, required: true },
         target: { type: String, required: true },
-        symlinkPath: { type: String, required: true, default: null }
+        symlinkPath: { type: String, required: true, default: null },
+        runOnStart: { type: Boolean, required: false }
       }
     ],
     required: true
@@ -28,10 +29,8 @@ export class ReleaseAsset {
     source: string
     target: string
     symlinkPath: string | null
+    runOnStart?: boolean
   }[]
-
-  @Prop({ type: Boolean, required: false })
-  runOnStart?: boolean
 
   @Prop({ type: String })
   writeDirectoryPath?: string

@@ -10,8 +10,6 @@ import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import useSwr from 'swr'
 import type { Key, SWRConfiguration } from 'swr'
 export type EntryIndexVersionsItemAssetsItem = {
-  /** Run on simulation (mission) start, note that this will execute the script before the mission environment is sanitized */
-  runonstart?: boolean
   /** download path */
   remoteSource: string
   /** list of symlinks to be created when enabled */
@@ -20,6 +18,8 @@ export type EntryIndexVersionsItemAssetsItem = {
     source?: string
     /** Target path for symlink */
     target?: string
+    /** Run on simulation (mission) start, note that this will execute the script before the mission environment is sanitized */
+    runonstart?: boolean
   }[]
 }
 
