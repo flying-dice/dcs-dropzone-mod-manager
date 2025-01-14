@@ -39,7 +39,7 @@ export async function bootstrapNestApplication() {
     return applicationContext
   } catch (e) {
     splashScreen.close()
-    logger.error('Failed to bootstrap application', e.stack);
+    logger.error('Failed to bootstrap application', e.stack)
     throw e
   }
 }

@@ -127,6 +127,15 @@ export class LifecycleManager {
 
     this.logger.debug(`Disabling mod: ${modId} with ${releaseAssets.length} release assets`)
     for (const releaseAsset of releaseAssets) {
+      // Temporarily remove symlinks still using the old path
+      // TODO: Remove this after no daily starts with 1.18.0 (Check Aptabase Dash) Due for review 30/02/2024
+      if (releaseAsset.symlinkPath) {
+        this.logger.debug(`Deleting Symlink for release asset: ${releaseAsset.id}`)
+        await rm(releaseAsset.symlinkPath, { force: true, recursive: true })
+        releaseAsset.symlinkPath = null
+      }
+      // End
+
       for (const link of releaseAsset.links) {
         if (link.symlinkPath) {
           this.logger.debug(`Deleting Symlink for release asset: ${releaseAsset.id}`)

@@ -116,6 +116,11 @@ export class SubscriptionManager implements OnApplicationBootstrap {
       if (asset.writeDirectoryPath && !(await pathExists(asset.writeDirectoryPath))) {
         errors.push(`Asset ${asset.writeDirectoryPath} is missing`)
       }
+
+      if (asset.symlinkPath) {
+        errors.push(`Legacy format for ${asset.symlinkPath} please re-subscribe`)
+      }
+
       for (const link of asset.links) {
         if (
           asset.writeDirectoryPath &&

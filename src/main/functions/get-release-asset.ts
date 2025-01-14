@@ -43,7 +43,6 @@ export function getReleaseAsset(
     tasks: []
   }
 
-
   const { baseUrl, file } = getUrlPartsForDownload(releaseAsset.remoteSource)
   const downloadTaskPayload: DownloadTaskPayload = { baseUrl, file, folder: releaseWriteDir }
 

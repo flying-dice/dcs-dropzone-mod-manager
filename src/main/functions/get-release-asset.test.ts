@@ -21,7 +21,7 @@ describe('getReleaseAsset', () => {
           target: '{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua',
           runonstart: true
         }
-      ],
+      ]
     }
     const releaseWriteDir = 'C:/Users/JohnDoe/AppData/Local/dcs-dropzone/mods/1/1'
 
