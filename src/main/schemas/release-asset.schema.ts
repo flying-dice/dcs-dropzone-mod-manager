@@ -18,8 +18,8 @@ export class ReleaseAsset {
    * TODO: Remove this after no daily starts with 1.18.0 (Check Aptabase Dash) Due for review 30/02/2024
    * @deprecated after v1.18.0 mods with symlinkPath should be re-subscribed
    */
-  @Prop({ type: String, required: true, default: null })
-  symlinkPath: string | null
+  @Prop({ type: String, required: false })
+  symlinkPath?: string | null
 
   @Prop({
     type: [
