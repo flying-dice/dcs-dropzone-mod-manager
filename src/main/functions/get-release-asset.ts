@@ -31,21 +31,19 @@ export function getReleaseAsset(
 ): HydratedReleaseAsset {
   const releaseAsset: HydratedReleaseAsset = {
     id: randomUUID(),
-    source: asset.source!,
-    target: asset.target!,
+    remoteSource: asset.remoteSource,
+    links: asset.links.map((link) => ({
+      source: link.source!,
+      target: link.target!,
+      runOnStart: link.runonstart || false,
+      symlinkPath: null
+    })),
     releaseId: release.id,
     subscriptionId: release.subscriptionId,
-    tasks: [],
-    symlinkPath: null
+    tasks: []
   }
 
-  if (asset.runonstart) {
-    releaseAsset.runOnStart = asset.runonstart
-  }
-
-  const source = releaseAsset.source
-
-  const { baseUrl, file } = getUrlPartsForDownload(source)
+  const { baseUrl, file } = getUrlPartsForDownload(releaseAsset.remoteSource)
   const downloadTaskPayload: DownloadTaskPayload = { baseUrl, file, folder: releaseWriteDir }
 
   releaseAsset.tasks.push({

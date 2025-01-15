@@ -13,10 +13,15 @@ describe('getReleaseAsset', () => {
       enabled: false
     }
     const asset: EntryIndexVersionsItemAssetsItem = {
-      source:
+      remoteSource:
         'https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.lua',
-      target: '{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua',
-      runonstart: true
+      links: [
+        {
+          source: 'hello-world.lua',
+          target: '{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua',
+          runonstart: true
+        }
+      ]
     }
     const releaseWriteDir = 'C:/Users/JohnDoe/AppData/Local/dcs-dropzone/mods/1/1'
 
@@ -25,11 +30,16 @@ describe('getReleaseAsset', () => {
       id: expect.any(String),
       releaseId: expect.any(String),
       subscriptionId: expect.any(String),
-      source:
+      remoteSource:
         'https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.lua',
-      target: '{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua',
-      symlinkPath: null,
-      runOnStart: true,
+      links: [
+        {
+          source: 'hello-world.lua',
+          target: '{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua',
+          symlinkPath: null,
+          runOnStart: true
+        }
+      ],
       tasks: [
         {
           id: expect.any(String),
@@ -60,9 +70,14 @@ describe('getReleaseAsset', () => {
       enabled: false
     }
     const asset: EntryIndexVersionsItemAssetsItem = {
-      source:
+      remoteSource:
         'https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.zip',
-      target: '{{DCS_USER_DIR}}/Mods/hello-world'
+      links: [
+        {
+          source: 'hello-world',
+          target: '{{DCS_USER_DIR}}/Mods/hello-world'
+        }
+      ]
     }
 
     const releaseWriteDir = 'C:/Users/JohnDoe/AppData/Local/dcs-dropzone/mods/1/1'
@@ -73,10 +88,16 @@ describe('getReleaseAsset', () => {
       id: expect.any(String),
       releaseId: expect.any(String),
       subscriptionId: expect.any(String),
-      source:
+      remoteSource:
         'https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.zip',
-      target: '{{DCS_USER_DIR}}/Mods/hello-world',
-      symlinkPath: null,
+      links: [
+        {
+          runOnStart: false,
+          source: 'hello-world',
+          target: '{{DCS_USER_DIR}}/Mods/hello-world',
+          symlinkPath: null
+        }
+      ],
       tasks: [
         {
           id: expect.any(String),

@@ -75,9 +75,14 @@ describe('ReleaseService', () => {
     id: 'test-asset',
     releaseId: 'test-release',
     subscriptionId: testRelease.subscriptionId,
-    source: 'http://example.com/file.lua',
-    target: '{{SOME_VAR}}/Scripts/file.lua',
-    symlinkPath: null
+    remoteSource: 'http://example.com/file.lua',
+    links: [
+      {
+        source: 'file.lua',
+        target: '{{SOME_VAR}}/Scripts/file.lua',
+        symlinkPath: null
+      }
+    ]
   }
 
   const testAssetTask: AssetTask = {
@@ -175,8 +180,13 @@ describe('ReleaseService', () => {
       releasepage: 'http://example.com',
       assets: [
         {
-          source: 'http://example.com/file.lua',
-          target: '{{SOME_VAR}}/Scripts/file.lua'
+          remoteSource: 'http://example.com/file.lua',
+          links: [
+            {
+              source: 'file.lua',
+              target: '{{SOME_VAR}}/Scripts/file.lua'
+            }
+          ]
         }
       ]
     })
@@ -203,8 +213,13 @@ describe('ReleaseService', () => {
       releasepage: 'http://example.com',
       assets: [
         {
-          source: 'http://example.com/file.zip/#/script.lua',
-          target: '{{SOME_VAR}}/Scripts/file.lua'
+          remoteSource: 'http://example.com/file.zip',
+          links: [
+            {
+              source: 'file.lua',
+              target: '{{SOME_VAR}}/Scripts/file.lua'
+            }
+          ]
         }
       ]
     })
@@ -234,8 +249,13 @@ describe('ReleaseService', () => {
       releasepage: 'http://example.com',
       assets: [
         {
-          source: 'http://example.com/file.zip/#/script.lua',
-          target: '{{SOME_VAR}}/Scripts/file.lua'
+          remoteSource: 'http://example.com/file.zip',
+          links: [
+            {
+              source: 'script.lua',
+              target: '{{SOME_VAR}}/Scripts/file.lua'
+            }
+          ]
         }
       ]
     })
@@ -265,13 +285,18 @@ describe('ReleaseService', () => {
       releasepage: 'http://example.com',
       assets: [
         {
-          source: 'http://example.com/file.lua',
-          target: '{{SOME_VAR}}/Scripts/file.lua'
+          remoteSource: 'http://example.com/file.lua',
+          links: [
+            {
+              source: 'file.lua',
+              target: '{{SOME_VAR}}/Scripts/file.lua'
+            }
+          ]
         }
       ]
     })
 
-    enabledMod.assets[0].symlinkPath = 'C:/some/path/file.lua'
+    enabledMod.assets[0].links[0].symlinkPath = 'C:/some/path/file.lua'
     enabledMod.release.enabled = true
 
     await releaseService.save(enabledMod.release)
@@ -288,13 +313,18 @@ describe('ReleaseService', () => {
       releasepage: 'http://example.com',
       assets: [
         {
-          source: 'http://example.com/file.lua',
-          target: '{{SOME_VAR}}/Scripts/file.lua'
+          remoteSource: 'http://example.com/file.lua',
+          links: [
+            {
+              source: 'file.lua',
+              target: '{{SOME_VAR}}/Scripts/file.lua'
+            }
+          ]
         }
       ]
     })
 
-    disabledMod.assets[0].symlinkPath = null
+    disabledMod.assets[0].links[0].symlinkPath = null
     disabledMod.release.enabled = false
 
     await releaseService.save(disabledMod.release)

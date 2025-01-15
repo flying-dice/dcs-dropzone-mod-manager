@@ -98,7 +98,7 @@ export class ReleaseService {
   @Log()
   async findAssetsWithSymlinks(): Promise<ReleaseAsset[]> {
     return this.releaseAssets
-      .find({ symlinkPath: { $ne: null } })
+      .find({ 'links.symlinkPath': { $ne: null } })
       .exec()
       .then((it) => it.map((it) => it.toJSON()))
   }

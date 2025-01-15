@@ -36,7 +36,7 @@ export class UninstallBatManager {
   async rebuildUninstallBat() {
     const releaseAssets = await this.releaseService.findAssetsWithSymlinks()
     const content = await generateSymlinkUninstallScript(
-      compact(releaseAssets.map((it) => it.symlinkPath))
+      compact(releaseAssets.map((it) => it.links.map((it) => it.symlinkPath)).flat())
     )
     await outputFile(
       path.join(await this.settingsManager.getWriteDir(), UninstallBatManager.FILENAME),

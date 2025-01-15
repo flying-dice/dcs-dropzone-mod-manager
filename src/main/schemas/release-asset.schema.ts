@@ -9,19 +9,35 @@ export class ReleaseAsset {
   releaseId: string
 
   @Prop({ type: String, required: true })
+  remoteSource: string
+
+  @Prop({ type: String, required: true })
   subscriptionId: string
 
-  @Prop({ type: String, required: true })
-  source: string
+  /**
+   * TODO: Remove this after no daily starts with 1.18.0 (Check Aptabase Dash) Due for review 30/02/2024
+   * @deprecated after v1.18.0 mods with symlinkPath should be re-subscribed
+   */
+  @Prop({ type: String, required: false })
+  symlinkPath?: string | null
 
-  @Prop({ type: String, required: true })
-  target: string
-
-  @Prop({ type: String, required: true, default: null })
-  symlinkPath: string | null
-
-  @Prop({ type: Boolean, required: false })
-  runOnStart?: boolean
+  @Prop({
+    type: [
+      {
+        source: { type: String, required: true },
+        target: { type: String, required: true },
+        symlinkPath: { type: String, required: true, default: null },
+        runOnStart: { type: Boolean, required: false }
+      }
+    ],
+    required: true
+  })
+  links: {
+    source: string
+    target: string
+    symlinkPath: string | null
+    runOnStart?: boolean
+  }[]
 
   @Prop({ type: String })
   writeDirectoryPath?: string
