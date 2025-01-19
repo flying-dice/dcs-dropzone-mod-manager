@@ -170,6 +170,26 @@ export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) 
 
             <Divider color={'gray'} />
 
+            <Divider color={'gray'} />
+            <Stack gap={'xs'}>
+              <Group justify={'space-between'}>
+                <Title order={4} fw={500}>
+                  Dependencies
+                </Title>
+              </Group>
+              {entry.dependencies ? (
+                <Stack gap={'xs'}>
+                  {entry.dependencies.map((dependency) => (
+                    <Anchor key={dependency} onClick={() => navigate(`/library/${dependency}`)}>
+                      {dependency}
+                    </Anchor>
+                  ))}
+                </Stack>
+              ) : (
+                <Text>No Dependencies Found</Text>
+              )}
+            </Stack>
+
             <Stack gap={'xs'}>
               <Group justify={'space-between'}>
                 <Title order={4} fw={500}>
