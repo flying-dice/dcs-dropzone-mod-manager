@@ -63,6 +63,8 @@ export interface EntryIndex {
   name?: string
   /** The tags of the mod, these are used to filter mods in the mod browser */
   tags: string[]
+  /** Mod Ids this mod is dependent on */
+  dependencies?: string[]
   /** The versions of the mod */
   versions: EntryIndexVersionsItem[]
 }
