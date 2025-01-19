@@ -16,7 +16,9 @@ import {
   Textarea,
   TextInput,
   Title,
-  TypographyStylesProvider
+  TypographyStylesProvider,
+  Image,
+  Center
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { marked } from 'marked'
@@ -29,6 +31,8 @@ import { ReleaseSummary } from '../components/release-summary'
 import { useRegistrySubscriber } from '../hooks/useRegistrySubscriber'
 import { useRegistryEntry } from '../hooks/useRegistryEntry'
 import { showNotification } from '@mantine/notifications'
+import { useAsync } from 'react-use'
+import { client } from '@renderer/client'
 
 export const RegistryEntryPage: React.FC = () => {
   const navigate = useNavigate()
@@ -70,6 +74,7 @@ export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) 
   const [isMouseOver, mouseOver] = useDisclosure(false)
 
   const latestRelease = entry.versions.find((it) => it.version === entry.latest)
+  const url = useAsync(() => client.getRegistryUrl.query(), [])
 
   return (
     <Stack>
@@ -80,6 +85,19 @@ export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) 
         <Anchor size={'sm'}>{entry.name}</Anchor>
       </Breadcrumbs>
       <TypographyStylesProvider className={'readme'} pr={300} pb={'xl'}>
+        {url.value && (
+          <Center>
+            <Image
+              src={`${url.value}/${entry.imageUrl}`}
+              h="auto"
+              w="80%"
+              mah="50vh"
+              fit="contain"
+              alt="preview"
+              radius="sm"
+            />
+          </Center>
+        )}
         <div
           dangerouslySetInnerHTML={{
             __html: marked.parse(atob(entry.content))
