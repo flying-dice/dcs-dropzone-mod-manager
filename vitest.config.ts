@@ -6,10 +6,10 @@ export default defineConfig({
   plugins: [swcPlugin()],
   test: {
     globals: true,
-    include: ['src/main/**/*.test.ts'],
+    include: ['src/main/**/*.test.ts', 'src/renderer/**/*.test.ts'],
     coverage: {
       provider: 'v8',
-      include: ['src/main/**/*.ts'],
+      include: ['src/main/**/*.ts', 'src/renderer/**/*.test.ts'],
       reporter: ['text', 'json-summary', 'json', 'cobertura', 'html'],
       reportOnFailure: true,
       thresholds: {

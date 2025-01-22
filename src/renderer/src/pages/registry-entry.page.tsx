@@ -33,6 +33,7 @@ import { useRegistryEntry } from '../hooks/useRegistryEntry'
 import { showNotification } from '@mantine/notifications'
 import { useAsync } from 'react-use'
 import { client } from '@renderer/client'
+import { chunks } from '@renderer/utils/arrays'
 
 export const RegistryEntryPage: React.FC = () => {
   const navigate = useNavigate()
@@ -85,19 +86,6 @@ export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) 
         <Anchor size={'sm'}>{entry.name}</Anchor>
       </Breadcrumbs>
       <TypographyStylesProvider className={'readme'} pr={300} pb={'xl'}>
-        {url.value && (
-          <Center>
-            <Image
-              src={`${url.value}/${entry.imageUrl}`}
-              h="auto"
-              w="80%"
-              mah="50vh"
-              fit="contain"
-              alt="preview"
-              radius="sm"
-            />
-          </Center>
-        )}
         <div
           dangerouslySetInnerHTML={{
             __html: marked.parse(atob(entry.content))
@@ -111,6 +99,16 @@ export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) 
               <Title order={4} fw={500}>
                 About
               </Title>
+              {url.value && (
+                <Center>
+                  <Image
+                    src={`${url.value}/${entry.imageUrl}`}
+                    fit="contain"
+                    alt="preview"
+                    radius="sm"
+                  />
+                </Center>
+              )}
               <TextInput
                 readOnly
                 variant={'unstyled'}
@@ -166,13 +164,15 @@ export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) 
               <Title order={4} fw={500}>
                 Authors
               </Title>
-              <AvatarGroup>
-                {entry.authors.map((it) => (
-                  <Avatar key={it.name} src={it.url} alt={it.name}>
-                    {it.name.slice(0, 2)}
-                  </Avatar>
-                ))}
-              </AvatarGroup>
+              {Array.from(chunks(entry.authors, 9)).map((chunk, i) => (
+                <AvatarGroup key={i}>
+                  {chunk.map((it) => (
+                    <Avatar key={it.name} src={it.url} alt={it.name}>
+                      {it.name.slice(0, 2)}
+                    </Avatar>
+                  ))}
+                </AvatarGroup>
+              ))}
             </Stack>
 
             <Divider color={'gray'} />
