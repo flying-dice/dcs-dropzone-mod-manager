@@ -11,7 +11,8 @@ export const showErrorNotification = (error: ErrorWithDetails) => {
   showNotification({
     color: 'red',
     title: error.title || 'Error',
-    message: error.message
+    message: error.message,
+    autoClose: 60000
   })
 }
 
