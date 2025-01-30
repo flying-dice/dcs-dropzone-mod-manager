@@ -1,9 +1,9 @@
-import { EntryIndex } from '../../../lib/client'
+import { EntryIndexHydrated } from '../../../lib/client'
 import { client } from '../client'
 import { showErrorNotification, showSuccessNotification } from '../utils/notifications'
 import { useSubscriptions } from './useSubscriptions'
 
-export const useRegistrySubscriber = (registryEntry: EntryIndex) => {
+export const useRegistrySubscriber = (registryEntry: EntryIndexHydrated) => {
   const allSubscriptions = useSubscriptions()
 
   return {

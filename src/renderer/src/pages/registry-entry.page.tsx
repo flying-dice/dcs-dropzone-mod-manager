@@ -24,7 +24,7 @@ import React, { useEffect } from 'react'
 import { MdOutlineCategory } from 'react-icons/md'
 import { VscCheck, VscClose } from 'react-icons/vsc'
 import { useNavigate, useParams } from 'react-router-dom'
-import { EntryIndex } from '../../../lib/client'
+import { EntryIndexHydrated } from '../../../lib/client'
 import { ReleaseSummary } from '../components/release-summary'
 import { useRegistrySubscriber } from '../hooks/useRegistrySubscriber'
 import { useRegistryEntry } from '../hooks/useRegistryEntry'
@@ -62,7 +62,7 @@ export const RegistryEntryPage: React.FC = () => {
 }
 
 export type RegistryEntryPageProps = {
-  entry: EntryIndex
+  entry: EntryIndexHydrated
 }
 export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) => {
   const navigate = useNavigate()
@@ -180,8 +180,11 @@ export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) 
               {entry.dependencies ? (
                 <Stack gap={'xs'}>
                   {entry.dependencies.map((dependency) => (
-                    <Anchor key={dependency} onClick={() => navigate(`/library/${dependency}`)}>
-                      {dependency}
+                    <Anchor
+                      key={dependency.id}
+                      onClick={() => navigate(`/library/${dependency.id}`)}
+                    >
+                      {dependency.name || dependency.id}
                     </Anchor>
                   ))}
                 </Stack>
