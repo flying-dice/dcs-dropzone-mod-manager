@@ -138,6 +138,9 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
                 enabled={state.enabled}
                 onToggleMod={() => handleToggleMod(subscription.modId)}
                 stateLabel={state.currentTaskLabel || state.progressLabel}
+                missingDeps={subscription.dependencies?.filter(
+                  (dep) => !results.some((sub) => sub.subscription.modId === dep.id)
+                )}
                 onRunExe={
                   state.exePath
                     ? () => state.exePath && handleRunExe(subscription.modId, state.exePath)

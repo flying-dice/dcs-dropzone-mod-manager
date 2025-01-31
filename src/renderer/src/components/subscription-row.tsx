@@ -1,6 +1,19 @@
-import { ActionIcon, Group, Menu, Progress, Stack, Table, Text, Tooltip } from '@mantine/core'
+import {
+  ActionIcon,
+  Anchor,
+  Group,
+  Menu,
+  Progress,
+  Stack,
+  Table,
+  Text,
+  Tooltip
+} from '@mantine/core'
+import { useState } from 'react'
 import { BiCheckbox, BiCheckboxChecked, BiPlay } from 'react-icons/bi'
 import { BsThreeDotsVertical } from 'react-icons/bs'
+import { useNavigate } from 'react-router-dom'
+import { EntryIndexSimple } from 'src/lib/client'
 
 function SubscriptionStatusColumn(props: {
   isLatest: boolean
@@ -10,6 +23,7 @@ function SubscriptionStatusColumn(props: {
   latestVersion?: string
   progress: number
   errors: string[]
+  missingDeps: EntryIndexSimple[]
 }) {
   if (props.isReady && props.errors.length > 0) {
     const errors = props.errors.map((error, index) => (
@@ -23,6 +37,30 @@ function SubscriptionStatusColumn(props: {
         <Tooltip label={<Stack gap={2}>{errors}</Stack>}>
           <Text fw={'bold'} c={'red'} size={'sm'}>
             Error
+          </Text>
+        </Tooltip>
+      </Table.Td>
+    )
+  }
+
+  if (props.isReady && props.missingDeps.length > 0) {
+    return (
+      <Table.Td>
+        <Tooltip
+          multiline
+          withinPortal={false}
+          label={
+            <Stack gap={'xs'}>
+              <Text size={'sm'}>Missing Dependencies:</Text>
+              {props.missingDeps.map((dependency) => (
+                <Text key={dependency.id}>- {dependency.name || dependency.id}</Text>
+              ))}
+            </Stack>
+          }
+        >
+          <Text fw={'bold'} c={'red'} size={'sm'}>
+            {props.missingDeps.length} Missing{' '}
+            {props.missingDeps.length > 1 ? 'Dependencies' : 'Dependency'}
           </Text>
         </Tooltip>
       </Table.Td>
@@ -80,6 +118,7 @@ export type SubscriptionRowProps = {
   stateLabel: string
   progress: number
   errors: string[]
+  missingDeps: EntryIndexSimple[]
 }
 
 export function SubscriptionRow(props: SubscriptionRowProps) {
@@ -129,6 +168,7 @@ export function SubscriptionRow(props: SubscriptionRowProps) {
         progress={props.progress}
         isLatest={props.isLatest}
         latestVersion={props.latestVersion}
+        missingDeps={props.missingDeps}
       />
       <Table.Td>{new Date(props.created).toLocaleString()}</Table.Td>
       <Table.Td>

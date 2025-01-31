@@ -169,7 +169,8 @@ export class SubscriptionManager implements OnApplicationBootstrap {
       id: randomUUID(),
       modId: mod.id,
       modName: mod.name!,
-      created: Date.now()
+      created: Date.now(),
+      dependencies: mod.dependencies || []
     }
     const release: Release = {
       id: randomUUID(),

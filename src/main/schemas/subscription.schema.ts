@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { EntryIndexSimple } from '../../lib/client'
 
 @Schema({ timestamps: true })
 export class Subscription {
@@ -7,6 +8,9 @@ export class Subscription {
 
   @Prop({ required: true, index: true })
   modId: string
+
+  @Prop({ required: false, index: true })
+  dependencies: EntryIndexSimple[]
 
   @Prop({ required: true })
   modName: string
