@@ -1,18 +1,6 @@
-import {
-  ActionIcon,
-  Anchor,
-  Group,
-  Menu,
-  Progress,
-  Stack,
-  Table,
-  Text,
-  Tooltip
-} from '@mantine/core'
-import { useState } from 'react'
+import { ActionIcon, Group, Menu, Progress, Stack, Table, Text, Tooltip } from '@mantine/core'
 import { BiCheckbox, BiCheckboxChecked, BiPlay } from 'react-icons/bi'
 import { BsThreeDotsVertical } from 'react-icons/bs'
-import { useNavigate } from 'react-router-dom'
 import { EntryIndexSimple } from 'src/lib/client'
 
 function SubscriptionStatusColumn(props: {
@@ -111,6 +99,7 @@ export type SubscriptionRowProps = {
   onOpenInExplorer: () => void
   onToggleMod: () => void
   onUpdate: () => void
+  onFixMissingDeps: () => void
   onRunExe?: () => void
   onUnsubscribe: () => void
   isReady: boolean
@@ -182,6 +171,11 @@ export function SubscriptionRow(props: SubscriptionRowProps) {
             {!props.isLatest && <Menu.Item onClick={props.onUpdate}>Update</Menu.Item>}
             {props.isReady && props.errors && props.isLatest && (
               <Menu.Item onClick={props.onUpdate}>Resubscribe</Menu.Item>
+            )}
+            {props.isReady && props.missingDeps.length > 0 && (
+              <Menu.Item onClick={props.onFixMissingDeps}>
+                Subscribe to missing Dependencies
+              </Menu.Item>
             )}
             <Menu.Item
               onClick={() => props.onToggleMod()}

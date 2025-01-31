@@ -32,7 +32,8 @@ describe('SubscriptionService', () => {
     id: 'test-subscription',
     modId: 'test-mod',
     modName: 'Test Subscription',
-    created: Date.now()
+    created: Date.now(),
+    dependencies: []
   }
 
   beforeAll(async () => {

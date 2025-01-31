@@ -7,6 +7,9 @@ import { SubscriptionRow } from '../components/subscription-row'
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { showNotification } from '@mantine/notifications'
+import { EntryIndexSimple } from 'src/lib/client'
+import { Subscription } from 'src/main/schemas/subscription.schema'
+import { SubscriptionWithState } from 'src/main/manager/subscription.manager'
 
 export type SubscriptionsProps = {
   onOpenSymlinksModal: (modId: string) => void
@@ -58,9 +61,12 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
     }
   }
 
-  async function handleToggleMod(modId: string) {
+  async function handleToggleMod(sub: Subscription) {
     try {
-      await client.toggleMod.mutate({ modId })
+      await client.toggleMod.mutate({ modId: sub.modId })
+      if (sub.dependencies) {
+        await Promise.all(sub.dependencies.map((dep) => client.toggleMod.mutate({ modId: dep.id }))) // This doesn't work if some are already enabled as they will disable (figure out how to only enable if parent is enabled)
+      }
       await subscriptions.mutate()
     } catch (err) {
       showErrorNotification(err)
@@ -78,6 +84,23 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
   async function handleUpdate(modId: string) {
     await client.update.mutate({ modId })
     await subscriptions.mutate()
+  }
+
+  async function handleSubscribeToMissingDeps(
+    dependencies: EntryIndexSimple[],
+    subscriptions: SubscriptionWithState[]
+  ) {
+    for (const dependency of dependencies) {
+      if (subscriptions.some((sub) => sub.subscription.modId === dependency.id)) continue
+      try {
+        await client.subscribe.mutate({ modId: dependency.id })
+        showSuccessNotification(`Subscribed to ${dependency.name}`)
+      } catch (e) {
+        // Ignore errors for now
+        console.error('Failed to subscribe to dependency:', dependency, e)
+        showErrorNotification(e)
+      }
+    }
   }
 
   return (
@@ -128,6 +151,9 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
                 created={subscription.created}
                 onOpenSymlinksModal={() => onOpenSymlinksModal(subscription.modId)}
                 onUpdate={() => handleUpdate(subscription.modId)}
+                onFixMissingDeps={() =>
+                  handleSubscribeToMissingDeps(subscription.dependencies, results)
+                }
                 onUnsubscribe={() => handleUnsubscribe(subscription.modId)}
                 onViewModPage={() => navigate(`/library/${subscription.modId}`)}
                 progress={state.progress}
@@ -136,7 +162,7 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
                 isLatest={state.isLatest}
                 version={state.version}
                 enabled={state.enabled}
-                onToggleMod={() => handleToggleMod(subscription.modId)}
+                onToggleMod={() => handleToggleMod(subscription)}
                 stateLabel={state.currentTaskLabel || state.progressLabel}
                 missingDeps={subscription.dependencies?.filter(
                   (dep) => !results.some((sub) => sub.subscription.modId === dep.id)
