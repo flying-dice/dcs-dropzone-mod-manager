@@ -43,9 +43,10 @@ export function getAppRouter(moduleRef: ModuleRef) {
     }),
     // Enable/Disable Toggle
     toggleMod: trpc.procedure
-      .input(z.object({ modId: z.string() }))
+      .input(z.object({ modId: z.string(), enableOnly: z.boolean().optional() }))
       .mutation(
-        async ({ input }): Promise<void> => moduleRef.get(LifecycleManager).toggleMod(input.modId)
+        async ({ input }): Promise<boolean> =>
+          moduleRef.get(LifecycleManager).toggleMod(input.modId, input.enableOnly)
       ),
     getModAssets: trpc.procedure
       .input(z.object({ modId: z.string() }))

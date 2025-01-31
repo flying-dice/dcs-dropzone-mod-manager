@@ -49,15 +49,18 @@ export class LifecycleManager {
    * If the mod is enabled, it will be disabled
    * If the mod is disabled, it will be enabled
    */
-  async toggleMod(modId: string): Promise<void> {
+  async toggleMod(modId: string, enableOnly: boolean | undefined): Promise<boolean> {
     const { release } = await this.getSubscriptionWithReleaseOrThrow(modId)
     this.logger.debug(`Toggling mod: ${modId} which is currently ${release.enabled}`)
-    if (release.enabled) {
+    if (release.enabled && enableOnly !== true) {
       this.logger.debug(`Disabling mod: ${modId}`)
       await this.disableMod(modId)
+      return false
     } else {
+      if (enableOnly === true && release.enabled) return true
       this.logger.debug(`Enabling mod: ${modId}`)
       await this.enableMod(modId)
+      return true
     }
   }
 

@@ -63,9 +63,13 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
 
   async function handleToggleMod(sub: Subscription) {
     try {
-      await client.toggleMod.mutate({ modId: sub.modId })
-      if (sub.dependencies) {
-        await Promise.all(sub.dependencies.map((dep) => client.toggleMod.mutate({ modId: dep.id }))) // This doesn't work if some are already enabled as they will disable (figure out how to only enable if parent is enabled)
+      const isEnabled = await client.toggleMod.mutate({ modId: sub.modId })
+      if (sub.dependencies && isEnabled) {
+        await Promise.all(
+          sub.dependencies.map((dep) =>
+            client.toggleMod.mutate({ modId: dep.id, enableOnly: true })
+          )
+        )
       }
       await subscriptions.mutate()
     } catch (err) {
