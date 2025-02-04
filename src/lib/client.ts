@@ -44,7 +44,7 @@ export type EntryIndexAuthorsItem = {
   url?: string
 }
 
-export interface EntryIndex {
+interface EntryIndexBase {
   authors: EntryIndexAuthorsItem[]
   /** The category of the mod, this is used to group mods in the mod browser */
   category?: string
@@ -63,8 +63,23 @@ export interface EntryIndex {
   name?: string
   /** The tags of the mod, these are used to filter mods in the mod browser */
   tags: string[]
+
   /** The versions of the mod */
   versions: EntryIndexVersionsItem[]
+}
+
+export interface EntryIndex extends EntryIndexBase {
+  /** Mod Ids this mod is dependent on */
+  dependencies?: string[]
+}
+
+export interface EntryIndexSimple {
+  id: string
+  name: string
+}
+
+export interface EntryIndexHydrated extends EntryIndexBase {
+  dependencies?: EntryIndexSimple[]
 }
 
 export type RegistryIndexItemAuthorsItem = {

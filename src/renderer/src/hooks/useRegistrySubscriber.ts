@@ -1,9 +1,9 @@
-import { EntryIndex } from '../../../lib/client'
+import { EntryIndexHydrated } from '../../../lib/client'
 import { client } from '../client'
 import { showErrorNotification, showSuccessNotification } from '../utils/notifications'
 import { useSubscriptions } from './useSubscriptions'
 
-export const useRegistrySubscriber = (registryEntry: EntryIndex) => {
+export const useRegistrySubscriber = (registryEntry: EntryIndexHydrated) => {
   const allSubscriptions = useSubscriptions()
 
   return {
@@ -12,6 +12,18 @@ export const useRegistrySubscriber = (registryEntry: EntryIndex) => {
       try {
         console.log('Subscribed to registry entry:', registryEntry)
         await client.subscribe.mutate({ modId: registryEntry.id })
+        if (registryEntry.dependencies) {
+          for (const dependency of registryEntry.dependencies) {
+            try {
+              await client.subscribe.mutate({ modId: dependency.id })
+              showSuccessNotification(`Subscribed to ${dependency.name}`)
+            } catch (e) {
+              // Ignore errors for now
+              console.error('Failed to subscribe to dependency:', dependency, e)
+              showErrorNotification(e)
+            }
+          }
+        }
         showSuccessNotification(`Subscribed to ${registryEntry.name}`)
       } catch (e) {
         showErrorNotification(e)

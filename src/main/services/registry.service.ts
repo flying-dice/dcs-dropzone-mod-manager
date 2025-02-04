@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { SettingsManager } from '../manager/settings.manager'
 import {
-  EntryIndex,
+  EntryIndexHydrated,
+  EntryIndexSimple,
   EntryIndexVersionsItem,
   getRegistryEntry,
   getRegistryIndex,
@@ -20,11 +21,26 @@ export class RegistryService {
     return data
   }
 
-  async getRegistryEntryIndex(modId: string): Promise<EntryIndex> {
+  async getRegistryEntryIndex(modId: string): Promise<EntryIndexHydrated> {
+    const baseURL = await this.settingsManager.getRegistryUrl()
     const { data } = await getRegistryEntry(modId, {
-      baseURL: await this.settingsManager.getRegistryUrl()
+      baseURL
     })
-    return data
+    const hydratedData = data as EntryIndexHydrated
+    if (data.dependencies) {
+      hydratedData.dependencies = await Promise.all(
+        data.dependencies.map<Promise<EntryIndexSimple>>(async (it) => {
+          const { data: depData } = await getRegistryEntry(it, {
+            baseURL
+          })
+          return {
+            id: depData.id,
+            name: depData.name
+          } as EntryIndexSimple
+        })
+      )
+    }
+    return hydratedData
   }
 
   async getLatestVersion(modId: string): Promise<EntryIndexVersionsItem | undefined> {
