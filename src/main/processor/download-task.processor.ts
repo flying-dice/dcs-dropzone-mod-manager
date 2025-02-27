@@ -23,7 +23,7 @@ export class DownloadTaskProcessor implements TaskProcessor<DownloadTaskPayload>
   constructor(private readonly configService: ConfigService<MainConfig>) {}
 
   async process(task: AssetTask<DownloadTaskPayload>): Promise<void> {
-    this.logger.debug(`[${task.id}] - Processing download task`, task.payload)
+    this.logger.debug(`[${task.id}] - Processing download task ${JSON.stringify(task.payload)}`)
 
     if (this.result && !this.terminalStatus) {
       task.status = AssetTaskStatus.IN_PROGRESS
@@ -58,7 +58,7 @@ export class DownloadTaskProcessor implements TaskProcessor<DownloadTaskPayload>
         this.progress = 100
       })
       .catch((error) => {
-        this.logger.error(`[${task.id}] - Download process failed`, error)
+        this.logger.error(`[${task.id}] - Download process failed ${error.message}`)
         this.terminalStatus = AssetTaskStatus.FAILED
       })
   }

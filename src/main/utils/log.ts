@@ -12,14 +12,14 @@ export const Log =
     descriptor.value = async function (...args: any[]) {
       const startTime = Date.now()
 
-      _logger.verbose(
-        `Method ${propertyKey} called with arguments: ${args.map((it) => `${it}`).join(', ')}`
-      )
+      // _logger.verbose(
+      //   `Method ${propertyKey} called with arguments: ${args.map((it) => `${it}`).join(', ')}`
+      // )
 
       try {
         const result = await originalMethod.apply(this, args)
-        const endTime = Date.now()
-        _logger.verbose(`Method ${propertyKey} executed successfully in ${endTime - startTime}ms`)
+        // const endTime = Date.now()
+        // _logger.verbose(`Method ${propertyKey} executed successfully in ${endTime - startTime}ms`)
         return result
       } catch (error) {
         const endTime = Date.now()
