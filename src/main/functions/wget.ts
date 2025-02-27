@@ -66,7 +66,10 @@ export async function wget({ exePath, baseUrl, file, targetDir, onProgress }: Wg
       })
     })
 
-    await rename(join(tempdir, file), target)
+    Logger.debug(`Downloaded file successfully, moving to target directory ${target}`)
+    await rename(join(tempdir, decodeURIComponent(file)), target)
+
+    Logger.debug('Removing temp directory')
     await rm(tempdir, { recursive: true, force: true })
 
     return target
