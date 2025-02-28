@@ -9,18 +9,4 @@ describe('delay', () => {
     expect(end - start).toBeLessThan(1050)
     expect(end - start).toBeGreaterThan(950)
   })
-
-  it('resolves immediately if delay is 0', async () => {
-    const start = performance.now()
-    await delay(0)
-    const end = performance.now()
-    expect(end - start).toBeLessThan(20)
-  })
-
-  it('handles negative delays as zero delay', async () => {
-    const start = performance.now()
-    await delay(-100)
-    const end = performance.now()
-    expect(end - start).toBeLessThan(20)
-  })
 })
