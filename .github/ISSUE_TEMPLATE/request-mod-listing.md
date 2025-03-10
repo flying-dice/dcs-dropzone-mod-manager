@@ -1,14 +1,25 @@
 ---
 name: Request Mod Listing
 about: Used by a publisher to request a new listing space
-title: 'Listing Request: {MOD NAME}'
+title: "[USER_ID] Listing Request: MOD_NAME - MOD_HOMEPAGE"
 labels: listing-request
 assignees: ''
 
 ---
 
-User ID: When Logged In the User ID is accessible from the profile menu under View User Details
+This request is used to create a new mod space.
 
-Mod Name: What's the name of your mod?
+**Preferred Mod ID:**  
+*(Must be a URL-safe, kebab-case formatted string. Example: `my-cool-mod`)*
 
-Mod Homepage: What's the homepage of your mod?
+**Mod Name:**  
+*(The full name of the mod. Example: `My Cool Mod`)*
+
+**Homepage URL:**  
+*(Link to the mod’s homepage or main source repository)*
+
+**Short Description:**  
+*(A concise summary of what this mod does, shown in mod tiles)*
+
+**Authors:**  
+*(List of author(s), e.g., `Author1, Author2`)*
