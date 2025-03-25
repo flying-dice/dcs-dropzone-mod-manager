@@ -22,11 +22,12 @@ import {
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { marked } from 'marked'
-import React, { useEffect } from 'react'
+import type React from 'react'
+import { useEffect } from 'react'
 import { MdOutlineCategory } from 'react-icons/md'
 import { VscCheck, VscClose } from 'react-icons/vsc'
 import { useNavigate, useParams } from 'react-router-dom'
-import { EntryIndexHydrated } from '../../../lib/client'
+import type { EntryIndexHydrated } from '../../../lib/client'
 import { ReleaseSummary } from '../components/release-summary'
 import { useRegistrySubscriber } from '../hooks/useRegistrySubscriber'
 import { useRegistryEntry } from '../hooks/useRegistryEntry'
@@ -102,7 +103,11 @@ export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) 
               {url.value && (
                 <Center>
                   <Image
-                    src={`${url.value}/${entry.imageUrl}`}
+                    src={
+                      entry.imageUrl.startsWith('http')
+                        ? entry.imageUrl
+                        : `${url.value}/${entry.imageUrl}`
+                    }
                     fit="contain"
                     alt="preview"
                     radius="sm"

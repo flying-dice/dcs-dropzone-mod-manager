@@ -32,7 +32,15 @@ export const RegistryEntryCard: React.FC<RegistryEntryCardProps> = ({ item, subs
           <Stack gap={0}>
             <Card.Section>
               {url.value && (
-                <Image src={`${url.value}/${item.imageUrl}`} height={190} alt="preview" />
+                <Image
+                  src={
+                    item.imageUrl.startsWith('http')
+                      ? item.imageUrl
+                      : `${url.value}/${item.imageUrl}`
+                  }
+                  height={190}
+                  alt="preview"
+                />
               )}
             </Card.Section>
             <Stack gap={0} pl={'md'} pr={'md'}>
