@@ -86,7 +86,10 @@ export class SubscriptionManager implements OnApplicationBootstrap {
     subscription: Subscription
   ): Promise<SubscriptionReleaseState | undefined> {
     const installed = await this.releaseService.findBySubscriptionIdOrThrow(subscription.id)
-    const latest = await this.registryService.getLatestVersion(subscription.modId)
+
+    const latest = await this.registryService.getLatestVersion(subscription.modId).catch((e) => {
+      this.logger.warn(`Failed to get latest release for mod ${subscription.modId} ${e.message}`)
+    })
 
     const assetTasks = await this.releaseService.findAssetTasksByRelease(installed.id)
     const assets = await this.releaseService.findAssetsByRelease(installed.id)
@@ -143,8 +146,8 @@ export class SubscriptionManager implements OnApplicationBootstrap {
       currentTaskLabel: assetTasks.find((it) => it.status === AssetTaskStatus.IN_PROGRESS)?.label,
       isReady: taskStatuses.every((it) => it === AssetTaskStatus.COMPLETED),
       exePath: installed.exePath,
-      isLatest: latest?.version ? installed.version === latest?.version : true,
-      latest: latest?.version,
+      isLatest: latest?.version ? installed.version === latest?.version : false,
+      latest: latest?.version || 'NOT FOUND',
       isFailed: taskStatuses.some((it) => it === AssetTaskStatus.FAILED),
       errors
     }
@@ -158,7 +161,9 @@ export class SubscriptionManager implements OnApplicationBootstrap {
     const mod = await this.registryService.getRegistryEntryIndex(modId)
 
     this.logger.debug(`Getting latest release for mod ${modId}`)
-    const latestRelease = await this.registryService.getLatestVersion(modId)
+    const latestRelease = await this.registryService.getLatestVersion(modId).catch((e) => {
+      this.logger.warn(`Failed to get latest release for mod ${modId} ${e.message}`)
+    })
 
     if (!latestRelease) {
       throw new Error(`No releases found for mod ${modId}`)

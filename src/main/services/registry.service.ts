@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { SettingsManager } from '../manager/settings.manager'
 import {
   EntryIndexHydrated,
@@ -11,6 +11,8 @@ import {
 
 @Injectable()
 export class RegistryService {
+  private readonly logger = new Logger(RegistryService.name)
+
   @Inject()
   protected settingsManager: SettingsManager
 
@@ -44,7 +46,9 @@ export class RegistryService {
   }
 
   async getLatestVersion(modId: string): Promise<EntryIndexVersionsItem | undefined> {
+    this.logger.debug(`Getting latest version for modId ${modId} from Registry`)
     const { latest, versions } = await this.getRegistryEntryIndex(modId)
+
     return versions.find((it) => it.version === latest)
   }
 }
