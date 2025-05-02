@@ -1,7 +1,7 @@
 import { Card, Group, Image, Indicator, Stack, Text } from '@mantine/core'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { RegistryIndexItem } from '../../../lib/client'
+import { RegistryIndexItem } from '../../../lib/types'
 import { useAsync } from 'react-use'
 import { client } from '../client'
 

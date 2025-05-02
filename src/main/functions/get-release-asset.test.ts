@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getReleaseAsset, HydratedReleaseAsset } from './get-release-asset'
-import { EntryIndexVersionsItemAssetsItem } from '../../lib/client'
+import { EntryIndexVersionsItemAssetsItem } from '../../lib/types'
 import { Release } from '../schemas/release.schema'
 import { AssetTaskStatus, AssetTaskType } from '../schemas/release-asset-task.schema'
 

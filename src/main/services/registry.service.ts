@@ -1,13 +1,12 @@
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { SettingsManager } from '../manager/settings.manager'
+import { getRegistryEntry, getRegistryIndex } from '../../lib/client'
 import {
   EntryIndexHydrated,
   EntryIndexSimple,
   EntryIndexVersionsItem,
-  getRegistryEntry,
-  getRegistryIndex,
   RegistryIndex
-} from '../../lib/client'
+} from '../../lib/types'
 
 @Injectable()
 export class RegistryService {

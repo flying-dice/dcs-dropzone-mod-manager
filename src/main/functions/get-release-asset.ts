@@ -1,6 +1,6 @@
 import { getUrlPartsForDownload } from './getUrlPartsForDownload'
 import { extname } from 'node:path'
-import { EntryIndexVersionsItemAssetsItem } from '../../lib/client'
+import { EntryIndexVersionsItemAssetsItem } from '../../lib/types'
 import {
   AssetTask,
   AssetTaskStatus,

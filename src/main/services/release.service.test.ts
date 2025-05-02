@@ -13,7 +13,7 @@ import { Release, ReleaseSchema } from '../schemas/release.schema'
 import { ReleaseService } from './release.service'
 import { cloneDeep, omit } from 'lodash'
 import { randomUUID } from 'node:crypto'
-import { EntryIndexVersionsItem } from '../../lib/client'
+import { EntryIndexVersionsItem } from '../../lib/types'
 import { getReleaseAsset, HydratedReleaseAsset } from '../functions/get-release-asset'
 
 vi.mock('@aptabase/electron/main')
@@ -175,6 +175,7 @@ describe('ReleaseService', () => {
 
   it('should include subscriptions with all tasks pending when calling fetchIdsForActiveSubscriptionTasks', async () => {
     const { release, assets } = createReleaseWithAssetsAndTask({
+      name: 'Test Mod',
       version: '1.0.0',
       date: new Date().toISOString(),
       releasepage: 'http://example.com',
@@ -208,6 +209,7 @@ describe('ReleaseService', () => {
 
   it('should include subscriptions with some tasks pending and some completed when calling fetchIdsForActiveSubscriptionTasks', async () => {
     const { release, assets } = createReleaseWithAssetsAndTask({
+      name: 'Test Mod',
       version: '1.0.0',
       date: new Date().toISOString(),
       releasepage: 'http://example.com',
@@ -244,6 +246,7 @@ describe('ReleaseService', () => {
 
   it('should exclude subscriptions with some tasks pending and some failed when calling fetchIdsForActiveSubscriptionTasks', async () => {
     const { release, assets } = createReleaseWithAssetsAndTask({
+      name: 'Test Mod',
       version: '1.0.0',
       date: new Date().toISOString(),
       releasepage: 'http://example.com',
@@ -280,6 +283,7 @@ describe('ReleaseService', () => {
 
   it('should return only assets with symbolic links defined when calling findAssetsWithSymlinks', async () => {
     const enabledMod = createReleaseWithAssetsAndTask({
+      name: 'Test Mod',
       version: '1.0.0',
       date: new Date().toISOString(),
       releasepage: 'http://example.com',
@@ -308,6 +312,7 @@ describe('ReleaseService', () => {
     }
 
     const disabledMod = createReleaseWithAssetsAndTask({
+      name: 'Test Mod',
       version: '1.0.0',
       date: new Date().toISOString(),
       releasepage: 'http://example.com',

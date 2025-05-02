@@ -10,6 +10,7 @@ import { SettingsService } from './settings.service'
 import { Config, ConfigSchema } from '../schemas/config.schema'
 import registryIndex from '../__stubs__/index.json'
 import modIndex from '../__stubs__/example-mod/index.json'
+import { DEFAULT_REGISTRY_URL } from '../../lib/registry'
 
 vi.mock('@aptabase/electron/main')
 vi.mock('electron')
@@ -18,7 +19,7 @@ function bootstrap() {
   return Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({
-        load: [() => ({ registryUrl: 'https://dcs-mod-manager-registry.pages.dev' })]
+        load: [() => ({ registryUrl: DEFAULT_REGISTRY_URL })]
       }),
       MongooseModule.forRootAsync({
         useFactory: async () => {
@@ -44,17 +45,13 @@ describe('RegistryService', () => {
     })
 
     it('should successfully subscribe to a mod', async () => {
-      nock('https://dcs-mod-manager-registry.pages.dev')
-        .get('/index.json')
-        .reply(200, registryIndex)
+      nock(DEFAULT_REGISTRY_URL).get('/index.json').reply(200, registryIndex)
 
       await expect(moduleRef.get(RegistryService).getRegistryIndex()).resolves.toMatchSnapshot()
     })
 
     it('should successfully fetch the mod index', async () => {
-      nock('https://dcs-mod-manager-registry.pages.dev')
-        .get('/example-mod/index.json')
-        .reply(200, modIndex)
+      nock(DEFAULT_REGISTRY_URL).get('/example-mod/index.json').reply(200, modIndex)
 
       await expect(
         moduleRef.get(RegistryService).getRegistryEntryIndex('example-mod')
