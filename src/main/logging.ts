@@ -21,7 +21,8 @@ export const fileTransport = new winston.transports.File({
   options: { flags: 'w' },
   maxsize: bytes('1mb'),
   filename,
-  format: combine(timestamp(), myFormat)
+  format: combine(timestamp(), myFormat),
+  maxFiles: 1
 })
 
 export const consoleTransport = new winston.transports.Console({
