@@ -9,10 +9,11 @@ exports[`RegistryService > GIVEN default values > should successfully fetch the 
   ],
   "category": "example",
   "content": "IyBFeGFtcGxlIEhlbGxvIFdvcmxkIE1vZAoKRENTIHdvcmxkIEhlbGxvIFdvcmxkIE1vZAoKT24gRENTIFN0YXJ0dXAgbG9ncyBoZWxsbyB3b3JsZCB0byB0aGUgY29uc29sZQoKPiBUaGlzIGNvbnRlbnQgaXMgcHJlc2VudGVkIHRvIHRoZSB1c2VyIHdoZW4gdGhleSBvcGVuIHRoZSBtb2QgcGFnZQo=",
+  "dependencies": [],
   "description": "A simple mod that logs hello world to the console on DCS startup",
   "homepage": "https://github.com/flying-dice/hello-world-mod",
   "id": "example-mod",
-  "imageUrl": "example-mod/index.png",
+  "imageUrl": "https://dcs-mod-manager-registry.pages.dev/example-mod/index.png",
   "latest": "0.1.0",
   "license": "GNU General Public License v3.0",
   "name": "Hello World Mod",
@@ -23,8 +24,13 @@ exports[`RegistryService > GIVEN default values > should successfully fetch the 
     {
       "assets": [
         {
-          "source": "https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.lua",
-          "target": "{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua",
+          "links": [
+            {
+              "source": "hello-world.lua",
+              "target": "{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua",
+            },
+          ],
+          "remoteSource": "https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.lua",
         },
       ],
       "date": "2023-01-07T12:00:00.000Z",
@@ -45,9 +51,10 @@ exports[`RegistryService > GIVEN default values > should successfully subscribe 
       },
     ],
     "category": "example",
+    "dependencies": [],
     "description": "A simple mod that logs hello world to the console on DCS startup",
     "id": "example-mod",
-    "imageUrl": "example-mod/index.png",
+    "imageUrl": "https://dcs-mod-manager-registry.pages.dev/example-mod/index.png",
     "latest": "0.1.0",
     "name": "Hello World Mod",
     "tags": [
@@ -66,10 +73,11 @@ exports[`RegistryService > GIVEN overridden values > should successfully fetch t
   ],
   "category": "example",
   "content": "IyBFeGFtcGxlIEhlbGxvIFdvcmxkIE1vZAoKRENTIHdvcmxkIEhlbGxvIFdvcmxkIE1vZAoKT24gRENTIFN0YXJ0dXAgbG9ncyBoZWxsbyB3b3JsZCB0byB0aGUgY29uc29sZQoKPiBUaGlzIGNvbnRlbnQgaXMgcHJlc2VudGVkIHRvIHRoZSB1c2VyIHdoZW4gdGhleSBvcGVuIHRoZSBtb2QgcGFnZQo=",
+  "dependencies": [],
   "description": "A simple mod that logs hello world to the console on DCS startup",
   "homepage": "https://github.com/flying-dice/hello-world-mod",
   "id": "example-mod",
-  "imageUrl": "example-mod/index.png",
+  "imageUrl": "https://dcs-mod-manager-registry.pages.dev/example-mod/index.png",
   "latest": "0.1.0",
   "license": "GNU General Public License v3.0",
   "name": "Hello World Mod",
@@ -80,8 +88,13 @@ exports[`RegistryService > GIVEN overridden values > should successfully fetch t
     {
       "assets": [
         {
-          "source": "https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.lua",
-          "target": "{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua",
+          "links": [
+            {
+              "source": "hello-world.lua",
+              "target": "{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua",
+            },
+          ],
+          "remoteSource": "https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.lua",
         },
       ],
       "date": "2023-01-07T12:00:00.000Z",
@@ -102,9 +115,10 @@ exports[`RegistryService > GIVEN overridden values > should successfully subscri
       },
     ],
     "category": "example",
+    "dependencies": [],
     "description": "A simple mod that logs hello world to the console on DCS startup",
     "id": "example-mod",
-    "imageUrl": "example-mod/index.png",
+    "imageUrl": "https://dcs-mod-manager-registry.pages.dev/example-mod/index.png",
     "latest": "0.1.0",
     "name": "Hello World Mod",
     "tags": [

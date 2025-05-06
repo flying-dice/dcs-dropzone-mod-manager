@@ -1,1 +1,1 @@
-export const DEFAULT_REGISTRY_URL = 'https://dcs-dropzone.app/api/registry/'
+export const DEFAULT_REGISTRY_URL = 'https://dcs-dropzone.app'
