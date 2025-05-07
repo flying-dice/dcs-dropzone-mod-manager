@@ -11,6 +11,7 @@
   "category": "example",
   "license": "GNU General Public License v3.0",
   "latest": "0.1.0",
+  "dependencies": [],
   "versions": [
     {
       "releasepage": "https://github.com/flying-dice/hello-world-mod/releases/tag/0.1.0",
@@ -19,13 +20,18 @@
       "date": "2023-01-07T12:00:00.000Z",
       "assets": [
         {
-          "source": "https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.lua",
-          "target": "{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua"
+          "remoteSource": "https://github.com/flying-dice/hello-world-mod/releases/download/0.1.0/hello-world.lua",
+          "links": [
+            {
+              "source": "hello-world.lua",
+              "target": "{{DCS_USER_DIR}}/Scripts/Hooks/hello-world.lua"
+            }
+          ]
         }
       ]
     }
   ],
   "id": "example-mod",
-  "imageUrl": "example-mod/index.png",
+  "imageUrl": "https://dcs-mod-manager-registry.pages.dev/example-mod/index.png",
   "content": "IyBFeGFtcGxlIEhlbGxvIFdvcmxkIE1vZAoKRENTIHdvcmxkIEhlbGxvIFdvcmxkIE1vZAoKT24gRENTIFN0YXJ0dXAgbG9ncyBoZWxsbyB3b3JsZCB0byB0aGUgY29uc29sZQoKPiBUaGlzIGNvbnRlbnQgaXMgcHJlc2VudGVkIHRvIHRoZSB1c2VyIHdoZW4gdGhleSBvcGVuIHRoZSBtb2QgcGFnZQo="
 }

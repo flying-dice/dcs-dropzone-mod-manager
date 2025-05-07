@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { EntryIndexSimple } from '../../lib/client'
+import { EntryIndexSimple } from '../../lib/types'
 
 @Schema({ timestamps: true })
 export class Subscription {

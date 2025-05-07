@@ -10,6 +10,8 @@ import { SettingsService } from './settings.service'
 import { Config, ConfigSchema } from '../schemas/config.schema'
 import registryIndex from '../__stubs__/index.json'
 import modIndex from '../__stubs__/example-mod/index.json'
+import { Logger } from '@nestjs/common'
+import { DEFAULT_REGISTRY_URL } from '../../lib/registry'
 
 vi.mock('@aptabase/electron/main')
 vi.mock('electron')
@@ -18,7 +20,7 @@ function bootstrap() {
   return Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({
-        load: [() => ({ registryUrl: 'https://dcs-mod-manager-registry.pages.dev' })]
+        load: [() => ({})]
       }),
       MongooseModule.forRootAsync({
         useFactory: async () => {
@@ -32,7 +34,9 @@ function bootstrap() {
       MongooseModule.forFeature([{ name: Config.name, schema: ConfigSchema }])
     ],
     providers: [RegistryService, SettingsManager, SettingsService]
-  }).compile()
+  })
+    .setLogger(new Logger())
+    .compile()
 }
 
 describe('RegistryService', () => {
@@ -44,17 +48,13 @@ describe('RegistryService', () => {
     })
 
     it('should successfully subscribe to a mod', async () => {
-      nock('https://dcs-mod-manager-registry.pages.dev')
-        .get('/index.json')
-        .reply(200, registryIndex)
-
-      await expect(moduleRef.get(RegistryService).getRegistryIndex()).resolves.toMatchSnapshot()
+      nock(DEFAULT_REGISTRY_URL).get('/api/registry/index.json').reply(200, registryIndex)
+      const result = await moduleRef.get(RegistryService).getRegistryIndex()
+      expect(result).toMatchSnapshot()
     })
 
     it('should successfully fetch the mod index', async () => {
-      nock('https://dcs-mod-manager-registry.pages.dev')
-        .get('/example-mod/index.json')
-        .reply(200, modIndex)
+      nock(DEFAULT_REGISTRY_URL).get('/api/registry/example-mod/index.json').reply(200, modIndex)
 
       await expect(
         moduleRef.get(RegistryService).getRegistryEntryIndex('example-mod')
@@ -72,13 +72,13 @@ describe('RegistryService', () => {
     })
 
     it('should successfully subscribe to a mod', async () => {
-      nock('https://example.com').get('/index.json').reply(200, registryIndex)
+      nock('https://example.com').get('/api/registry/index.json').reply(200, registryIndex)
 
       await expect(moduleRef.get(RegistryService).getRegistryIndex()).resolves.toMatchSnapshot()
     })
 
     it('should successfully fetch the mod index', async () => {
-      nock('https://example.com').get('/example-mod/index.json').reply(200, modIndex)
+      nock('https://example.com').get('/api/registry/example-mod/index.json').reply(200, modIndex)
 
       await expect(
         moduleRef.get(RegistryService).getRegistryEntryIndex('example-mod')

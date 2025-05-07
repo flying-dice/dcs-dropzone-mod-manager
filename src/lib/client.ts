@@ -8,114 +8,808 @@
 import * as axios from 'axios'
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import useSwr from 'swr'
-import type { Key, SWRConfiguration } from 'swr'
-export type EntryIndexVersionsItemAssetsItem = {
-  /** download path */
-  remoteSource: string
-  /** list of symlinks to be created when enabled */
-  links: {
-    /** Source path for symlink */
-    source?: string
-    /** Target path for symlink */
-    target?: string
-    /** Run on simulation (mission) start, note that this will execute the script before the mission environment is sanitized */
-    runonstart?: boolean
-  }[]
+import type { Arguments, Key, SWRConfiguration } from 'swr'
+import useSWRMutation from 'swr/mutation'
+import type { SWRMutationConfiguration } from 'swr/mutation'
+export type GetRegistryEntry200VersionsItemAssetsItemLinksItem = {
+  /** Run on simulation (mission) start, note that this will execute the script before the mission environment is sanitized */
+  runonstart?: boolean
+  /** The name of the file # separates download path and internal zip path */
+  source: string
+  /** The name of the installation location relative to install path */
+  target: string
 }
 
-export type EntryIndexVersionsItem = {
+export type GetRegistryEntry200VersionsItemAssetsItem = {
+  links: GetRegistryEntry200VersionsItemAssetsItemLinksItem[]
+  /** The URL of the file to download */
+  remoteSource: string
+}
+
+export type GetRegistryEntry200VersionsItem = {
   /** The array of files to install */
-  assets: EntryIndexVersionsItemAssetsItem[]
+  assets: GetRegistryEntry200VersionsItemAssetsItem[]
   /** The date of the release */
   date: string
   /** Executable file specifically Tools */
   exePath?: string
   /** The name of the release */
-  name?: string
+  name: string
   /** The release page of the release */
   releasepage: string
   /** The version of the release */
-  version?: string
+  version: string
 }
 
-export type EntryIndexAuthorsItem = {
+export type GetRegistryEntry200AuthorsItem = {
   avatar?: string
   name: string
   url?: string
 }
 
-interface EntryIndexBase {
-  authors: EntryIndexAuthorsItem[]
+export type GetRegistryEntry200 = {
+  authors: GetRegistryEntry200AuthorsItem[]
   /** The category of the mod, this is used to group mods in the mod browser */
-  category?: string
+  category: string
   content: string
+  /** The dependencies of the mod */
+  dependencies?: string[]
   /** A short description of the mod to be displayed in the mod tile */
-  description?: string
+  description: string
   /** The homepage of the mod */
   homepage: string
   /** @pattern ^[a-z0-9-]+$ */
   id: string
   imageUrl: string
-  latest?: string
+  latest: string
   /** The license of the mod */
-  license?: string
+  license: string
   /** The name of the mod */
-  name?: string
+  name: string
   /** The tags of the mod, these are used to filter mods in the mod browser */
   tags: string[]
-
   /** The versions of the mod */
-  versions: EntryIndexVersionsItem[]
+  versions: GetRegistryEntry200VersionsItem[]
 }
 
-export interface EntryIndex extends EntryIndexBase {
-  /** Mod Ids this mod is dependent on */
-  dependencies?: string[]
-}
-
-export interface EntryIndexSimple {
-  id: string
-  name: string
-}
-
-export interface EntryIndexHydrated extends EntryIndexBase {
-  dependencies?: EntryIndexSimple[]
-}
-
-export type RegistryIndexItemAuthorsItem = {
+export type GetRegistryIndex200ItemAuthorsItem = {
   avatar?: string
   name: string
   url?: string
 }
 
-export type RegistryIndexItem = {
-  authors: RegistryIndexItemAuthorsItem[]
+export type GetRegistryIndex200Item = {
+  authors: GetRegistryIndex200ItemAuthorsItem[]
   /** The category of the mod, this is used to group mods in the mod browser */
-  category?: string
+  category: string
+  /** The dependencies of the mod */
+  dependencies?: string[]
   /** A short description of the mod to be displayed in the mod tile */
-  description?: string
+  description: string
   /** @pattern ^[a-z0-9-]+$ */
   id: string
   imageUrl: string
-  latest?: string
+  latest: string
   /** The name of the mod */
-  name?: string
+  name: string
   /** The tags of the mod, these are used to filter mods in the mod browser */
   tags: string[]
 }
 
-export type RegistryIndex = RegistryIndexItem[]
+export type GetAuthByProviderCallbackParams = {
+  code: string
+  state: string
+}
+
+export type GetSudoModSchema200 = { [key: string]: unknown }
+
+/**
+ * The currently authenticated user
+ */
+export interface AuthenticatedUser {
+  /** The user's avatar URL, which can be used to display the user's profile picture */
+  avatarUrl: string
+  /** The user's unique ID as a string, which is provided by the OAuth provider */
+  id: string
+  /** The user's login, which is unique to the OAuth provider */
+  login: string
+  /** The user's name, if available. This is not always provided by the OAuth provider */
+  name?: string
+  /** The user's profile URL, which can be used to view the user's profile on the OAuth provider's website */
+  profileUrl: string
+  /** Whether the user is a sudo user */
+  sudo: boolean
+}
+
+export type ModVersionsItemAssetsItemLinksItem = {
+  /** Run on simulation (mission) start, note that this will execute the script before the mission environment is sanitized */
+  runonstart?: boolean
+  /** The name of the file # separates download path and internal zip path */
+  source: string
+  /** The name of the installation location relative to install path */
+  target: string
+}
+
+export type ModVersionsItemAssetsItem = {
+  links: ModVersionsItemAssetsItemLinksItem[]
+  /** The URL of the file to download */
+  remoteSource: string
+}
+
+export type ModVersionsItem = {
+  /** The array of files to install */
+  assets: ModVersionsItemAssetsItem[]
+  /** The date of the release */
+  date: string
+  /** Executable file specifically Tools */
+  exePath?: string
+  /** The name of the release */
+  name: string
+  /** The release page of the release */
+  releasepage: string
+  /** The version of the release */
+  version: string
+}
+
+/**
+ * A mod
+ */
+export interface Mod {
+  /** The authors of the mod as a list of strings */
+  authors?: string[]
+  /** The category of the mod, this is used to group mods in the mod browser */
+  category?: string
+  /** The content of the mod */
+  content?: string
+  /** The dependencies of the mod */
+  dependencies?: string[]
+  /** A short description of the mod to be displayed in the mod tile */
+  description: string
+  /** The homepage of the mod */
+  homepage: string
+  /** @pattern ^[a-z0-9-]+$ */
+  id: string
+  /** The URL of the image to display in the mod tile */
+  imageUrl?: string
+  /** The latest version of the mod to be pushed to the subscribers */
+  latest?: string
+  /** The license of the mod */
+  license?: string
+  /**
+   * The maintainers of the mod
+   * @minItems 1
+   */
+  maintainers: string[]
+  /** The name of the mod */
+  name: string
+  published?: boolean
+  /** The tags of the mod, these are used to filter mods in the mod browser */
+  tags?: string[]
+  /** The versions of the mod */
+  versions?: ModVersionsItem[]
+}
+
+/**
+ * A summary of a mod
+ */
+export interface ModSummary {
+  /** The authors of the mod as a list of strings */
+  authors: string[]
+  /** The category of the mod, this is used to group mods in the mod browser */
+  category: string
+  /** The dependencies of the mod */
+  dependencies: string[]
+  /** A short description of the mod to be displayed in the mod tile */
+  description: string
+  /** The homepage of the mod */
+  homepage: string
+  /** @pattern ^[a-z0-9-]+$ */
+  id: string
+  /** The URL of the image to display in the mod tile */
+  imageUrl?: string
+  /** The latest version of the mod to be pushed to the subscribers */
+  latest?: string
+  /** The license of the mod */
+  license: string
+  /**
+   * The maintainers of the mod
+   * @minItems 1
+   */
+  maintainers: string[]
+  /** The name of the mod */
+  name: string
+  published: boolean
+  /** The tags of the mod, these are used to filter mods in the mod browser */
+  tags: string[]
+}
+
+/**
+ * The health status of the server.
+ */
+export interface Health {
+  /** The health status of the server. */
+  status: 'UP'
+}
+
+/**
+ * Check the health of the server.
+ * @summary Health Check
+ */
+export const getApiHealth = (options?: AxiosRequestConfig): Promise<AxiosResponse<Health>> => {
+  return axios.default.get(`/api/health`, options)
+}
+
+export const getGetApiHealthKey = () => [`/api/health`] as const
+
+export type GetApiHealthQueryResult = NonNullable<Awaited<ReturnType<typeof getApiHealth>>>
+export type GetApiHealthQueryError = AxiosError<unknown>
+
+/**
+ * @summary Health Check
+ */
+export const useGetApiHealth = <TError = AxiosError<unknown>>(options?: {
+  swr?: SWRConfiguration<Awaited<ReturnType<typeof getApiHealth>>, TError> & {
+    swrKey?: Key
+    enabled?: boolean
+  }
+  axios?: AxiosRequestConfig
+}) => {
+  const { swr: swrOptions, axios: axiosOptions } = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false
+  const swrKey = swrOptions?.swrKey ?? (() => (isEnabled ? getGetApiHealthKey() : null))
+  const swrFn = () => getApiHealth(axiosOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+
+/**
+ * Returns a list of all mods maintained by the authenticated user.
+ * @summary Get All User Mods
+ */
+export const getUserMods = (options?: AxiosRequestConfig): Promise<AxiosResponse<ModSummary[]>> => {
+  return axios.default.get(`/api/user-mods`, options)
+}
+
+export const getGetUserModsKey = () => [`/api/user-mods`] as const
+
+export type GetUserModsQueryResult = NonNullable<Awaited<ReturnType<typeof getUserMods>>>
+export type GetUserModsQueryError = AxiosError<unknown>
+
+/**
+ * @summary Get All User Mods
+ */
+export const useGetUserMods = <TError = AxiosError<unknown>>(options?: {
+  swr?: SWRConfiguration<Awaited<ReturnType<typeof getUserMods>>, TError> & {
+    swrKey?: Key
+    enabled?: boolean
+  }
+  axios?: AxiosRequestConfig
+}) => {
+  const { swr: swrOptions, axios: axiosOptions } = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false
+  const swrKey = swrOptions?.swrKey ?? (() => (isEnabled ? getGetUserModsKey() : null))
+  const swrFn = () => getUserMods(axiosOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+
+/**
+ * Returns the mod with the specified ID if it is maintained by the authenticated user. If the mod exists, but is not maintained by the authenticated user, a 403 Forbidden error is returned.
+ * @summary Get User Mod By ID
+ */
+export const getUserModById = (
+  id: string,
+  options?: AxiosRequestConfig
+): Promise<AxiosResponse<Mod>> => {
+  return axios.default.get(`/api/user-mods/${id}`, options)
+}
+
+export const getGetUserModByIdKey = (id: string) => [`/api/user-mods/${id}`] as const
+
+export type GetUserModByIdQueryResult = NonNullable<Awaited<ReturnType<typeof getUserModById>>>
+export type GetUserModByIdQueryError = AxiosError<void>
+
+/**
+ * @summary Get User Mod By ID
+ */
+export const useGetUserModById = <TError = AxiosError<void>>(
+  id: string,
+  options?: {
+    swr?: SWRConfiguration<Awaited<ReturnType<typeof getUserModById>>, TError> & {
+      swrKey?: Key
+      enabled?: boolean
+    }
+    axios?: AxiosRequestConfig
+  }
+) => {
+  const { swr: swrOptions, axios: axiosOptions } = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!id
+  const swrKey = swrOptions?.swrKey ?? (() => (isEnabled ? getGetUserModByIdKey(id) : null))
+  const swrFn = () => getUserModById(id, axiosOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+
+/**
+ * Updates the mod with the specified ID if it is maintained by the authenticated user. If the mod exists, but is not maintained by the authenticated user, a 403 Forbidden error is returned.
+ * @summary Update User Mod
+ */
+export const updateUserMod = (
+  id: string,
+  mod: Mod,
+  options?: AxiosRequestConfig
+): Promise<AxiosResponse<Mod>> => {
+  return axios.default.put(`/api/user-mods/${id}`, mod, options)
+}
+
+export const getUpdateUserModMutationFetcher = (id: string, options?: AxiosRequestConfig) => {
+  return (_: Key, { arg }: { arg: Mod }): Promise<AxiosResponse<Mod>> => {
+    return updateUserMod(id, arg, options)
+  }
+}
+export const getUpdateUserModMutationKey = (id: string) => [`/api/user-mods/${id}`] as const
+
+export type UpdateUserModMutationResult = NonNullable<Awaited<ReturnType<typeof updateUserMod>>>
+export type UpdateUserModMutationError = AxiosError<void>
+
+/**
+ * @summary Update User Mod
+ */
+export const useUpdateUserMod = <TError = AxiosError<void>>(
+  id: string,
+  options?: {
+    swr?: SWRMutationConfiguration<
+      Awaited<ReturnType<typeof updateUserMod>>,
+      TError,
+      Key,
+      Mod,
+      Awaited<ReturnType<typeof updateUserMod>>
+    > & { swrKey?: string }
+    axios?: AxiosRequestConfig
+  }
+) => {
+  const { swr: swrOptions, axios: axiosOptions } = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getUpdateUserModMutationKey(id)
+  const swrFn = getUpdateUserModMutationFetcher(id, axiosOptions)
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+
+/**
+ * Returns the schema for a mod.
+ * @summary Get Sudo Mod Schema
+ */
+export const getSudoModSchema = (
+  options?: AxiosRequestConfig
+): Promise<AxiosResponse<GetSudoModSchema200>> => {
+  return axios.default.get(`/api/sudo-mods/schema`, options)
+}
+
+export const getGetSudoModSchemaKey = () => [`/api/sudo-mods/schema`] as const
+
+export type GetSudoModSchemaQueryResult = NonNullable<Awaited<ReturnType<typeof getSudoModSchema>>>
+export type GetSudoModSchemaQueryError = AxiosError<unknown>
+
+/**
+ * @summary Get Sudo Mod Schema
+ */
+export const useGetSudoModSchema = <TError = AxiosError<unknown>>(options?: {
+  swr?: SWRConfiguration<Awaited<ReturnType<typeof getSudoModSchema>>, TError> & {
+    swrKey?: Key
+    enabled?: boolean
+  }
+  axios?: AxiosRequestConfig
+}) => {
+  const { swr: swrOptions, axios: axiosOptions } = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false
+  const swrKey = swrOptions?.swrKey ?? (() => (isEnabled ? getGetSudoModSchemaKey() : null))
+  const swrFn = () => getSudoModSchema(axiosOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+
+/**
+ * Returns a list of all mods.
+ * @summary Get All User Mods.
+ */
+export const getSudoMods = (options?: AxiosRequestConfig): Promise<AxiosResponse<Mod[]>> => {
+  return axios.default.get(`/api/sudo-mods`, options)
+}
+
+export const getGetSudoModsKey = () => [`/api/sudo-mods`] as const
+
+export type GetSudoModsQueryResult = NonNullable<Awaited<ReturnType<typeof getSudoMods>>>
+export type GetSudoModsQueryError = AxiosError<unknown>
+
+/**
+ * @summary Get All User Mods.
+ */
+export const useGetSudoMods = <TError = AxiosError<unknown>>(options?: {
+  swr?: SWRConfiguration<Awaited<ReturnType<typeof getSudoMods>>, TError> & {
+    swrKey?: Key
+    enabled?: boolean
+  }
+  axios?: AxiosRequestConfig
+}) => {
+  const { swr: swrOptions, axios: axiosOptions } = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false
+  const swrKey = swrOptions?.swrKey ?? (() => (isEnabled ? getGetSudoModsKey() : null))
+  const swrFn = () => getSudoMods(axiosOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+
+/**
+ * Returns the mod with the specified ID.
+ * @summary Get User Mod By ID.
+ */
+export const getSudoModById = (
+  id: string,
+  options?: AxiosRequestConfig
+): Promise<AxiosResponse<Mod>> => {
+  return axios.default.get(`/api/sudo-mods/${id}`, options)
+}
+
+export const getGetSudoModByIdKey = (id: string) => [`/api/sudo-mods/${id}`] as const
+
+export type GetSudoModByIdQueryResult = NonNullable<Awaited<ReturnType<typeof getSudoModById>>>
+export type GetSudoModByIdQueryError = AxiosError<void>
+
+/**
+ * @summary Get User Mod By ID.
+ */
+export const useGetSudoModById = <TError = AxiosError<void>>(
+  id: string,
+  options?: {
+    swr?: SWRConfiguration<Awaited<ReturnType<typeof getSudoModById>>, TError> & {
+      swrKey?: Key
+      enabled?: boolean
+    }
+    axios?: AxiosRequestConfig
+  }
+) => {
+  const { swr: swrOptions, axios: axiosOptions } = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!id
+  const swrKey = swrOptions?.swrKey ?? (() => (isEnabled ? getGetSudoModByIdKey(id) : null))
+  const swrFn = () => getSudoModById(id, axiosOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+
+/**
+ * Updates the mod with the specified ID.
+ * @summary Update User Mod
+ */
+export const setSudoModbyId = (
+  id: string,
+  mod: Mod,
+  options?: AxiosRequestConfig
+): Promise<AxiosResponse<Mod>> => {
+  return axios.default.put(`/api/sudo-mods/${id}`, mod, options)
+}
+
+export const getSetSudoModbyIdMutationFetcher = (id: string, options?: AxiosRequestConfig) => {
+  return (_: Key, { arg }: { arg: Mod }): Promise<AxiosResponse<Mod>> => {
+    return setSudoModbyId(id, arg, options)
+  }
+}
+export const getSetSudoModbyIdMutationKey = (id: string) => [`/api/sudo-mods/${id}`] as const
+
+export type SetSudoModbyIdMutationResult = NonNullable<Awaited<ReturnType<typeof setSudoModbyId>>>
+export type SetSudoModbyIdMutationError = AxiosError<void>
+
+/**
+ * @summary Update User Mod
+ */
+export const useSetSudoModbyId = <TError = AxiosError<void>>(
+  id: string,
+  options?: {
+    swr?: SWRMutationConfiguration<
+      Awaited<ReturnType<typeof setSudoModbyId>>,
+      TError,
+      Key,
+      Mod,
+      Awaited<ReturnType<typeof setSudoModbyId>>
+    > & { swrKey?: string }
+    axios?: AxiosRequestConfig
+  }
+) => {
+  const { swr: swrOptions, axios: axiosOptions } = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getSetSudoModbyIdMutationKey(id)
+  const swrFn = getSetSudoModbyIdMutationFetcher(id, axiosOptions)
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+
+/**
+ * Deletes the mod with the specified ID.
+ * @summary Delete User Mod By ID.
+ */
+export const deleteSudoModById = (
+  id: string,
+  options?: AxiosRequestConfig
+): Promise<AxiosResponse<void>> => {
+  return axios.default.delete(`/api/sudo-mods/${id}`, options)
+}
+
+export const getDeleteSudoModByIdMutationFetcher = (id: string, options?: AxiosRequestConfig) => {
+  return (_: Key, __: { arg: Arguments }): Promise<AxiosResponse<void>> => {
+    return deleteSudoModById(id, options)
+  }
+}
+export const getDeleteSudoModByIdMutationKey = (id: string) => [`/api/sudo-mods/${id}`] as const
+
+export type DeleteSudoModByIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteSudoModById>>
+>
+export type DeleteSudoModByIdMutationError = AxiosError<void>
+
+/**
+ * @summary Delete User Mod By ID.
+ */
+export const useDeleteSudoModById = <TError = AxiosError<void>>(
+  id: string,
+  options?: {
+    swr?: SWRMutationConfiguration<
+      Awaited<ReturnType<typeof deleteSudoModById>>,
+      TError,
+      Key,
+      Arguments,
+      Awaited<ReturnType<typeof deleteSudoModById>>
+    > & { swrKey?: string }
+    axios?: AxiosRequestConfig
+  }
+) => {
+  const { swr: swrOptions, axios: axiosOptions } = options ?? {}
+
+  const swrKey = swrOptions?.swrKey ?? getDeleteSudoModByIdMutationKey(id)
+  const swrFn = getDeleteSudoModByIdMutationFetcher(id, axiosOptions)
+
+  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+
+/**
+ * Handles the OAuth provider's callback after the user has authenticated. The callback URL includes the user's access token and other information.
+ * @summary OAuth provider callback
+ */
+export const getAuthByProviderCallback = (
+  provider: 'github',
+  params: GetAuthByProviderCallbackParams,
+  options?: AxiosRequestConfig
+): Promise<AxiosResponse<unknown>> => {
+  return axios.default.get(`/auth/${provider}/callback`, {
+    ...options,
+    params: { ...params, ...options?.params }
+  })
+}
+
+export const getGetAuthByProviderCallbackKey = (
+  provider: 'github',
+  params: GetAuthByProviderCallbackParams
+) => [`/auth/${provider}/callback`, ...(params ? [params] : [])] as const
+
+export type GetAuthByProviderCallbackQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAuthByProviderCallback>>
+>
+export type GetAuthByProviderCallbackQueryError = AxiosError<unknown>
+
+/**
+ * @summary OAuth provider callback
+ */
+export const useGetAuthByProviderCallback = <TError = AxiosError<unknown>>(
+  provider: 'github',
+  params: GetAuthByProviderCallbackParams,
+  options?: {
+    swr?: SWRConfiguration<Awaited<ReturnType<typeof getAuthByProviderCallback>>, TError> & {
+      swrKey?: Key
+      enabled?: boolean
+    }
+    axios?: AxiosRequestConfig
+  }
+) => {
+  const { swr: swrOptions, axios: axiosOptions } = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!provider
+  const swrKey =
+    swrOptions?.swrKey ??
+    (() => (isEnabled ? getGetAuthByProviderCallbackKey(provider, params) : null))
+  const swrFn = () => getAuthByProviderCallback(provider, params, axiosOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+
+/**
+ * Redirects the user to the OAuth provider's authorization page (e.g., GitHub) to initiate the authentication process.
+ * @summary Redirect to OAuth provider login page
+ */
+export const getAuthByProviderLogin = (
+  provider: 'github',
+  options?: AxiosRequestConfig
+): Promise<AxiosResponse<unknown>> => {
+  return axios.default.get(`/auth/${provider}/login`, options)
+}
+
+export const getGetAuthByProviderLoginKey = (provider: 'github') =>
+  [`/auth/${provider}/login`] as const
+
+export type GetAuthByProviderLoginQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAuthByProviderLogin>>
+>
+export type GetAuthByProviderLoginQueryError = AxiosError<unknown>
+
+/**
+ * @summary Redirect to OAuth provider login page
+ */
+export const useGetAuthByProviderLogin = <TError = AxiosError<unknown>>(
+  provider: 'github',
+  options?: {
+    swr?: SWRConfiguration<Awaited<ReturnType<typeof getAuthByProviderLogin>>, TError> & {
+      swrKey?: Key
+      enabled?: boolean
+    }
+    axios?: AxiosRequestConfig
+  }
+) => {
+  const { swr: swrOptions, axios: axiosOptions } = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false && !!provider
+  const swrKey =
+    swrOptions?.swrKey ?? (() => (isEnabled ? getGetAuthByProviderLoginKey(provider) : null))
+  const swrFn = () => getAuthByProviderLogin(provider, axiosOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+
+/**
+ * Returns the details of the authenticated user, including their ID, login, avatar URL, and profile URL.
+ Requires a valid authentication session (cookie-based authentication).
+ * @summary Get authenticated user data
+ */
+export const getAuthUser = (
+  options?: AxiosRequestConfig
+): Promise<AxiosResponse<AuthenticatedUser>> => {
+  return axios.default.get(`/auth/user`, options)
+}
+
+export const getGetAuthUserKey = () => [`/auth/user`] as const
+
+export type GetAuthUserQueryResult = NonNullable<Awaited<ReturnType<typeof getAuthUser>>>
+export type GetAuthUserQueryError = AxiosError<unknown>
+
+/**
+ * @summary Get authenticated user data
+ */
+export const useGetAuthUser = <TError = AxiosError<unknown>>(options?: {
+  swr?: SWRConfiguration<Awaited<ReturnType<typeof getAuthUser>>, TError> & {
+    swrKey?: Key
+    enabled?: boolean
+  }
+  axios?: AxiosRequestConfig
+}) => {
+  const { swr: swrOptions, axios: axiosOptions } = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false
+  const swrKey = swrOptions?.swrKey ?? (() => (isEnabled ? getGetAuthUserKey() : null))
+  const swrFn = () => getAuthUser(axiosOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
+
+/**
+ * Logs the user out by clearing the session cookie.
+ * @summary Logout
+ */
+export const getAuthLogout = (options?: AxiosRequestConfig): Promise<AxiosResponse<unknown>> => {
+  return axios.default.get(`/auth/logout`, options)
+}
+
+export const getGetAuthLogoutKey = () => [`/auth/logout`] as const
+
+export type GetAuthLogoutQueryResult = NonNullable<Awaited<ReturnType<typeof getAuthLogout>>>
+export type GetAuthLogoutQueryError = AxiosError<unknown>
+
+/**
+ * @summary Logout
+ */
+export const useGetAuthLogout = <TError = AxiosError<unknown>>(options?: {
+  swr?: SWRConfiguration<Awaited<ReturnType<typeof getAuthLogout>>, TError> & {
+    swrKey?: Key
+    enabled?: boolean
+  }
+  axios?: AxiosRequestConfig
+}) => {
+  const { swr: swrOptions, axios: axiosOptions } = options ?? {}
+
+  const isEnabled = swrOptions?.enabled !== false
+  const swrKey = swrOptions?.swrKey ?? (() => (isEnabled ? getGetAuthLogoutKey() : null))
+  const swrFn = () => getAuthLogout(axiosOptions)
+
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+
+  return {
+    swrKey,
+    ...query
+  }
+}
 
 /**
  * @summary Get Registry Index
  */
 export const getRegistryIndex = (
   options?: AxiosRequestConfig
-): Promise<AxiosResponse<RegistryIndex>> => {
-  return axios.default.get(`/index.json`, options)
+): Promise<AxiosResponse<GetRegistryIndex200Item[]>> => {
+  return axios.default.get(`/api/registry/index.json`, options)
 }
 
-export const getGetRegistryIndexKey = () => [`/index.json`] as const
+export const getGetRegistryIndexKey = () => [`/api/registry/index.json`] as const
 
 export type GetRegistryIndexQueryResult = NonNullable<Awaited<ReturnType<typeof getRegistryIndex>>>
 export type GetRegistryIndexQueryError = AxiosError<unknown>
@@ -150,11 +844,11 @@ export const useGetRegistryIndex = <TError = AxiosError<unknown>>(options?: {
 export const getRegistryEntry = (
   id: string,
   options?: AxiosRequestConfig
-): Promise<AxiosResponse<EntryIndex>> => {
-  return axios.default.get(`/${id}/index.json`, options)
+): Promise<AxiosResponse<GetRegistryEntry200>> => {
+  return axios.default.get(`/api/registry/${id}/index.json`, options)
 }
 
-export const getGetRegistryEntryKey = (id: string) => [`/${id}/index.json`] as const
+export const getGetRegistryEntryKey = (id: string) => [`/api/registry/${id}/index.json`] as const
 
 export type GetRegistryEntryQueryResult = NonNullable<Awaited<ReturnType<typeof getRegistryEntry>>>
 export type GetRegistryEntryQueryError = AxiosError<unknown>

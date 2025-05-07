@@ -1,7 +1,7 @@
 import { ActionIcon, Group, Menu, Progress, Stack, Table, Text, Tooltip } from '@mantine/core'
 import { BiCheckbox, BiCheckboxChecked, BiPlay } from 'react-icons/bi'
 import { BsThreeDotsVertical } from 'react-icons/bs'
-import { EntryIndexSimple } from 'src/lib/client'
+import { EntryIndexSimple } from 'src/lib/types'
 
 function SubscriptionStatusColumn(props: {
   isLatest: boolean

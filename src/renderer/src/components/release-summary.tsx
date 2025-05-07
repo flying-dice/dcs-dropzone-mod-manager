@@ -1,7 +1,7 @@
 import { Anchor, Badge, Group, Stack, Text } from '@mantine/core'
 import ms from 'ms'
 import React from 'react'
-import { EntryIndexVersionsItem } from '../../../lib/client'
+import { EntryIndexVersionsItem } from '../../../lib/types'
 
 export type ReleaseSummaryProps = {
   latest?: boolean

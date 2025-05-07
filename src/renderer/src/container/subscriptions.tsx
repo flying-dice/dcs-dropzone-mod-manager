@@ -7,13 +7,14 @@ import { SubscriptionRow } from '../components/subscription-row'
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { showNotification } from '@mantine/notifications'
-import { EntryIndexSimple } from 'src/lib/client'
+import { EntryIndexSimple } from 'src/lib/types'
 import { Subscription } from 'src/main/schemas/subscription.schema'
 import { SubscriptionWithState } from 'src/main/manager/subscription.manager'
 
 export type SubscriptionsProps = {
   onOpenSymlinksModal: (modId: string) => void
 }
+
 export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
   const navigate = useNavigate()
   const subscriptions = useSubscriptions()

@@ -1,4 +1,4 @@
-import { EntryIndexHydrated } from '../../../lib/client'
+import { EntryIndexHydrated } from '../../../lib/types'
 import { client } from '../client'
 import { showErrorNotification, showSuccessNotification } from '../utils/notifications'
 import { useSubscriptions } from './useSubscriptions'

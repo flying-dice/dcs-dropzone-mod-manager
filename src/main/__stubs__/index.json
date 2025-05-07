@@ -10,7 +10,8 @@
     "tags": ["hello"],
     "category": "example",
     "latest": "0.1.0",
+    "dependencies": [],
     "id": "example-mod",
-    "imageUrl": "example-mod/index.png"
+    "imageUrl": "https://dcs-mod-manager-registry.pages.dev/example-mod/index.png"
   }
 ]
