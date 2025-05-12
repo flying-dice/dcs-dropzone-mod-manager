@@ -1,8 +1,6 @@
 import { posixpath } from './posixpath'
 import { join } from 'path'
 import { spawn } from 'child_process'
-import { tmpdir } from 'node:os'
-import { randomUUID } from 'node:crypto'
 import { mkdir, rename, stat } from 'node:fs/promises'
 import { Logger } from '@nestjs/common'
 import { extractPercentage } from './extract-percentage'
@@ -18,7 +16,7 @@ export type WgetProps = {
 export async function wget({ exePath, baseUrl, file, targetDir, onProgress }: WgetProps) {
   await stat(exePath)
 
-  const tempdir = posixpath(join(tmpdir(), 'dcs-dropzone', randomUUID()))
+  const tempdir = posixpath(join(targetDir, 'downloading'))
 
   try {
     await mkdir(tempdir, { recursive: true })
