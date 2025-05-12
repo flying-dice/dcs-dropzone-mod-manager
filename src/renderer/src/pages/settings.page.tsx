@@ -67,12 +67,31 @@ const Configurables: React.FC = () => {
     client.getDefaultRegistryUrl.query()
   )
   const defaultGameDir = useSWR('defaultGameDir', () => client.getDefaultGameDir.query())
+  const defaultWriteDir = useSWR('defaultWriteDir', () => client.getDefaultWriteDir.query())
 
   const gameDir = useConfig('gameDir')
+  const writeDir = useConfig('writeDir')
   const registryUrl = useConfig('registryUrl')
 
   return (
     <Stack>
+      <SettingEntry
+        name="writeDir"
+        label="Mods folder"
+        description="This is where we will store the mod files"
+        defaultValue={defaultWriteDir.data}
+        onClick={() =>
+          client.askFolder.query({ default: defaultWriteDir.data || '' }).then((folder) => {
+            if (!folder) return
+            const [f] = folder.filePaths
+            if (!f) return
+            writeDir.set(f)
+          })
+        }
+      />
+
+      {!defaultWriteDir.data && <Alert color={'red'}>Failed to get default write directory</Alert>}
+
       <SettingEntry
         name="gameDir"
         label="DCS Save Game folder"
@@ -129,7 +148,6 @@ const Configurables: React.FC = () => {
 
 export const SettingsPage: React.FC = () => {
   const currentVersion = useSWR('currentVersion', () => client.currentVersion.query())
-  const defaultWriteDir = useSWR('defaultWriteDir', () => client.getDefaultWriteDir.query())
 
   return (
     <Stack gap={'xl'}>
@@ -155,22 +173,6 @@ export const SettingsPage: React.FC = () => {
         />
 
         <MissionScriptingConfig />
-
-        {!defaultWriteDir.data && (
-          <Alert color={'red'}>Failed to get default write directory</Alert>
-        )}
-
-        <TextInput
-          label="Mods folder"
-          value={defaultWriteDir.data}
-          description={'This is where we will store the mod files'}
-          readOnly
-          rightSection={
-            <ActionIcon variant={'subtle'} onClick={() => client.openWriteDirInExplorer.mutate()}>
-              <CgExternal />
-            </ActionIcon>
-          }
-        />
       </Stack>
 
       <Configurables />
