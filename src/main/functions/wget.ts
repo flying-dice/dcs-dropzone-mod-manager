@@ -1,10 +1,11 @@
 import { posixpath } from './posixpath'
-import { join } from 'path'
+import { join, dirname } from 'path'
 import { spawn } from 'child_process'
 import { mkdir, rename, stat } from 'node:fs/promises'
 import { Logger } from '@nestjs/common'
 import { extractPercentage } from './extract-percentage'
 import { rm } from 'fs-extra'
+import { randomUUID } from 'node:crypto'
 
 export type WgetProps = {
   exePath: string
@@ -16,7 +17,7 @@ export type WgetProps = {
 export async function wget({ exePath, baseUrl, file, targetDir, onProgress }: WgetProps) {
   await stat(exePath)
 
-  const tempdir = posixpath(join(targetDir, 'downloading'))
+  const tempdir = posixpath(join(targetDir, 'downloading', randomUUID()))
 
   try {
     await mkdir(tempdir, { recursive: true })
@@ -68,7 +69,7 @@ export async function wget({ exePath, baseUrl, file, targetDir, onProgress }: Wg
     await rename(join(tempdir, decodeURIComponent(file)), target)
 
     Logger.debug('Removing temp directory')
-    await rm(tempdir, { recursive: true, force: true })
+    await rm(dirname(tempdir), { recursive: true, force: true })
 
     return target
   } catch (e) {
