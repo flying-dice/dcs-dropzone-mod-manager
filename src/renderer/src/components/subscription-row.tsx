@@ -1,5 +1,5 @@
 import { ActionIcon, Group, Menu, Progress, Stack, Table, Text, Tooltip } from '@mantine/core'
-import { BiCheckbox, BiCheckboxChecked, BiPlay } from 'react-icons/bi'
+import { BiCheckbox, BiCheckboxChecked, BiPin, BiPlay } from 'react-icons/bi'
 import { BsThreeDotsVertical } from 'react-icons/bs'
 import { EntryIndexSimple } from 'src/lib/types'
 
@@ -93,12 +93,15 @@ export type SubscriptionRowProps = {
   version: string
   isLatest: boolean
   latestVersion?: string
+  isPinned: boolean
+  versions: string[]
   created: number
   onViewModPage: () => void
   onOpenSymlinksModal: () => void
   onOpenInExplorer: () => void
   onToggleMod: () => void
   onUpdate: () => void
+  onPin: (version: string) => void
   onFixMissingDeps: () => void
   onRunExe?: () => void
   onUnsubscribe: () => void
@@ -147,6 +150,7 @@ export function SubscriptionRow(props: SubscriptionRowProps) {
       <Table.Td>
         <Group>
           <Text>{props.version}</Text>
+          {props.isPinned && <BiPin size={'1.25em'} />}
         </Group>
       </Table.Td>
       <SubscriptionStatusColumn
@@ -183,6 +187,26 @@ export function SubscriptionRow(props: SubscriptionRowProps) {
             >
               {props.enabled ? 'Disable' : 'Enable'}
             </Menu.Item>
+            <Menu.Sub>
+              <Menu.Sub.Target>
+                <Menu.Sub.Item>Pin Version</Menu.Sub.Item>
+              </Menu.Sub.Target>
+
+              <Menu.Sub.Dropdown>
+                {props.isPinned && <Menu.Item onClick={() => props.onUpdate()}>Unpin</Menu.Item>}
+                {props.versions.reverse().map((version) => (
+                  <Menu.Item
+                    key={version}
+                    onClick={() => props.onPin(version)}
+                    rightSection={
+                      props.isPinned && props.version == version && <BiPin size={'1.25em'} />
+                    }
+                  >
+                    {version}
+                  </Menu.Item>
+                ))}
+              </Menu.Sub.Dropdown>
+            </Menu.Sub>
             <Menu.Item onClick={props.onViewModPage}>View Mod Page</Menu.Item>
             <Menu.Item onClick={props.onOpenSymlinksModal}>View Install Details</Menu.Item>
             <Menu.Item onClick={props.onOpenInExplorer}>Open in Explorer</Menu.Item>

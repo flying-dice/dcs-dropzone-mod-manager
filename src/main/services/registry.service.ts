@@ -47,4 +47,18 @@ export class RegistryService {
 
     return versions.find((it) => it.version === latest)
   }
+
+  async getVersion(modId: string, version: string): Promise<EntryIndexVersionsItem | undefined> {
+    this.logger.debug(`Getting version ${version} for modId ${modId} from Registry`)
+    const { versions } = await this.getRegistryEntryIndex(modId)
+
+    return versions.find((it) => it.version === version)
+  }
+
+  async getVersions(modId: string): Promise<string[]> {
+    this.logger.debug(`Getting all versions Ids for modId ${modId} from Registry`)
+    const { versions } = await this.getRegistryEntryIndex(modId)
+
+    return versions.map((it) => it.version)
+  }
 }
