@@ -23,7 +23,7 @@ import {
 import { useDisclosure } from '@mantine/hooks'
 import { marked } from 'marked'
 import type React from 'react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { MdOutlineCategory } from 'react-icons/md'
 import { VscCheck, VscClose } from 'react-icons/vsc'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -77,6 +77,7 @@ export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) 
 
   const latestRelease = entry.versions.find((it) => it.version === entry.latest)
   const url = useAsync(() => client.getRegistryUrl.query(), [])
+  const [showMoreReleases, setShowMoreReleases] = useState(false)
 
   return (
     <Stack>
@@ -226,6 +227,26 @@ export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) 
                 <ReleaseSummary release={latestRelease} latest />
               ) : (
                 <Text>No Release Found</Text>
+              )}
+              {entry.versions.length > 1 && (
+                <>
+                  <Text
+                    size={'xs'}
+                    c={'dimmed'}
+                    onClick={() => setShowMoreReleases((prev) => !prev)}
+                  >
+                    {entry.versions.length - 1} more releases
+                  </Text>
+                  <Stack>
+                    {showMoreReleases &&
+                      entry.versions
+                        .filter((it) => it.version !== entry.latest)
+                        .sort((a, b) => +new Date(b.date) - +new Date(a.date))
+                        .map((release) => (
+                          <ReleaseSummary key={release.version} release={release} />
+                        ))}
+                  </Stack>
+                </>
               )}
             </Stack>
           </Stack>
