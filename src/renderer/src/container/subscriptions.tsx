@@ -91,6 +91,11 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
     await subscriptions.mutate()
   }
 
+  async function handlePinUpdate(modId: string, version: string) {
+    await client.update.mutate({ modId, version })
+    await subscriptions.mutate()
+  }
+
   async function handleSubscribeToMissingDeps(
     dependencies: EntryIndexSimple[],
     subscriptions: SubscriptionWithState[]
@@ -148,7 +153,7 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {results.map(({ subscription, state }) => (
+            {results.map(({ subscription, state, versions }) => (
               <SubscriptionRow
                 key={subscription.id}
                 modId={subscription.modId}
@@ -156,6 +161,7 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
                 created={subscription.created}
                 onOpenSymlinksModal={() => onOpenSymlinksModal(subscription.modId)}
                 onUpdate={() => handleUpdate(subscription.modId)}
+                onPin={(version: string) => handlePinUpdate(subscription.modId, version)}
                 onFixMissingDeps={() =>
                   handleSubscribeToMissingDeps(subscription.dependencies, results)
                 }
@@ -164,8 +170,10 @@ export function Subscriptions({ onOpenSymlinksModal }: SubscriptionsProps) {
                 progress={state.progress}
                 isReady={state.isReady}
                 onOpenInExplorer={() => client.openInExplorer.mutate({ modId: subscription.modId })}
+                isPinned={state.isPinned}
                 isLatest={state.isLatest}
                 version={state.version}
+                versions={versions}
                 enabled={state.enabled}
                 onToggleMod={() => handleToggleMod(subscription)}
                 stateLabel={state.currentTaskLabel || state.progressLabel}

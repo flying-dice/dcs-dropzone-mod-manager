@@ -11,6 +11,9 @@ export class Release {
   @Prop({ type: String, required: true })
   version: string
 
+  @Prop({ type: Boolean, required: true })
+  pinned: boolean
+
   @Prop({ type: Boolean, required: true, default: false })
   enabled: boolean
 

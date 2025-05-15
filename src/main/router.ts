@@ -79,9 +79,10 @@ export function getAppRouter(moduleRef: ModuleRef) {
           moduleRef.get(SubscriptionManager).unsubscribe(input.modId)
       ),
     update: trpc.procedure
-      .input(z.object({ modId: z.string() }))
+      .input(z.object({ modId: z.string(), version: z.string().optional() }))
       .mutation(
-        async ({ input }): Promise<void> => moduleRef.get(SubscriptionManager).update(input.modId)
+        async ({ input }): Promise<void> =>
+          moduleRef.get(SubscriptionManager).update(input.modId, input.version)
       ),
     openWriteDirInExplorer: trpc.procedure.mutation(
       async ({}): Promise<void> =>

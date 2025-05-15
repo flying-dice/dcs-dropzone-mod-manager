@@ -10,7 +10,8 @@ describe('getReleaseAsset', () => {
       id: '88822dfd-28d3-4440-bbca-94750e2dda5f',
       subscriptionId: 'fce9873e-dbac-451e-89a4-8a7aabcd7382',
       version: '0.1.0',
-      enabled: false
+      enabled: false,
+      pinned: false
     }
     const asset: EntryIndexVersionsItemAssetsItem = {
       remoteSource:
@@ -67,7 +68,8 @@ describe('getReleaseAsset', () => {
       id: '88822dfd-28d3-4440-bbca-94750e2dda5f',
       subscriptionId: 'fce9873e-dbac-451e-89a4-8a7aabcd7382',
       version: '0.1.0',
-      enabled: false
+      enabled: false,
+      pinned: false
     }
     const asset: EntryIndexVersionsItemAssetsItem = {
       remoteSource:
