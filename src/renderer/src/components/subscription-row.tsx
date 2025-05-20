@@ -194,7 +194,7 @@ export function SubscriptionRow(props: SubscriptionRowProps) {
 
               <Menu.Sub.Dropdown>
                 {props.isPinned && <Menu.Item onClick={() => props.onUpdate()}>Unpin</Menu.Item>}
-                {props.versions.reverse().map((version) => (
+                {[...props.versions].reverse().map((version) => (
                   <Menu.Item
                     key={version}
                     onClick={() => props.onPin(version)}
