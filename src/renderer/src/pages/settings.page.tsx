@@ -90,7 +90,7 @@ const Configurables: React.FC = () => {
         }
       />
 
-      {!defaultWriteDir.data && <Alert color={'red'}>Failed to get default write directory</Alert>}
+      {!defaultWriteDir.data && isEmpty(writeDir.value.data) && <Alert color={'red'}>Failed to get default write directory</Alert>}
 
       <SettingEntry
         name="gameDir"

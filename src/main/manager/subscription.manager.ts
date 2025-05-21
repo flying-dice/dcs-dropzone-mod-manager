@@ -301,9 +301,9 @@ export class SubscriptionManager implements OnApplicationBootstrap {
     )
 
     for (const directory of foldersInWriteDirectory) {
-      const assetFolders = readdirSync(join(writeDirectory, directory.name), {
+      const assetFolders = (await readdir(join(writeDirectory, directory.name), {
         withFileTypes: true
-      }).filter((it) => it.isDirectory())
+      })).filter((it) => it.isDirectory())
       for (const assetDirectory of assetFolders) {
         const downloadingDir = join(
           writeDirectory,
@@ -314,7 +314,11 @@ export class SubscriptionManager implements OnApplicationBootstrap {
         this.logger.warn(`Checking for incomplete downloads in ${downloadingDir}`)
         if (!(await pathExists(downloadingDir))) continue
         this.logger.warn(`Deleting incomplete download directory ${downloadingDir}`)
-        await rmdir(downloadingDir, { recursive: true })
+        try {
+          await rmdir(downloadingDir, { recursive: true })
+        } catch (error) {
+          this.logger.error(`Failed to delete directory ${downloadingDir}: ${error.message}`)
+        }
       }
     }
   }
