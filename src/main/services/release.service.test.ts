@@ -48,7 +48,8 @@ function createReleaseWithAssetsAndTask(versionsItem: EntryIndexVersionsItem) {
     id: randomUUID(),
     subscriptionId,
     version: versionsItem.version!,
-    enabled: false
+    enabled: false,
+    pinned: false
   }
 
   const assets: HydratedReleaseAsset[] = []
@@ -68,7 +69,8 @@ describe('ReleaseService', () => {
     id: 'test-release',
     subscriptionId: 'test-subscription',
     version: '1.0.0',
-    enabled: false
+    enabled: false,
+    pinned: false,
   }
 
   const testAsset: ReleaseAsset = {

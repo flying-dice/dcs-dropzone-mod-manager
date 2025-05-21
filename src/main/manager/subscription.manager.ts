@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common'
-import { ProgressLabel } from '../../lib/types'
+import { EntryIndexVersionsItem, ProgressLabel } from '../../lib/types'
 import { FsService } from '../services/fs.service'
 import { RegistryService } from '../services/registry.service'
 import { WriteDirectoryService } from '../services/write-directory.service'
@@ -28,12 +28,14 @@ export type SubscriptionReleaseState = {
   latest?: string
   isReady: boolean
   isFailed: boolean
+  isPinned: boolean
   errors: string[]
 }
 
 export type SubscriptionWithState = {
   subscription: Subscription
   state: SubscriptionReleaseState
+  versions: string[]
 }
 
 @Injectable()
@@ -69,8 +71,11 @@ export class SubscriptionManager implements OnApplicationBootstrap {
 
     for (const subscription of await this.subscriptionService.findAll()) {
       const state = await this.getSubscriptionReleaseState(subscription)
+      const versions = await this.registryService.getVersions(subscription.modId).catch((e) => {
+        this.logger.warn(`Failed to get versions for mod ${subscription.modId} ${e.message}`)
+      })
       if (state) {
-        subscriptionsWithState.push({ subscription, state })
+        subscriptionsWithState.push({ subscription, state, versions: versions || [] })
       }
     }
 
@@ -146,6 +151,7 @@ export class SubscriptionManager implements OnApplicationBootstrap {
       currentTaskLabel: assetTasks.find((it) => it.status === AssetTaskStatus.IN_PROGRESS)?.label,
       isReady: taskStatuses.every((it) => it === AssetTaskStatus.COMPLETED),
       exePath: installed.exePath,
+      isPinned: installed.pinned,
       isLatest: latest?.version ? installed.version === latest?.version : false,
       latest: latest?.version || 'NOT FOUND',
       isFailed: taskStatuses.some((it) => it === AssetTaskStatus.FAILED),
@@ -154,19 +160,28 @@ export class SubscriptionManager implements OnApplicationBootstrap {
   }
 
   @Log()
-  async subscribe(modId: string): Promise<void> {
+  async subscribe(modId: string, version?: string): Promise<void> {
     this.logger.log(`Subscribing to mod ${modId}`)
 
     this.logger.debug(`Getting registry index for mod ${modId}`)
     const mod = await this.registryService.getRegistryEntryIndex(modId)
+    let targetRelease: EntryIndexVersionsItem | undefined | void
+    if (!version) {
+      this.logger.debug(`Getting latest release for mod ${modId}`)
+      targetRelease = await this.registryService.getLatestVersion(modId).catch((e) => {
+        this.logger.warn(`Failed to get latest release for mod ${modId} ${e.message}`)
+      })
+    } else {
+      this.logger.debug(`Getting release ${version} for mod ${modId}`)
+      targetRelease = await this.registryService.getVersion(modId, version).catch((e) => {
+        this.logger.warn(`Failed to get release ${version} for mod ${modId} ${e.message}`)
+      })
+    }
 
-    this.logger.debug(`Getting latest release for mod ${modId}`)
-    const latestRelease = await this.registryService.getLatestVersion(modId).catch((e) => {
-      this.logger.warn(`Failed to get latest release for mod ${modId} ${e.message}`)
-    })
-
-    if (!latestRelease) {
-      throw new Error(`No releases found for mod ${modId}`)
+    if (!targetRelease) {
+      throw new Error(
+        `No release found for mod ${modId}${version ? ` with version ${version}` : ''}`
+      )
     }
 
     this.logger.debug(`Building Subscription and Release data for ${modId}`)
@@ -180,9 +195,10 @@ export class SubscriptionManager implements OnApplicationBootstrap {
     const release: Release = {
       id: randomUUID(),
       subscriptionId: subscription.id,
-      version: latestRelease.version!,
+      version: targetRelease.version!,
+      pinned: !!version,
       enabled: false,
-      exePath: latestRelease.exePath
+      exePath: targetRelease.exePath
     }
 
     this.logger.debug(`Determining write directory for mod ${modId}`)
@@ -192,7 +208,7 @@ export class SubscriptionManager implements OnApplicationBootstrap {
     )
     this.logger.verbose(`Release write directory: ${releaseWriteDir}`)
 
-    const assets = latestRelease.assets.map((asset) =>
+    const assets = targetRelease.assets.map((asset) =>
       getReleaseAsset(release, asset, releaseWriteDir)
     )
 
@@ -206,7 +222,7 @@ export class SubscriptionManager implements OnApplicationBootstrap {
         await this.writeDirectoryService.getWriteDirectoryForSubscription(subscription)
     })
 
-    this.logger.debug(`Saving release ${latestRelease.version} for mod ${modId}`)
+    this.logger.debug(`Saving release ${targetRelease.version} for mod ${modId}`)
     await this.releaseService.save({
       ...release,
       writeDirectory: releaseWriteDir
@@ -225,7 +241,7 @@ export class SubscriptionManager implements OnApplicationBootstrap {
 
     this.logger.log(`Subscribed to mod ${modId}`)
 
-    await trackEvent('mod_subscribed', { mod_id: modId, mod_version: latestRelease.version! })
+    await trackEvent('mod_subscribed', { mod_id: modId, mod_version: targetRelease.version! })
   }
 
   @Log()
@@ -263,14 +279,14 @@ export class SubscriptionManager implements OnApplicationBootstrap {
   }
 
   @Log()
-  async update(modId: string) {
+  async update(modId: string, version?: string): Promise<void> {
     this.logger.log(`Updating mod ${modId}`)
 
     this.logger.debug(`Unsubscribing from mod ${modId}`)
     await this.unsubscribe(modId)
 
     this.logger.debug(`Subscribing to mod ${modId}`)
-    await this.subscribe(modId)
+    await this.subscribe(modId, version)
   }
 
   @Log()
