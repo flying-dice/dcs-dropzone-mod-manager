@@ -13,7 +13,7 @@ import { Log } from '../utils/log'
 import { getReleaseAsset } from '../functions/get-release-asset'
 import { randomUUID } from 'node:crypto'
 import { join } from 'node:path'
-import { ensureDirSync, pathExists, readdirSync, rmdir } from 'fs-extra'
+import { ensureDirSync, pathExists, readdir, readdirSync, rmdir } from 'fs-extra'
 import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
 import { posixpath } from '../functions/posixpath'
 
@@ -296,14 +296,16 @@ export class SubscriptionManager implements OnApplicationBootstrap {
 
     if (!(await pathExists(writeDirectory))) return
 
-    const foldersInWriteDirectory = readdirSync(writeDirectory, { withFileTypes: true }).filter(
+    const foldersInWriteDirectory = (await readdir(writeDirectory, { withFileTypes: true })).filter(
       (it) => it.isDirectory()
     )
 
     for (const directory of foldersInWriteDirectory) {
-      const assetFolders = (await readdir(join(writeDirectory, directory.name), {
-        withFileTypes: true
-      })).filter((it) => it.isDirectory())
+      const assetFolders = (
+        await readdir(join(writeDirectory, directory.name), {
+          withFileTypes: true
+        })
+      ).filter((it) => it.isDirectory())
       for (const assetDirectory of assetFolders) {
         const downloadingDir = join(
           writeDirectory,
