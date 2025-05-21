@@ -1,5 +1,5 @@
 import { posixpath } from './posixpath'
-import { join, dirname } from 'path'
+import { join } from 'path'
 import { spawn } from 'child_process'
 import { mkdir, rename, stat } from 'node:fs/promises'
 import { Logger } from '@nestjs/common'
@@ -69,7 +69,7 @@ export async function wget({ exePath, baseUrl, file, targetDir, onProgress }: Wg
     await rename(join(tempdir, decodeURIComponent(file)), target)
 
     Logger.debug('Removing temp directory')
-    await rm(dirname(tempdir), { recursive: true, force: true })
+    await rm(tempdir, { recursive: true, force: true })
 
     return target
   } catch (e) {

@@ -63,6 +63,7 @@ export class SubscriptionManager implements OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<any> {
     this.logger.log('Checking for orphaned subscriptions and releases')
     await this.removeOrphanedSubscriptionsAndReleases()
+    await this.removeIncompleteDownloads()
   }
 
   @Log()
@@ -287,6 +288,35 @@ export class SubscriptionManager implements OnApplicationBootstrap {
 
     this.logger.debug(`Subscribing to mod ${modId}`)
     await this.subscribe(modId, version)
+  }
+
+  @Log()
+  async removeIncompleteDownloads() {
+    const writeDirectory = await this.writeDirectoryService.getWriteDirectory()
+
+    if (!(await pathExists(writeDirectory))) return
+
+    const foldersInWriteDirectory = readdirSync(writeDirectory, { withFileTypes: true }).filter(
+      (it) => it.isDirectory()
+    )
+
+    for (const directory of foldersInWriteDirectory) {
+      const assetFolders = readdirSync(join(writeDirectory, directory.name), {
+        withFileTypes: true
+      }).filter((it) => it.isDirectory())
+      for (const assetDirectory of assetFolders) {
+        const downloadingDir = join(
+          writeDirectory,
+          directory.name,
+          assetDirectory.name,
+          'downloading'
+        )
+        this.logger.warn(`Checking for incomplete downloads in ${downloadingDir}`)
+        if (!(await pathExists(downloadingDir))) continue
+        this.logger.warn(`Deleting incomplete download directory ${downloadingDir}`)
+        await rmdir(downloadingDir, { recursive: true })
+      }
+    }
   }
 
   @Log()
