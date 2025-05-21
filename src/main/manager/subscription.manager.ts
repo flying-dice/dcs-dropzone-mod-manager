@@ -13,7 +13,7 @@ import { Log } from '../utils/log'
 import { getReleaseAsset } from '../functions/get-release-asset'
 import { randomUUID } from 'node:crypto'
 import { join } from 'node:path'
-import { ensureDirSync, pathExists, readdirSync, rmdir } from 'fs-extra'
+import { ensureDirSync, pathExists, readdir, readdirSync, rmdir } from 'fs-extra'
 import { AssetTaskStatus } from '../schemas/release-asset-task.schema'
 import { posixpath } from '../functions/posixpath'
 
@@ -63,6 +63,7 @@ export class SubscriptionManager implements OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<any> {
     this.logger.log('Checking for orphaned subscriptions and releases')
     await this.removeOrphanedSubscriptionsAndReleases()
+    await this.removeIncompleteDownloads()
   }
 
   @Log()
@@ -287,6 +288,41 @@ export class SubscriptionManager implements OnApplicationBootstrap {
 
     this.logger.debug(`Subscribing to mod ${modId}`)
     await this.subscribe(modId, version)
+  }
+
+  @Log()
+  async removeIncompleteDownloads() {
+    const writeDirectory = await this.writeDirectoryService.getWriteDirectory()
+
+    if (!(await pathExists(writeDirectory))) return
+
+    const foldersInWriteDirectory = (await readdir(writeDirectory, { withFileTypes: true })).filter(
+      (it) => it.isDirectory()
+    )
+
+    for (const directory of foldersInWriteDirectory) {
+      const assetFolders = (
+        await readdir(join(writeDirectory, directory.name), {
+          withFileTypes: true
+        })
+      ).filter((it) => it.isDirectory())
+      for (const assetDirectory of assetFolders) {
+        const downloadingDir = join(
+          writeDirectory,
+          directory.name,
+          assetDirectory.name,
+          'downloading'
+        )
+        this.logger.warn(`Checking for incomplete downloads in ${downloadingDir}`)
+        if (!(await pathExists(downloadingDir))) continue
+        this.logger.warn(`Deleting incomplete download directory ${downloadingDir}`)
+        try {
+          await rmdir(downloadingDir, { recursive: true })
+        } catch (error) {
+          this.logger.error(`Failed to delete directory ${downloadingDir}: ${error.message}`)
+        }
+      }
+    }
   }
 
   @Log()
