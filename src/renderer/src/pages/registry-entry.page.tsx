@@ -235,7 +235,9 @@ export const _RegistryEntryPage: React.FC<RegistryEntryPageProps> = ({ entry }) 
                     c={'dimmed'}
                     onClick={() => setShowMoreReleases((prev) => !prev)}
                   >
-                    {entry.versions.length - 1} more releases
+                    {showMoreReleases
+                      ? 'Hide releases'
+                      : `${entry.versions.length - 1} more releases`}
                   </Text>
                   <Stack>
                     {showMoreReleases &&
